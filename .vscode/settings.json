@@ -1,0 +1,8 @@
+{
+  "python.pythonPath": "/Users/bas/anaconda3/envs/cantus/bin/python",
+  "code-runner.executorMap": 
+  { 
+      "python": "$pythonPath -u $fullFileName" 
+  },
+  "code-runner.saveAllFilesBeforeRun": true
+}
