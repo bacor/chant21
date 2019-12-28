@@ -1,0 +1,34 @@
+// An Arpeggio PEG grammar for gabc
+// Author: Bas Cornelissen
+
+// FILE
+    gabc_file = header? r'(\n)?%%(\n)+' body? EOF
+
+// HEADER
+    header = attribute+
+    attribute = attribute_key r':[ ]*' attribute_value r';(\n)*'
+    attribute_key = r'[^:;%]+'
+    attribute_value = r'[^:;%]+'
+
+// BODY
+    body = (word (whitespace / EOF))+
+    word = syllable+
+    syllable = text? "(" music ")"
+    whitespace = r'[ \n\r\t\f\v]+'
+    // text cannot start with a space
+    text = r'[^ \n\r\t\f\v\(][^\(]*'
+
+// MUSIC
+    music = (clef / note / barline / spacer)*
+    clef = r'(c|f)b?[1-4]'
+    barline = r",0|,_|,|'|`|::|:\?|:|;[1-6]|;"
+    spacer = r'\!|@|//|/0|/\[-?[0-9]\]|/| '
+
+    note = prefix* position suffix*
+    prefix = '-'
+    suffix = neume_shape? alteration? rhythmic_sign? empty_note_or_accent*
+    position = r'[a-mA-M]'
+    neume_shape = r'~|>|<|v|V|o(~|<)?|w|s<?'
+    alteration = r'x|y|#'
+    rhythmic_sign = r'\.\.?|\'(0|1)?|_[0-5]*'
+    empty_note_or_accent = r'r[0-5]?|R'
