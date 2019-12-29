@@ -21,6 +21,9 @@ class TestFile(unittest.TestCase):
         self.assertEqual(parse[2].rule_name, 'body')
         self.assertEqual(parse[2].value, 'a | ( | f | ) | b | ( | g | ) |   | c | ( | h | ) | \n | i | ( | j | ) | ')
 
+    #TODO always include header/body, but allow body and header to be empty
+    #That is: body and header should NOT be optional
+
     def test_empty_header(self):
         parser = GABCParser()
         file_str = '%%\na(f)b(g)'
