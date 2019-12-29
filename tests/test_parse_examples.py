@@ -2,12 +2,6 @@ import unittest
 import glob
 from pygabc.parser import GABCParser
 
-def run_test(self, example):
-    parser = GABCParser()
-    parse = parser.parse_file(example)
-    self.assertFalse(parse.error)
-    return parse
-
 class TestParseExamples(unittest.TestCase):
 
     def run_test(self, example):

@@ -1,3 +1,8 @@
+"""Unittests for the GABC to Volpiano converter
+
+Todo:
+    * Test conversion of example files
+"""
 import unittest
 from arpeggio import visit_parse_tree
 from pygabc.parser import GABCParser
@@ -296,5 +301,11 @@ class TestConversion(unittest.TestCase):
         self.assertEqual(music, f'1{MUSIC_WORD_BOUNDARY}c{MUSIC_SYLLABLE_BOUNDARY}d{MUSIC_WORD_BOUNDARY}e')
         self.assertEqual(text, f'{TEXT_WORD_BOUNDARY}A{TEXT_SYLLABLE_BOUNDARY}B{TEXT_WORD_BOUNDARY}C')
         
+class TestConversionExamples(unittest.TestCase):
+
+    def test_convert_salve_regina(self):
+        #TODO implement
+        pass
+
 if __name__ == '__main__':
     unittest.main()

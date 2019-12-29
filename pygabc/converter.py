@@ -315,6 +315,9 @@ class VolpianoConverter:
 
     Raises:
         MissingClef: when converting a GABC string without clef
+
+    Todo:
+        * Convert complete files
     """
 
     def __init__(self, **kwargs):
@@ -388,6 +391,7 @@ class VolpianoConverter:
         return text, volpiano
 
     def convert_file_contents(self, gabc):
+        #TODO implement this
         raise NotImplementedError()
 
 ####
