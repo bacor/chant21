@@ -45,10 +45,17 @@ LIQUESCENT_PREFIXES = {
 SPACERS = {
     '!': '',
     '@': '',
-    '/': '',
-
-    # Neume-boundaries
+    
+    # Neumatic-element boundaries
+    '/': '-',
     '//': '-',
+    '/[-2]': '-', # Is this even valid?
+    '/[-1]': '-',
+    '/[0]': '-',
+    '/[1]': '-',
+    '/[2]': '-',
+    '/[3]': '-',
+    '/[4]': '-', # Is this even valid?
 
     ' ': None
 }
@@ -60,6 +67,23 @@ TEXT_SYLLABLE_BOUNDARY = '-'
 MUSIC_SYLLABLE_BOUNDARY = '--'
 TEXT_WORD_BOUNDARY = ' '
 MUSIC_WORD_BOUNDARY = '---'
+
+# Note: midi keys are not the flats but the naturals 
+MIDI_TO_VOLPIANO_FLAT = {
+    59: "y", #B flat
+    64: "w", #E flat
+    71: "i", #B flat
+    76: "x", #E flat
+    83: "z", #B flat
+}
+
+MIDI_TO_VOLPIANO_NATURAL = {
+    59: "Y", #B flat
+    64: "W", #E flat
+    71: "I", #B flat
+    76: "X", #E flat
+    83: "Z", #B flat
+}
 
 # Volpiano notes
 MIDI_TO_VOLPIANO_NOTE = {
@@ -119,12 +143,19 @@ MIDI_TO_VOLPIANO_LIQUESCENT = {
     86: "S"
 }
 
+MIDI_C_PER_CLEF = {
+    'c4': 72,
+    'c3': 72
+}
+
 ####
 
-def position_to_midi(position, clef, C=60):
+def position_to_midi(position, clef, C=None):
     """Convert a note position (on the 4 lines) to a midi pitch"""
     positions = dict(a=-3, b=-2, c=-1, d=0, e=1, f=2, g=3, h=4, i=5, j=6, k=7, l=8, m=9)
     clef_position = dict(c1=0, c2=2, c3=4, cb3=4, c4=6, cb4=6, f3=1, f4=3)
+    if C is None:
+        C = MIDI_C_PER_CLEF.get(clef, 60)
     if clef == 'cb3' or clef == 'cb4':
         scale = [0, 2, 4, 5, 7, 9, 10]
     else:
@@ -146,15 +177,25 @@ def position_to_midi(position, clef, C=60):
 
     return midi
 
-def position_to_volpiano_note(position, clef):
-    midi = position_to_midi(position, clef)
+def position_to_note(position, clef, C=None):
+    midi = position_to_midi(position, clef, C=C)
     volpiano_note = MIDI_TO_VOLPIANO_NOTE[midi]
     return volpiano_note
 
-def position_to_volpiano_liquescent(position, clef):
-    midi = position_to_midi(position, clef)
+def position_to_liquescent(position, clef, C=None):
+    midi = position_to_midi(position, clef, C=C)
     volpiano_liquescent = MIDI_TO_VOLPIANO_LIQUESCENT[midi]
     return volpiano_liquescent
+
+def position_to_flat(position, clef, C=None):
+    midi = position_to_midi(position, clef, C=C)
+    volpiano_flat = MIDI_TO_VOLPIANO_FLAT[midi]
+    return volpiano_flat
+
+def position_to_natural(position, clef, C=None):
+    midi = position_to_midi(position, clef, C=C)
+    volpiano_natural = MIDI_TO_VOLPIANO_NATURAL[midi]
+    return volpiano_natural
 
 ####
 
@@ -183,6 +224,19 @@ class VolpianoConverterVisitor(PTNodeVisitor):
     }
     ```
     """
+    
+    def visit_gabc_file(self, node, children):
+        header = children.results['header'][0]
+        text, music = children.results['body'][0]
+        return header, text, music
+
+    def visit_header(self, node, children):
+        return { key: value for key, value in children }
+    
+    def visit_attribute(self, node, children):
+        key = children.results['attribute_key'][0]
+        value = children.results['attribute_value'][0]
+        return key, value
 
     def visit_body(self, node, children):
         text = []
@@ -289,6 +343,12 @@ class VolpianoConverterVisitor(PTNodeVisitor):
         return ALTERATIONS.get(node.value)
         
     def visit_rhythmic_sign(self, node, children):
+        # Treat dots as neumatic cuts
+        # if node.value in ['.', '..']:
+        #     return {
+        #         'type': 'spacer',
+        #         'value': SPACERS.get('/')
+        #     }
         return None
     
     def visit_empty_note_or_accent(self, node, children):
@@ -352,20 +412,28 @@ class VolpianoConverter:
 
             # Symbols dependent on clef
             elif event['type'] in ['note', 'liquescent', 'alteration']:
-                
+
                 if current_clef is None:
                     raise MissingClef('Cannot determine the pitch of notes without clef')
 
                 if event['type'] == 'liquescent':
-                    liquescent = position_to_volpiano_liquescent(event['position'], current_clef)
+                    liquescent = position_to_liquescent(
+                        event['position'], current_clef)
                     volpiano += liquescent
 
                 elif event['type'] == 'note':
-                    note = position_to_volpiano_note(event['position'], current_clef)
+                    note = position_to_note(
+                        event['position'], current_clef)
                     volpiano += note
                 
                 elif event['type'] == 'alteration':
-                    raise NotImplementedError()
+                    if event['value'] == 'flat':
+                        alteration = position_to_flat(
+                            event['position'], current_clef)
+                    elif event['value'] == 'natural':
+                        alteration = position_to_natural(
+                            event['position'], current_clef)
+                    volpiano += alteration
 
         return volpiano
 
@@ -391,8 +459,23 @@ class VolpianoConverter:
         return text, volpiano
 
     def convert_file_contents(self, gabc):
-        #TODO implement this
-        raise NotImplementedError()
+        #TODO write docstring
+        # Main conversion is done by the Visitor
+        parse = self.file_parser.parse(gabc)
+        header, text, music = visit_parse_tree(parse, self.visitor)
+
+        # Second visit: convert positions to notes. 
+        # We do not use the second_ mechanism of Arpeggio, since
+        # visit_parse_tree does not return the second output
+        volpiano = self._convert_music_events_to_volpiano(music)
+        text = ''.join(text)
+        return header, text, volpiano
+
+    def convert_file(self, filename):
+        #TODO write docstring
+        with open(filename, 'r') as handle:
+            contents = handle.read()
+        return self.convert_file_contents(contents)
 
 ####
 

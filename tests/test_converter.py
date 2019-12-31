@@ -193,6 +193,23 @@ class TestPositionToMidiConversion(unittest.TestCase):
 
 class TestConversionVisitor(unittest.TestCase):
     
+    def test_file(self):
+        parser = GABCParser()
+        file_str = 'attr1:value1;\nattr2:value2;%%\n\na(f)b(g) c(h)\ni(j)'
+        parse = parser.parse(file_str)
+        header, text, music = visit_parse_tree(parse, VolpianoConverterVisitor())
+
+        target_header = dict(attr1='value1', attr2='value2')
+        self.assertDictEqual(header, target_header)
+        # TODO test header and body
+        
+    def test_header(self):
+        parser = GABCParser(root='header')
+        parse = parser.parse('attr1: value1;\nattr2:value2;')
+        header = visit_parse_tree(parse, VolpianoConverterVisitor())
+        target = dict(attr1='value1', attr2='value2')
+        self.assertDictEqual(header, target)
+
     def test_syllable(self):
         parser = GABCParser(root='syllable')
         parse = parser.parse('A(fg)')
@@ -272,7 +289,17 @@ class TestConversion(unittest.TestCase):
         converter = VolpianoConverter()
         text, volpiano = converter.convert('(c3) A(fgf)B(g) C(h)')
         self.assertEqual(text, ' A-B C')
-        self.assertEqual(volpiano, '1---aba--b---c')
+        self.assertEqual(volpiano, '1---hjh--j---k')
+
+    def test_file_conversion(self):
+        converter = VolpianoConverter()
+        file_str = 'attr1:value1;\nattr2:value2;%%\n\n(c3) a(f)b(g) c(h)\ni(j)'
+        header, text, music = converter.convert_file_contents(file_str)
+        
+        target_header = dict(attr1='value1', attr2='value2')
+        self.assertDictEqual(header, target_header)
+        self.assertEqual(text, ' a-b c i')
+        self.assertEqual(music, '1---h--j---k---m')
 
     def test_missing_clef(self):
         converter = VolpianoConverter()
@@ -305,6 +332,23 @@ class TestConversionExamples(unittest.TestCase):
 
     def test_convert_salve_regina(self):
         #TODO implement
+        converter = VolpianoConverter()
+        filename = 'examples/an--salve_regina_simple_tone--solesmes.gabc'
+        header, text, volpiano = converter.convert_file(filename)
+        pass
+
+    def test_convert_kyrie(self):
+        #TODO implement
+        converter = VolpianoConverter()
+        filename = 'examples/ky--kyrie_ad_lib_x_-_orbis_factor--solesmes.gabc'
+        header, text, volpiano = converter.convert_file(filename)
+        pass
+    
+    def test_convert_populus_sion(self):
+        #TODO implement
+        converter = VolpianoConverter()
+        filename = 'examples/populus_sion.gabc'
+        header, text, volpiano = converter.convert_file(filename)
         pass
 
 if __name__ == '__main__':
