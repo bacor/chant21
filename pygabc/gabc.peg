@@ -1,5 +1,12 @@
 // An Arpeggio PEG grammar for gabc
 // Author: Bas Cornelissen
+//
+// To do
+// ----- 
+// * Consider adopting the Gregorio terminology of neumes and neumatic cuts
+//   see http://gregorio-project.github.io/structure.html
+// * Require an gabc_file to always have a body and header, but allow those
+//   to be empty (rather than making the body and header optional).
 
 // FILE
     gabc_file = header? r'(\n)?%%(\n)+' body? EOF
