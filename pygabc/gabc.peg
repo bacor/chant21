@@ -1,4 +1,8 @@
-// An Arpeggio PEG grammar for gabc
+// An Arpeggio PEG grammar for gabc_file
+//
+// Inspired by the PEG grammar used in 'gabc-converter'; see
+// https://github.com/saybaar/gabc-converter
+//
 // Author: Bas Cornelissen
 //
 // To do
