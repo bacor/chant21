@@ -5,7 +5,7 @@ Date: 27 December 2019
 """
 import unittest
 from arpeggio import NoMatch
-from pygabc.parser import GABCParser
+from gabc2volpiano.parser import GABCParser
 
 class TestFile(unittest.TestCase):
     def test_file(self):

@@ -1,6 +1,6 @@
 from arpeggio import PTNodeVisitor
 from arpeggio import visit_parse_tree
-from pygabc.parser import GABCParser
+from gabc2volpiano.parser import GABCParser
 
 OPTIONS = {
     

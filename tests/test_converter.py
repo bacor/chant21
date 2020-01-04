@@ -5,8 +5,8 @@ Todo:
 """
 import unittest
 from arpeggio import visit_parse_tree
-from pygabc.parser import GABCParser
-from pygabc.converter import *
+from gabc2volpiano.parser import GABCParser
+from gabc2volpiano.converter import *
 
 class TestPositionToMidiConversion(unittest.TestCase):
 

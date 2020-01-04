@@ -1,6 +1,6 @@
 import unittest
 import glob
-from pygabc.parser import GABCParser
+from gabc2volpiano.parser import GABCParser
 
 class TestParseExamples(unittest.TestCase):
 
