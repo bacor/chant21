@@ -1,3 +1,4 @@
+import json
 from arpeggio import PTNodeVisitor
 from arpeggio import visit_parse_tree
 from gabc2volpiano.parser import GABCParser
@@ -396,7 +397,7 @@ class VolpianoConverter:
         self.file_parser = GABCParser(**kwargs, root='gabc_file')
         self.visitor = VolpianoConverterVisitor()
     
-    def _convert_music_events_to_volpiano(self, events):
+    def _convert_music_events_to_volpiano(self, events: list):
         """Convert a sequence of music events into volpiano characters
         
         Args:
@@ -448,7 +449,7 @@ class VolpianoConverter:
 
         return volpiano
 
-    def convert(self, gabc):
+    def convert(self, gabc: str):
         """Convert a GABC string (without header) to Volpiano
         
         Args:
@@ -469,8 +470,20 @@ class VolpianoConverter:
         text = ''.join(text)
         return text, volpiano
 
-    def convert_file_contents(self, gabc):
-        #TODO write docstring
+    def convert_file_contents(self, gabc: str):
+        """Converts the contents of a GABC file to Volpiano.
+
+        A GABC file contains both a header and a body part, separated
+        by `%%`.
+        
+        Args:
+            gabc (string): The contents of a GABC file (including a header)
+        
+        Returns:
+            A tuple `header, text, volpiano`. The `header` is a dictionary
+            with all the information in the header of the GABC file. `text` 
+            and `volpiano` are both strings.
+        """
         # Main conversion is done by the Visitor
         parse = self.file_parser.parse(gabc)
         header, text, music = visit_parse_tree(parse, self.visitor)
@@ -482,11 +495,31 @@ class VolpianoConverter:
         text = ''.join(text)
         return header, text, volpiano
 
-    def convert_file(self, filename):
-        #TODO write docstring
-        with open(filename, 'r') as handle:
+    def convert_file(self, source_fn: str, target_fn: str):
+        """Convert a GABC file to a Volpiano JSON file.
+
+        A Volpiano JSON file contains an object of the form:
+        ```json
+        {
+            "metadata": { ... },
+            "text": [string]
+            "volpiano: [string]
+        }
+        ```
+
+        Args:
+            source_fn (string): the GABC source file
+            target_fn (string): the Volpiano JSON target file
+        """
+        with open(source_fn, 'r') as handle:
             contents = handle.read()
-        return self.convert_file_contents(contents)
+            header, text, volpiano = self.convert_file_contents(contents)
+        
+        with open(target_fn, 'w') as handle:
+            obj = dict(metadata=header, text=text, volpiano=volpiano)
+
+            json.dump(obj, handle, indent=4)
+        
 
 ####
 

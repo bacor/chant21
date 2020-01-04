@@ -351,22 +351,25 @@ class TestConversionExamples(unittest.TestCase):
     def test_convert_salve_regina(self):
         #TODO implement
         converter = VolpianoConverter()
-        filename = 'examples/an--salve_regina_simple_tone--solesmes.gabc'
-        header, text, volpiano = converter.convert_file(filename)
+        source = 'examples/an--salve_regina_simple_tone--solesmes.gabc'
+        target = 'tmp/salve-regina.json'
+        # converter.convert_file(source, target)
         pass
 
     def test_convert_kyrie(self):
         #TODO implement
         converter = VolpianoConverter()
-        filename = 'examples/ky--kyrie_ad_lib_x_-_orbis_factor--solesmes.gabc'
-        header, text, volpiano = converter.convert_file(filename)
+        source = 'examples/ky--kyrie_ad_lib_x_-_orbis_factor--solesmes.gabc'
+        target = 'tmp/kyrie.json'
+        # converter.convert_file(source, target)
         pass
     
     def test_convert_populus_sion(self):
         #TODO implement
         converter = VolpianoConverter()
-        filename = 'examples/populus_sion.gabc'
-        header, text, volpiano = converter.convert_file(filename)
+        source = 'examples/populus_sion.gabc'
+        target = 'tmp/populus-sion.json'
+        # converter.convert_file(source, target)
         pass
 
 if __name__ == '__main__':
