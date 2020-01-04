@@ -32,24 +32,46 @@ Convert a GABC string:
 (' He-llo world', '1---h--jh---jkjh')
 ```
 
-To convert a complete file (e.g. `kyrie.gabc`) including a header:
+You can also convert complete file, to Volpiano JSON file: a simple
+JSON file describing an object with `metadata`, `text` and `volpiano`
+properties. For example, here's the gabc file `kyrie.gabc`:
+
 ```gabc
 name:Kyrie;
 mode:1;
 %%
 (c4) KY(ixhi)ri(hg)e(hd..) *(,) e(fhGE'D)lé(c')i(d)son.(d.)
-```
+``` 
+
+running
 
 ```python
->>> header, text, volpiano = converter.convert_file('kyrie.gabc')
+>>> converter.convert_file('kyrie.gabc', 'kyrie.json')
+```
+
+results in `kyrie.json`:
+
+```json
+{
+    "metadata": {
+        "name": "Kyrie",
+        "mode": "1"
+    },
+    "text": " KY-ri-e * e-l\u00e9-i-son.",
+    "volpiano": "1---ihj--hg--hd---7---fhged--c--d--d"
+}
+```
+
+You can also convert the contents of a gabc file, as follows:
+
+```python
+>>> gabc = open('kyrie.gabc', 'r').read()
+>>> header, text, volpiano = converter.convert_file_contents(gabc)
 >>> header
 {'name': 'Kyrie', 'mode': '1'}
 >>> text, volpiano
 (' KY-ri-e * e-lé-i-son.', '1---ihj--hg--hd---7---fhged--c--d--d')
 ```
-
-The method `converter.convert_file_contents` converts the contents 
-of a `.gabc` file (i.e., including header).
 
 Tests
 -----
