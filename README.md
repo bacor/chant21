@@ -17,6 +17,8 @@ a text string (the lyrics).
 Examples
 --------
 
+Convert a GABC string:
+
 ```python
 >>> from gabc2volpiano import VolpianoConverter
 >>> converter = VolpianoConverter()
@@ -25,20 +27,24 @@ Examples
 (' He-llo world', '1---h--jh---jkjh')
 ```
 
-```python
->>> from gabc2volpiano import VolpianoConverter
->>> converter = VolpianoConverter()
->>> file_contents = (
-"""name:Kyrie;
+To convert a complete file (e.g. `kyrie.gabc`) including a header:
+```gabc
+name:Kyrie;
 mode:1;
 %%
-(c4) KY(ixhi)ri(hg)e(hd..) *(,) e(fhGE'D)lé(c')i(d)son.(d.)""")
->>> header, text, volpiano = converter.convert_file_contents(file_contents)
+(c4) KY(ixhi)ri(hg)e(hd..) *(,) e(fhGE'D)lé(c')i(d)son.(d.)
+```
+
+```python
+>>> header, text, volpiano = converter.convert_file('kyrie.gabc')
 >>> header
 {'name': 'Kyrie', 'mode': '1'}
 >>> text, volpiano
 (' KY-ri-e * e-lé-i-son.', '1---ihj--hg--hd---7---fhged--c--d--d')
 ```
+
+The method `converter.convert_file_contents` converts the contents 
+of a `.gabc` file (i.e., including header).
 
 Tests
 -----
