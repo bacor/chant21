@@ -2,150 +2,155 @@ from arpeggio import PTNodeVisitor
 from arpeggio import visit_parse_tree
 from pygabc.parser import GABCParser
 
-####
-
-BARLINES = {
-	# Comma
-	",": "7",
-	",_": "7",
-	",0": "7",
-	"'": "7",
-	"`": "7",
-
-	# Middle barline
-	";": "6",
-	";1": "6",
-	";2": "6",
-	";3": "6",
-	";4": "6",
-	";5": "6",
-	";6": "6",
-
-	# Double barline
-	"::": "4",
-
-	# Barline
-	":": "3",
-	":?": "3"
-}
-
-ALTERATIONS = {
-    'x': 'flat',
-    'y': 'natural'
-}
-
-LIQUESCENT_NEUME_SHAPES = {
-    'w': 'liquescent'
-}
-
-LIQUESCENT_PREFIXES = {
-    '-': 'liquescent'
-}
-
-SPACERS = {
-    '!': '',
-    '@': '',
+OPTIONS = {
     
-    # Neumatic-element boundaries
-    '/': '-',
-    '//': '-',
-    '/[-2]': '-', # Is this even valid?
-    '/[-1]': '-',
-    '/[0]': '-',
-    '/[1]': '-',
-    '/[2]': '-',
-    '/[3]': '-',
-    '/[4]': '-', # Is this even valid?
+    # Volpiano constants
+    # ------------------ 
 
-    ' ': None
-}
+    'volpiano_clef': '1',
+    'volpiano_no_text': '',
+    'volpiano_music_neume_boundary': '-',
+    'volpiano_text_syllable_boundary': '-',
+    'volpiano_music_syllable_boundary': '--',
+    'volpiano_text_word_boundary': ' ',
+    'volpiano_music_word_boundary': '---',
 
-# Volpiano constants
-NO_TEXT = ''
-CLEF = '1'
-TEXT_SYLLABLE_BOUNDARY = '-'
-MUSIC_SYLLABLE_BOUNDARY = '--'
-TEXT_WORD_BOUNDARY = ' '
-MUSIC_WORD_BOUNDARY = '---'
 
-# Note: midi keys are not the flats but the naturals 
-MIDI_TO_VOLPIANO_FLAT = {
-    59: "y", #B flat
-    64: "w", #E flat
-    71: "i", #B flat
-    76: "x", #E flat
-    83: "z", #B flat
-}
+    # GABC constants
+    # --------------
 
-MIDI_TO_VOLPIANO_NATURAL = {
-    59: "Y", #B flat
-    64: "W", #E flat
-    71: "I", #B flat
-    76: "X", #E flat
-    83: "Z", #B flat
-}
+    # GABC alterations that are actually converted to Volpiano.
+    # Others (sharps) are ignored.
+    'gabc_flat': 'x',
+    'gabc_natural': 'y',
 
-# Volpiano notes
-MIDI_TO_VOLPIANO_NOTE = {
-    53: "8", # F
-    55: "9", # G
-    57: "a",
-    # 58: "y", # B flat
-    59: "b",
-    60: "c",
-    62: "d",
-    # 63: "w", # E flat
-    64: "e",
-    65: "f",
-    67: "g",
-    69: "h",
-    # 70: "i", # B flat
-    71: "j",
-    72: "k", # C
-    74: "l",
-    # 75: "x", # E flat
-    76: "m",
-    77: "n",
-    79: "o",
-    81: "p",
-    # 82: "z", # B flat
-    83: "q",
-    84: "r", # C
-    86: "s"
-}
 
-# Volpiano notes
-MIDI_TO_VOLPIANO_LIQUESCENT = {
-    53: "(", # F
-    55: ")", # G
-    57: "A",
-    # 58: "y", # B flat
-    59: "B",
-    60: "C",
-    62: "D",
-    # 63: "w", # E flat
-    64: "E",
-    65: "F",
-    67: "G",
-    69: "H",
-    # 70: "i", # B flat
-    71: "J",
-    72: "K", # C
-    74: "L",
-    # 75: "x", # E flat
-    76: "M",
-    77: "N",
-    79: "O",
-    81: "P",
-    # 82: "z", # B flat
-    83: "Q",
-    84: "R", # C
-    86: "S"
-}
+    # GABC to Volpiano conversion
+    # ---------------------------
 
-MIDI_C_PER_CLEF = {
-    'c4': 72,
-    'c3': 72
+    # List of GABC neume shapes and prefixes that are converted to liquescents
+    'liquescent_neume_shapes': ['w'],
+    'liquescent_prefixes': ['-'],
+    
+    # Map of GABC to volpiano spacers
+    'spacers': {
+        # No spaces
+        '!': '',
+        '@': '',
+        # Neumatic-element boundaries
+        '/': '-',
+        '//': '-',
+        '/[-2]': '-', # Is this even valid?
+        '/[-1]': '-',
+        '/[0]': '-',
+        '/[1]': '-',
+        '/[2]': '-',
+        '/[3]': '-',
+        '/[4]': '-', # Is this even valid?
+        # Ignored
+        ' ': None
+    },
+
+    # Map of GABC to Volpiano barlines
+    "barlines": {
+        # Commas
+        ",": "7",
+        ",_": "7",
+        ",0": "7",
+        "'": "7",
+        "`": "7",
+        # Middle barline
+        ";": "6",
+        ";1": "6",
+        ";2": "6",
+        ";3": "6",
+        ";4": "6",
+        ";5": "6",
+        ";6": "6",
+        # Double barline
+        "::": "4",
+        # Barline
+        ":": "3",
+        ":?": "3"
+    },
+
+
+    # MIDI to Volpiano and GABC conversion
+    # ------------------------------------
+
+    # Map of midi keys to corresponding Volpiano flat signs
+    # Note: midi keys are not the flats but the naturals 
+    'midi_to_volpiano_flat': {
+        59: "y", #B flat
+        64: "w", #E flat
+        71: "i", #B flat
+        76: "x", #E flat
+        83: "z", #B flat
+    },
+
+    # Map of midi keys to corresponding Volpiano natural signs
+    'midi_to_volpiano_natural': {
+        59: "Y", #B flat
+        64: "W", #E flat
+        71: "I", #B flat
+        76: "X", #E flat
+        83: "Z", #B flat
+    },
+
+    # Map of midi keys to volpiano notes
+    'midi_to_volpiano_note': {
+        53: "8", # F
+        55: "9", # G
+        57: "a",
+        59: "b",
+        60: "c",
+        62: "d",
+        64: "e",
+        65: "f",
+        67: "g",
+        69: "h",
+        71: "j",
+        72: "k", # C
+        74: "l",
+        76: "m",
+        77: "n",
+        79: "o",
+        81: "p",
+        83: "q",
+        84: "r", # C
+        86: "s"
+    },
+
+    # Map of midi keys to volpiano liquescents
+    'midi_to_volpiano_liquescent': {
+        53: "(", # F
+        55: ")", # G
+        57: "A",
+        59: "B",
+        60: "C",
+        62: "D",
+        64: "E",
+        65: "F",
+        67: "G",
+        69: "H",
+        71: "J",
+        72: "K", # C
+        74: "L",
+        76: "M",
+        77: "N",
+        79: "O",
+        81: "P",
+        83: "Q",
+        84: "R", # C
+        86: "S"
+    },
+
+    # Which midi key to use as the 'central' C in different clefs?
+    # The default is midi key 60.
+    'midi_c_per_clef': {
+        'c4': 72,
+        'c3': 72
+    }
 }
 
 ####
@@ -155,7 +160,7 @@ def position_to_midi(position, clef, C=None):
     positions = dict(a=-3, b=-2, c=-1, d=0, e=1, f=2, g=3, h=4, i=5, j=6, k=7, l=8, m=9)
     clef_position = dict(c1=0, c2=2, c3=4, cb3=4, c4=6, cb4=6, f3=1, f4=3)
     if C is None:
-        C = MIDI_C_PER_CLEF.get(clef, 60)
+        C = OPTIONS['midi_c_per_clef'].get(clef, 60)
     if clef == 'cb3' or clef == 'cb4':
         scale = [0, 2, 4, 5, 7, 9, 10]
     else:
@@ -179,22 +184,22 @@ def position_to_midi(position, clef, C=None):
 
 def position_to_note(position, clef, C=None):
     midi = position_to_midi(position, clef, C=C)
-    volpiano_note = MIDI_TO_VOLPIANO_NOTE[midi]
+    volpiano_note = OPTIONS['midi_to_volpiano_note'][midi]
     return volpiano_note
 
 def position_to_liquescent(position, clef, C=None):
     midi = position_to_midi(position, clef, C=C)
-    volpiano_liquescent = MIDI_TO_VOLPIANO_LIQUESCENT[midi]
+    volpiano_liquescent = OPTIONS['midi_to_volpiano_liquescent'][midi]
     return volpiano_liquescent
 
 def position_to_flat(position, clef, C=None):
     midi = position_to_midi(position, clef, C=C)
-    volpiano_flat = MIDI_TO_VOLPIANO_FLAT[midi]
+    volpiano_flat = OPTIONS['midi_to_volpiano_flat'][midi]
     return volpiano_flat
 
 def position_to_natural(position, clef, C=None):
     midi = position_to_midi(position, clef, C=C)
-    volpiano_natural = MIDI_TO_VOLPIANO_NATURAL[midi]
+    volpiano_natural = OPTIONS['midi_to_volpiano_natural'][midi]
     return volpiano_natural
 
 ####
@@ -246,8 +251,8 @@ class VolpianoConverterVisitor(PTNodeVisitor):
             music.extend(word_music)
             # Insert word boundaries between words
             if i < len(children) - 1:
-                text.append(TEXT_WORD_BOUNDARY)
-                event = dict(type='boundary', value=MUSIC_WORD_BOUNDARY)
+                text.append(OPTIONS['volpiano_text_word_boundary'])
+                event = dict(type='boundary', value=OPTIONS['volpiano_music_word_boundary'])
                 music.append(event)
 
         return text, music
@@ -260,8 +265,8 @@ class VolpianoConverterVisitor(PTNodeVisitor):
             music.extend(syllable_music)
             # Insert syllable boundaries *between* syllables (not at the end)
             if i < len(children) - 1:
-                text.append(TEXT_SYLLABLE_BOUNDARY)
-                event = dict(type='boundary', value=MUSIC_SYLLABLE_BOUNDARY)
+                text.append(OPTIONS['volpiano_text_syllable_boundary'])
+                event = dict(type='boundary', value=OPTIONS['volpiano_music_syllable_boundary'])
                 music.append(event)
         return text, music
 
@@ -272,7 +277,7 @@ class VolpianoConverterVisitor(PTNodeVisitor):
         assert 'music' in children.results
         assert len(children.results['music']) == 1
         music = children.results['music'][0]
-        text = children.results.get('text', [NO_TEXT])[0]
+        text = children.results.get('text', [OPTIONS['volpiano_no_text']])[0]
         return text, music
 
     def visit_music(self, node, children):
@@ -287,14 +292,14 @@ class VolpianoConverterVisitor(PTNodeVisitor):
     def visit_barline(self, node, children):
         event = { 
             'type': 'barline',
-            'value': BARLINES[node.value]
+            'value': OPTIONS['barlines'][node.value]
         }
         return event
 
     def visit_spacer(self, node, children):
         event = {
             'type': 'spacer',
-            'value': SPACERS.get(node.value)
+            'value': OPTIONS['spacers'].get(node.value)
         }
         return event
 
@@ -334,21 +339,27 @@ class VolpianoConverterVisitor(PTNodeVisitor):
         return node.value.lower()
 
     def visit_prefix(self, node, children):
-        return LIQUESCENT_PREFIXES.get(node.value)
+        if node.value in OPTIONS['liquescent_prefixes']:
+            return 'liquescent'
+        else:
+            return None
     
     def visit_neume_shape(self, node, children):
-        return LIQUESCENT_NEUME_SHAPES.get(node.value)
+        if node.value in OPTIONS['liquescent_neume_shapes']:
+            return 'liquescent'
+        else:
+            return None
     
     def visit_alteration(self, node, children):
-        return ALTERATIONS.get(node.value)
+        if node.value == OPTIONS['gabc_flat']:
+            return 'flat'
+        elif node.value == OPTIONS['gabc_natural']:
+            return 'natural'
+        else:
+            return None
         
     def visit_rhythmic_sign(self, node, children):
-        # Treat dots as neumatic cuts
-        # if node.value in ['.', '..']:
-        #     return {
-        #         'type': 'spacer',
-        #         'value': SPACERS.get('/')
-        #     }
+        # TODO Treat dots as neumatic cuts?
         return None
     
     def visit_empty_note_or_accent(self, node, children):
@@ -404,7 +415,7 @@ class VolpianoConverter:
             # Clef
             if event['type'] == 'clef':
                 current_clef = event['value']
-                volpiano += CLEF
+                volpiano += OPTIONS['volpiano_clef']
             
              # Symbols independent of clef
             elif event['type'] in ['barline', 'boundary', 'spacer']:

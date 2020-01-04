@@ -239,7 +239,7 @@ class TestConversionVisitor(unittest.TestCase):
 
     def test_barlines(self):
         parser = GABCParser(root='music')
-        for gabc, target in BARLINES.items():
+        for gabc, target in OPTIONS['barlines'].items():
             parse = parser.parse(gabc)
             events = visit_parse_tree(parse, VolpianoConverterVisitor())
             self.assertEqual(len(events), 1)
@@ -248,7 +248,7 @@ class TestConversionVisitor(unittest.TestCase):
 
     def test_spacers(self):
         parser = GABCParser(root='music')
-        for gabc, target in SPACERS.items():
+        for gabc, target in OPTIONS['spacers'].items():
             parse = parser.parse(gabc)
             events = visit_parse_tree(parse, VolpianoConverterVisitor())
             self.assertEqual(len(events), 1)
@@ -257,7 +257,7 @@ class TestConversionVisitor(unittest.TestCase):
 
     def test_liquescent_neume_shapes(self):
         parser = GABCParser(root='music')
-        for shape in LIQUESCENT_NEUME_SHAPES.keys():
+        for shape in OPTIONS['liquescent_neume_shapes']:
             parse = parser.parse(f'f{shape}')
             events = visit_parse_tree(parse, VolpianoConverterVisitor())
             self.assertEqual(len(events), 1)
@@ -266,7 +266,7 @@ class TestConversionVisitor(unittest.TestCase):
 
     def test_liquescent_prefix(self):
         parser = GABCParser(root='music')
-        for prefix in LIQUESCENT_PREFIXES.keys():
+        for prefix in OPTIONS['liquescent_prefixes']:
             parse = parser.parse(f'{prefix}f')
             events = visit_parse_tree(parse, VolpianoConverterVisitor())
             self.assertEqual(len(events), 1)
@@ -275,7 +275,11 @@ class TestConversionVisitor(unittest.TestCase):
 
     def test_alteration(self):
         parser = GABCParser(root='music') 
-        for alteration, name in ALTERATIONS.items():
+        alterations = {
+            OPTIONS['gabc_flat']: 'flat',
+            OPTIONS['gabc_natural']: 'natural',
+        }
+        for alteration, name in alterations.items():
             parse = parser.parse(f'f{alteration}')
             events = visit_parse_tree(parse, VolpianoConverterVisitor())
             self.assertEqual(len(events), 1)
@@ -319,14 +323,28 @@ class TestConversion(unittest.TestCase):
     def test_word_boundaries(self):
         converter = VolpianoConverter()
         text, music = converter.convert('(c2) A(f) B(g)')
-        self.assertEqual(music, f'1{MUSIC_WORD_BOUNDARY}c{MUSIC_WORD_BOUNDARY}d')
-        self.assertEqual(text, f'{TEXT_WORD_BOUNDARY}A{TEXT_WORD_BOUNDARY}B')
+
+        # Boundaries
+        text_syll = OPTIONS['volpiano_text_syllable_boundary']
+        music_syll = OPTIONS['volpiano_music_syllable_boundary']
+        music_word = OPTIONS['volpiano_music_word_boundary']
+        text_word = OPTIONS['volpiano_text_word_boundary']
+
+        self.assertEqual(music, f'1{music_word}c{music_word}d')
+        self.assertEqual(text, f'{text_word}A{text_word}B')
 
     def test_syllable_boundaries(self):
         converter = VolpianoConverter()
         text, music = converter.convert('(c2) A(f)B(g) C(h)')
-        self.assertEqual(music, f'1{MUSIC_WORD_BOUNDARY}c{MUSIC_SYLLABLE_BOUNDARY}d{MUSIC_WORD_BOUNDARY}e')
-        self.assertEqual(text, f'{TEXT_WORD_BOUNDARY}A{TEXT_SYLLABLE_BOUNDARY}B{TEXT_WORD_BOUNDARY}C')
+        
+        # Boundaries
+        text_syll = OPTIONS['volpiano_text_syllable_boundary']
+        music_syll = OPTIONS['volpiano_music_syllable_boundary']
+        music_word = OPTIONS['volpiano_music_word_boundary']
+        text_word = OPTIONS['volpiano_text_word_boundary']
+
+        self.assertEqual(music, f'1{music_word}c{music_syll}d{music_word}e')
+        self.assertEqual(text, f'{text_word}A{text_syll}B{text_word}C')
         
 class TestConversionExamples(unittest.TestCase):
 
