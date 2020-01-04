@@ -14,6 +14,11 @@ The grammar can be found in `gabc2volpiano/gabc.peg`. We then use
 resulting parse tree is then converted to a Volpiano string (the music) and 
 a text string (the lyrics). 
 
+The gabc example files are copied from 
+[gabc-converter](https://github.com/saybaar/gabc-converter): 
+"populus_sion.gabc is the canonical example in the gabc documentation, 
+and the other examples are from gregobase."
+
 Examples
 --------
 
