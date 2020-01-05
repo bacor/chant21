@@ -30,9 +30,10 @@ OPTIONS = {
     # ---------------------------
 
     # List of GABC neume shapes and prefixes that are converted to liquescents
-    'liquescent_neume_shapes': ['w'],
+    # Volpiano 2 might also support quilisma (but that adds other complications)
+    'liquescent_neume_shapes': ['~'],
     'liquescent_prefixes': ['-'],
-    
+
     # Map of GABC to volpiano spacers
     'spacers': {
         # No spaces
