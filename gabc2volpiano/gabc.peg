@@ -9,6 +9,8 @@
 // ----- 
 // * Consider adopting the Gregorio terminology of neumes and neumatic cuts
 //   see http://gregorio-project.github.io/structure.html
+// * Braces above [ob:..]
+// * Guide? e.g. f+ (22x)
 
 // FILE
     gabc_file = header separator body EOF
@@ -38,7 +40,8 @@
     prefix = '-'
     suffix = neume_shape? alteration? rhythmic_sign? empty_note_or_accent*
     position = r'[a-mA-M]'
-    neume_shape = r'~|>|<|v|V|o(~|<)?|w|s<?'
+    neume_shape = r'~|>|<|v|V|o(~|<)?|w|s<?|q'
+        // for 'q', see gregorio-project.github.io/gabc/details.html#podatus
     alteration = r'x|y|#'
     rhythmic_sign = r'\.\.?|\'(0|1)?|_[0-5]*'
     empty_note_or_accent = r'r[0-5]?|R'
