@@ -9,20 +9,19 @@
 // ----- 
 // * Consider adopting the Gregorio terminology of neumes and neumatic cuts
 //   see http://gregorio-project.github.io/structure.html
-// * Require an gabc_file to always have a body and header, but allow those
-//   to be empty (rather than making the body and header optional).
 
 // FILE
-    gabc_file = header? r'(\n)?%%(\n)+' body? EOF
+    gabc_file = header separator body EOF
+    separator = r'(\n)*%%(\n)+'
 
 // HEADER
-    header = attribute+
+    header = attribute*
     attribute = attribute_key r':[ ]*' attribute_value r';(\n)*'
     attribute_key = r'[^:;%]+'
     attribute_value = r'[^:;%]+'
 
 // BODY
-    body = (word (whitespace / EOF))+
+    body = (word (whitespace / EOF))*
     word = syllable+
     syllable = text? "(" music ")"
     whitespace = r'[ \n\r\t\f\v]+'
