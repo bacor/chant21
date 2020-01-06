@@ -90,6 +90,13 @@ class TestHeader(unittest.TestCase):
         parse = parser.parse(header_str)
         self.assertFalse(parse.error)
 
+    def test_semicolons(self):
+        parser = GABCParser(root='header')
+        header_str = "attr1:value1; value2;"
+        parse = parser.parse(header_str)
+        self.assertEqual(parse[0][2].value, 'value1; value2')
+        # TODO test raises error when not followed by space
+
 class TestBody(unittest.TestCase):
     def test_body(self):
         parser = GABCParser(root='body')

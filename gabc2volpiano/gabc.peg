@@ -21,7 +21,8 @@
     header = attribute*
     attribute = attribute_key r':[ ]*' attribute_value r';(\n)*'
     attribute_key = r'[^:;%]+'
-    attribute_value = r'[^:;%]+'
+    attribute_value = r'[^%;]+(;\ [^%;]+)*'
+        // Allow the use of ; when followed by a space
 
 // BODY
     body = (word (whitespace / EOF))*
