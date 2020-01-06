@@ -10,5 +10,11 @@ class TestSpecialCases(unittest.TestCase):
         parse = parser.parse(gabc)
         self.assertFalse(parse.error)
 
+    def test_polyphony(self):
+        gabc = 'Quó(dh)ni(h)am(jhhghvG{ix}Ef_g//eg!ivHGhvFDe.)'
+        parser = GABCParser(root='body')
+        parse = parser.parse(gabc)
+        self.assertFalse(parse.error)
+
 if __name__ == '__main__':
     unittest.main()

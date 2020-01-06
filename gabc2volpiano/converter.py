@@ -326,7 +326,10 @@ class VolpianoConverterVisitor(PTNodeVisitor):
 
     def visit_end_of_line(self, node, children):
         return None
-    
+
+    def visit_polyphony(self, node, children):
+        return None
+
     def visit_note(self, node, children):
         position = children.results.get('position')[0]
         is_liquescent = 'liquescent' in children

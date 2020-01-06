@@ -239,6 +239,12 @@ class TestMusic(unittest.TestCase):
 
         parse = parser.parse('z::c3')
         self.assertEqual(parse[0].rule_name, 'end_of_line')
+    
+    def test_polyphony(self):
+        gabc = '{i}'
+        parser = GABCParser(root='music')
+        parse = parser.parse(gabc)
+        self.assertEqual(parse[0].rule_name, 'polyphony')
 
 class TestClef(unittest.TestCase):
 
