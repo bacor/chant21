@@ -10,37 +10,27 @@ from gabc2volpiano.parser import GABCParser
 class TestFile(unittest.TestCase):
     def test_file(self):
         parser = GABCParser()
-        file_str = 'attr1:value1;\nattr2:value2;%%\n\na(f)b(g) c(h)\ni(j)'
+        file_str = 'attr1:value1;\nattr2:value2;\n%%\n\na(f)b(g) c(h)\ni(j)'
         parse = parser.parse(file_str)
-        # Header
         self.assertEqual(parse[0].rule_name, 'header')
-        self.assertEqual(parse[0].value, 'attr1 | : | value1 | ;\n | attr2 | : | value2 | ;')
-        # Head/body separator
-        self.assertEqual(parse[1].value, '%%\n\n')
-        # Body
+        self.assertEqual(parse[1].rule_name, 'separator')
         self.assertEqual(parse[2].rule_name, 'body')
-        self.assertEqual(parse[2].value, 'a | ( | f | ) | b | ( | g | ) |   | c | ( | h | ) | \n | i | ( | j | ) | ')
-
-    #TODO always include header/body, but allow body and header to be empty
-    #That is: body and header should NOT be optional
+        self.assertEqual(parse[3].rule_name, 'EOF')
 
     def test_empty_header(self):
         parser = GABCParser()
         file_str = '%%\na(f)b(g)'
         parse = parser.parse(file_str)
-        
-        self.assertNotEqual(parse[0].rule_name, 'header')
-        self.assertEqual(parse[0].value, '%%\n')
+        self.assertEqual(parse[0].rule_name, 'separator')
+        self.assertEqual(parse[1].rule_name, 'body')
         self.assertEqual(parse[1].value, 'a | ( | f | ) | b | ( | g | ) | ')
     
     def test_empty_body(self):
         parser = GABCParser()
         file_str = 'attr1:value1;\n%%\n'
         parse = parser.parse(file_str)
-
         self.assertEqual(parse[0].rule_name, 'header')
-        self.assertEqual(parse[0].value, 'attr1 | : | value1 | ;\n')
-        self.assertEqual(parse[1].value, '%%\n')
+        self.assertEqual(parse[1].rule_name, 'separator')
         self.assertEqual(parse[2].rule_name, 'EOF')
 
     def test_empty_header_and_body(self):
