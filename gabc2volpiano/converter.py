@@ -324,6 +324,9 @@ class VolpianoConverterVisitor(PTNodeVisitor):
         }
         return event
 
+    def visit_end_of_line(self, node, children):
+        return None
+    
     def visit_note(self, node, children):
         position = children.results.get('position')[0]
         is_liquescent = 'liquescent' in children
@@ -425,7 +428,7 @@ class VolpianoConverter:
         volpiano = ''
         current_clef = None
         for event in events:
-           
+
             # Clef
             if event['type'] == 'clef':
                 current_clef = event['value']
