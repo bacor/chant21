@@ -30,7 +30,7 @@
     text = r'[^ \n\r\t\f\v\(][^\(]*'
 
 // MUSIC
-    music = (clef / note / barline / spacer)*
+    music = (clef / note / barline / spacer / end_of_line)*
     clef = r'(c|f)b?[1-4]'
     barline = r",0|,_|,|'|`|::|:\?|:|;[1-6]|;"
     spacer = r'\!|@|//|/0|/\[-?[0-9]\]|/| '
@@ -43,3 +43,4 @@
     alteration = r'x|y|#'
     rhythmic_sign = r'\.\.?|\'(0|1)?|_[0-5]*'
     empty_note_or_accent = r'r[0-5]?|R'
+    end_of_line = r'z0?'

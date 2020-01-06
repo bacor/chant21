@@ -229,6 +229,17 @@ class TestSyllable(unittest.TestCase):
         self.assertEqual(parse[1][2].value, ',')
         self.assertEqual(parse[1][3].rule_name, 'spacer')
 
+class TestMusic(unittest.TestCase):
+    
+    def test_end_of_line(self):
+        # http://gregorio-project.github.io/gabc/details.html#endofline
+        parser = GABCParser(root='music')
+        parse = parser.parse('z0::c3')
+        self.assertEqual(parse[0].rule_name, 'end_of_line')
+
+        parse = parser.parse('z::c3')
+        self.assertEqual(parse[0].rule_name, 'end_of_line')
+
 class TestClef(unittest.TestCase):
 
     def test_clefs(self):
