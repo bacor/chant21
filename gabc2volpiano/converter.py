@@ -51,7 +51,7 @@ OPTIONS = {
         '/[3]': '-',
         '/[4]': '-', # Is this even valid?
         # Ignored
-        ' ': None
+        ' ': ''
     },
 
     # Map of GABC to Volpiano barlines
@@ -306,14 +306,14 @@ class VolpianoConverterVisitor(PTNodeVisitor):
     def visit_barline(self, node, children):
         event = { 
             'type': 'barline',
-            'value': OPTIONS['barlines'][node.value]
+            'value': OPTIONS['barlines'].get(node.value, '')
         }
         return event
 
     def visit_spacer(self, node, children):
         event = {
             'type': 'spacer',
-            'value': OPTIONS['spacers'].get(node.value)
+            'value': OPTIONS['spacers'].get(node.value, '')
         }
         return event
 
