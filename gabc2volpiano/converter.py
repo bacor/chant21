@@ -10,6 +10,7 @@ OPTIONS = {
 
     'volpiano_clef': '1',
     'volpiano_no_text': '',
+    'volpiano_no_music': '.',
     'volpiano_music_neume_boundary': '-',
     'volpiano_text_syllable_boundary': '-',
     'volpiano_music_syllable_boundary': '--',
@@ -276,10 +277,21 @@ class VolpianoConverterVisitor(PTNodeVisitor):
         return None
 
     def visit_syllable(self, node, children):
-        assert 'music' in children.results
-        assert len(children.results['music']) == 1
-        music = children.results['music'][0]
-        text = children.results.get('text', [OPTIONS['volpiano_no_text']])[0]
+        if 'music' in children.results:
+            assert len(children.results['music']) == 1
+            music = children.results['music'][0]
+        else:
+            event = {
+                'type': 'no_music',
+                'value': OPTIONS['volpiano_no_music']
+            }
+            music = [event]
+        
+        if 'text' in children.results:
+            text = children.results['text'][0]
+        else:
+            text = OPTIONS['volpiano_no_text']
+
         return text, music
 
     def visit_music(self, node, children):
@@ -420,7 +432,7 @@ class VolpianoConverter:
                 volpiano += OPTIONS['volpiano_clef']
             
              # Symbols independent of clef
-            elif event['type'] in ['barline', 'boundary', 'spacer']:
+            elif event['type'] in ['barline', 'boundary', 'spacer', 'no_music']:
                 volpiano += event['value']
 
             # Symbols dependent on clef

@@ -2,6 +2,7 @@
 
 Todo:
     * Test conversion of example files
+    * Test whether music can be empty
 """
 import unittest
 from arpeggio import visit_parse_tree
