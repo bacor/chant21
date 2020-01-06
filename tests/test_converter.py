@@ -314,7 +314,7 @@ class TestConversion(unittest.TestCase):
     def test_liquescents(self):
         converter = VolpianoConverter()
         text, music = converter.convert('(c2) (-fgfw)')
-        self.assertEqual(music, '1---CdC')
+        self.assertEqual(music, '1---Cdc')
 
     def test_notes(self):
         converter = VolpianoConverter()
