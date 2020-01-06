@@ -43,4 +43,4 @@
     alteration = r'x|y|#'
     rhythmic_sign = r'\.\.?|\'(0|1)?|_[0-5]*'
     empty_note_or_accent = r'r[0-5]?|R'
-    end_of_line = r'z0?'
+    end_of_line = r'[zZ]0?'
