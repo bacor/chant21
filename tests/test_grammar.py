@@ -243,6 +243,21 @@ class TestMusic(unittest.TestCase):
         parse = parser.parse(gabc)
         self.assertEqual(parse[0].rule_name, 'polyphony')
 
+    def test_braces(self):
+        braces = [
+            '[ob:1]',
+            '[ob:1;6mm]',
+            '[ocb:1;18mm]',
+            '[ocb:1;18.1235mm]',
+            '[ocba:1{]',
+            '[ocba:0}]',
+        ]
+        parser = GABCParser(root='music')
+        for gabc in braces: 
+            parse = parser.parse(gabc)
+            self.assertEqual(parse[0].rule_name, 'brace')
+            self.assertEqual(parse[0].value, gabc)
+
 class TestClef(unittest.TestCase):
 
     def test_clefs(self):
