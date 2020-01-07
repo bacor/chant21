@@ -270,8 +270,17 @@ class VolpianoConverterVisitor(PTNodeVisitor):
     """
     
     def visit_gabc_file(self, node, children):
-        header = children.results['header'][0]
-        text, music = children.results['body'][0]
+        if 'header' not in children.results:
+            header = {}
+        else:
+            header = children.results['header'][0]
+
+        if 'body' not in children.results:
+            text = ''
+            music = ''
+        else:
+            text, music = children.results['body'][0]
+        
         return header, text, music
 
     def visit_header(self, node, children):
