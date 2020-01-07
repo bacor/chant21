@@ -6,6 +6,8 @@ Todo:
     * Test handling of accidentals at non-supported positions 
       (e.g. not b-flat or e-flat)
     * Test flat clefs
+    * Test f2 clef
+    * Test f1 clef?
 """
 import unittest
 from arpeggio import visit_parse_tree

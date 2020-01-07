@@ -165,7 +165,7 @@ OPTIONS = {
 def position_to_midi(position, clef, C=None):
     """Convert a note position (on the 4 lines) to a midi pitch"""
     positions = dict(a=-3, b=-2, c=-1, d=0, e=1, f=2, g=3, h=4, i=5, j=6, k=7, l=8, m=9)
-    clef_position = dict(c1=0, c2=2, c3=4, cb3=4, c4=6, cb4=6, f3=1, f4=3)
+    clef_position = dict(c1=0, c2=2, c3=4, cb3=4, c4=6, cb4=6, f1=-3, f2=-1, f3=1, f4=3)
     if C is None:
         C = OPTIONS['midi_c_per_clef'].get(clef, 60)
     if clef == 'cb3' or clef == 'cb4':
