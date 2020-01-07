@@ -9,9 +9,6 @@
 // ----- 
 // * Consider adopting the Gregorio terminology of neumes and neumatic cuts
 //   see http://gregorio-project.github.io/structure.html
-// * Braces above [ob:..]
-// * Guide? e.g. f+ (22x)
-// * Allow semicolon in attribute values
 
 // FILE
     gabc_file = header separator body EOF
