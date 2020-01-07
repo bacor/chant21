@@ -36,7 +36,7 @@
 // MUSIC
     music = (clef / note / barline / spacer / end_of_line / polyphony / brace)*
     clef = r'(c|f)b?[1-4]'
-    barline = r",0|,_|,|'|`|::|:\?|:|;[1-6]|;"
+    barline = r",0|,_|,[1-6]?|'|`|::|:\?|:|;[1-6]|;"
     spacer = r'\!|@|//|/0|/\[-?[0-9]\]|/| '
 
     note = prefix* position suffix*
