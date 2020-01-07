@@ -9,6 +9,9 @@
 // ----- 
 // * Consider adopting the Gregorio terminology of neumes and neumatic cuts
 //   see http://gregorio-project.github.io/structure.html
+// * To do: separate node for text tags?
+//   eg text = a_string_ / (string_wo_bracket* tag string_wo_bracket*)
+//      tag = r'\<[a-z]+\>[^\<]*\</[a-z]+\>'
 
 // FILE
     gabc_file = header separator body EOF
@@ -26,9 +29,10 @@
     word = syllable+
     syllable = text? "(" music ")"
     whitespace = r'[ \n\r\t\f\v]+'
-    // text cannot start with a space
-    text = r'[^ \n\r\t\f\v\(][^\(]*'
-
+    // text either contains a tag (e.g. "bla<i>foo</i>bla") 
+    // or is a string without brackets, not starting with a space
+    text = r'([^\(]*\<[a-z]+\>[^\<]*\</[a-z]+\>[^\(]*)|([^ \n\r\t\f\v\(][^\(\n]*)'
+    
 // MUSIC
     music = (clef / note / barline / spacer / end_of_line / polyphony / brace)*
     clef = r'(c|f)b?[1-4]'

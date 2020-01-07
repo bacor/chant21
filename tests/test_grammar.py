@@ -226,6 +226,11 @@ class TestSyllable(unittest.TestCase):
         self.assertEqual(parse[1][2].value, ',')
         self.assertEqual(parse[1][3].rule_name, 'spacer')
 
+    def test_tags(self):
+        parse = self.parser.parse('<i>test</i>(f)')
+        self.assertEqual(parse[0].rule_name, 'text')
+        self.assertEqual(parse[0].value, '<i>test</i>')
+
 class TestMusic(unittest.TestCase):
     
     def test_end_of_line(self):
