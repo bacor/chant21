@@ -2,6 +2,12 @@
 
 Author: Bas Cornelissen
 Date: 27 December 2019
+
+TODO
+    * Test advanced music: code
+    * Test advanced music: choral_sign
+    * Test advanced music: translation
+
 """
 import unittest
 from arpeggio import NoMatch
@@ -231,22 +237,25 @@ class TestSyllable(unittest.TestCase):
         self.assertEqual(parse[0].rule_name, 'text')
         self.assertEqual(parse[0].value, '<i>test</i>')
 
-class TestMusic(unittest.TestCase):
+class TestAdvancedMusic(unittest.TestCase):
     
     def test_end_of_line(self):
         # http://gregorio-project.github.io/gabc/details.html#endofline
         parser = GABCParser(root='music')
         parse = parser.parse('z0::c3')
-        self.assertEqual(parse[0].rule_name, 'end_of_line')
+        self.assertEqual(parse[0].rule_name, 'advanced')
+        self.assertEqual(parse[0][0].rule_name, 'end_of_line')
 
         parse = parser.parse('z::c3')
-        self.assertEqual(parse[0].rule_name, 'end_of_line')
+        self.assertEqual(parse[0].rule_name, 'advanced')
+        self.assertEqual(parse[0][0].rule_name, 'end_of_line')
     
     def test_polyphony(self):
         gabc = '{i}'
         parser = GABCParser(root='music')
         parse = parser.parse(gabc)
-        self.assertEqual(parse[0].rule_name, 'polyphony')
+        self.assertEqual(parse[0].rule_name, 'advanced')
+        self.assertEqual(parse[0][0].rule_name, 'polyphony')
 
     def test_braces(self):
         braces = [
@@ -260,8 +269,9 @@ class TestMusic(unittest.TestCase):
         parser = GABCParser(root='music')
         for gabc in braces: 
             parse = parser.parse(gabc)
-            self.assertEqual(parse[0].rule_name, 'brace')
-            self.assertEqual(parse[0].value, gabc)
+            self.assertEqual(parse[0].rule_name, 'advanced')
+            self.assertEqual(parse[0][0].rule_name, 'brace')
+            self.assertEqual(parse[0][0].value, gabc)
 
 class TestClef(unittest.TestCase):
 

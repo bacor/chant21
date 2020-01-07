@@ -37,7 +37,7 @@
     text = r'([^\(]*\<[a-z]+\>[^\<]*\</[a-z]+\>[^\(]*)|([^ \n\r\t\f\v\(][^\(\n]*)'
     
 // MUSIC
-    music = (clef / note / barline / spacer / end_of_line / polyphony / brace)*
+    music = (clef / note / barline / spacer / advanced)*
     clef = r'(c|f)b?[1-4]'
     barline = r",0|,_|,[1-6]?|'|`|::|:\?|:|;[1-6]|;"
     spacer = r'\!|@|//|/0|/\[-?[0-9]\]|/| '
@@ -51,9 +51,14 @@
     alteration = r'x|y|#'
     rhythmic_sign = r'\.\.?|\'(0|1)?|_[0-5]*'
     empty_note_or_accent = r'r[0-5]?|R'
+
+// ADVANCED MUSIC
+    advanced = end_of_line / polyphony / brace / code / choral_sign / translation
     end_of_line = r'[zZ](0|-)?|\+'
         // TODO is z- proper gabc? GregoBase chant 8748 contains it for example
         // TODO is this the right place for the plus?
-
     polyphony = '{' note+ '}'
     brace = r'\[(o|u)(b|cba|cb):(0|1)(({|})|(;\d+(\.\d+)?mm))?\]'
+    code = r'\[(nv:gv:ev)[^\]]+\]'
+    choral_sign = r'\[cs:[^\]]+\]'
+    translation = r'\[alt:[^\]]+\]'
