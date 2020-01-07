@@ -12,6 +12,9 @@
 // * To do: separate node for text tags?
 //   eg text = a_string_ / (string_wo_bracket* tag string_wo_bracket*)
 //      tag = r'\<[a-z]+\>[^\<]*\</[a-z]+\>'
+// * In GregoBase, there are a number of chants containing "/v" or "v" before
+//   a note: e.g. "Dé(*vfe/gh)" (id 3974). This breaks the parser (16x) but
+//   is this correct syntax?
 
 // FILE
     gabc_file = header separator body EOF

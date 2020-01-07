@@ -3,6 +3,9 @@
 Todo:
     * Test conversion of example files
     * Test whether music can be empty
+    * Test handling of accidentals at non-supported positions 
+      (e.g. not b-flat or e-flat)
+    * Test flat clefs
 """
 import unittest
 from arpeggio import visit_parse_tree

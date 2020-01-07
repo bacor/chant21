@@ -130,7 +130,7 @@ OPTIONS = {
         55: ")", # G
         57: "A",
         59: "B",
-        60: "C",
+        60: "C", # C
         62: "D",
         64: "E",
         65: "F",
@@ -152,8 +152,12 @@ OPTIONS = {
     # The default is midi key 60.
     'midi_c_per_clef': {
         'c4': 72,
-        'c3': 72
-    }
+        'c3': 72,
+        'cb4': 72,
+        'cb3': 72,
+    },
+
+    'ignore_unsupported_alterations': False,
 }
 
 ####
@@ -187,23 +191,55 @@ def position_to_midi(position, clef, C=None):
 
 def position_to_note(position, clef, C=None):
     midi = position_to_midi(position, clef, C=C)
-    volpiano_note = OPTIONS['midi_to_volpiano_note'][midi]
-    return volpiano_note
+    # When encountering B-flats in flat keys, return the note preceded by
+    # an accidental. This is not optimal.
+    # TODO find a better solution?
+    if clef in ['cb3', 'cb4'] and midi in [58, 70, 82]: 
+        midi += 1
+        accidental = OPTIONS['midi_to_volpiano_flat'][midi]
+        volpiano_note = OPTIONS['midi_to_volpiano_note'][midi]
+        return accidental + volpiano_note
+    else:
+        volpiano_note = OPTIONS['midi_to_volpiano_note'][midi]
+        return volpiano_note
 
 def position_to_liquescent(position, clef, C=None):
     midi = position_to_midi(position, clef, C=C)
-    volpiano_liquescent = OPTIONS['midi_to_volpiano_liquescent'][midi]
-    return volpiano_liquescent
+    # When encountering B-flats in flat keys, return the note preceded by
+    # an accidental. This is not optimal.
+    # TODO find a better solution?
+    if clef in ['cb3', 'cb4'] and midi in [58, 70, 82]: 
+        midi += 1
+        accidental = OPTIONS['midi_to_volpiano_flat'][midi]
+        volpiano_liquescent = OPTIONS['midi_to_volpiano_liquescent'][midi]
+        return accidental + volpiano_liquescent
+    else:
+        volpiano_liquescent = OPTIONS['midi_to_volpiano_liquescent'][midi]
+        return volpiano_liquescent
 
 def position_to_flat(position, clef, C=None):
     midi = position_to_midi(position, clef, C=C)
-    volpiano_flat = OPTIONS['midi_to_volpiano_flat'][midi]
-    return volpiano_flat
+    if midi not in OPTIONS['midi_to_volpiano_flat']:
+        if OPTIONS['ignore_unsupported_alterations']:
+            return False
+        else:
+            raise Warning(f'Volpiano has no flat at MIDI key {midi}. '
+                         +'Is there a flat at the wrong line?')
+    else:
+        volpiano_flat = OPTIONS['midi_to_volpiano_flat'][midi]
+        return volpiano_flat
 
 def position_to_natural(position, clef, C=None):
     midi = position_to_midi(position, clef, C=C)
-    volpiano_natural = OPTIONS['midi_to_volpiano_natural'][midi]
-    return volpiano_natural
+    if midi not in OPTIONS['midi_to_volpiano_natural']:
+        if OPTIONS['ignore_unsupported_alterations']:
+            raise Warning(f'Volpiano has no natural at MIDI key {midi}. '
+                         +'Is there a natural at the wrong line?')
+        else:
+            return False
+    else:
+        volpiano_natural = OPTIONS['midi_to_volpiano_natural'][midi]
+        return volpiano_natural
 
 ####
 
@@ -467,7 +503,13 @@ class VolpianoConverter:
                     elif event['value'] == 'natural':
                         alteration = position_to_natural(
                             event['position'], current_clef)
-                    volpiano += alteration
+                    
+                    if alteration is not False:
+                        volpiano += alteration
+                    else:
+                        # Ignore alterations other than B-flats/naturals 
+                        # and E-flats/naturals
+                        pass
 
         return volpiano
 
