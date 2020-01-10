@@ -136,7 +136,6 @@ class Neume(music21.spanner.Spanner):
             'children': [c.plain for c in self.children],
         }
 
-
 class Syllable(music21.spanner.Spanner):
 
     def __init__(self, text, neumes, **kwargs):
@@ -212,7 +211,6 @@ class Syllable(music21.spanner.Spanner):
 class Word(music21.spanner.Spanner):
     
     def __init__(self, *syllables, **kwargs):
-        print(syllables)
         if len(syllables) == 2 and type(syllables[0]) == str:
             syll_kws = {
                 'eIsFlat': kwargs.get('eIsFlat', False),
@@ -278,3 +276,63 @@ class Word(music21.spanner.Spanner):
             'type': 'word',
             'children': self.children
         }
+
+#TODO implement
+class Accidental(music21.pitch.Accidental):
+    pass
+
+#TODO implement
+class GClef(music21.clef.TrebleClef):
+    
+    def __init__(self, volpiano='1', text='', **kwargs):
+        self.text = text
+        self.volpiano = volpiano
+        super().__init__(**kwargs)
+    
+    @property
+    def plain(self):
+        return {
+            'type': 'gClef',
+            'volpiano': self.volpiano,
+            'text': self.text,
+        } 
+
+#TODO implement
+class FClef(music21.clef.BassClef):
+    
+    def __init__(self, volpiano='2', text='', **kwargs):
+        self.text = text
+        self.volpiano = volpiano
+        super().__init__(**kwargs)
+    
+    @property
+    def plain(self):
+        return {
+            'type': 'fClef',
+            'volpiano': self.volpiano,
+            'text': self.text,
+        } 
+
+#TODO implement
+class Barline(music21.bar.Barline):
+    def __init__(self, volpiano, text='', **kwargs):
+        barlineTypes = {
+            '3': 'regular',
+            '4': 'double',
+            '5': 'final',
+            '6': 'tick',  # TODO 
+            '6': 'short', # TODO 
+        }
+        if volpiano not in barlineTypes:
+            raise ValueError('Invalid barline')
+        self.text = text
+        self.volpiano = volpiano
+        super().__init__(barlineTypes[volpiano], **kwargs)
+
+    @property
+    def plain(self):
+        return {
+            'type': 'barline',
+            'volpiano': self.volpiano,
+            'text': self.text,
+        } 
