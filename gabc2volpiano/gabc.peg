@@ -1,0 +1,64 @@
+// An Arpeggio PEG grammar for gabc_file
+//
+// Inspired by the PEG grammar used in 'gabc-converter'; see
+// https://github.com/saybaar/gabc-converter
+//
+// Author: Bas Cornelissen
+//
+// To do
+// ----- 
+// * Consider adopting the Gregorio terminology of neumes and neumatic cuts
+//   see http://gregorio-project.github.io/structure.html
+// * To do: separate node for text tags?
+//   eg text = a_string_ / (string_wo_bracket* tag string_wo_bracket*)
+//      tag = r'\<[a-z]+\>[^\<]*\</[a-z]+\>'
+// * In GregoBase, there are a number of chants containing "/v" or "v" before
+//   a note: e.g. "Dé(*vfe/gh)" (id 3974). This breaks the parser (16x) but
+//   is this correct syntax?
+
+// FILE
+    gabc_file = header separator body EOF
+    separator = r'(\n)*%%(\n)+'
+
+// HEADER
+    header = attribute*
+    attribute = attribute_key r':[ ]*' attribute_value r';(\n)*'
+    attribute_key = r'[^:;%]+'
+    attribute_value = r'[^%;]+(;\ [^%;]+)*'
+        // Allow the use of ; when followed by a space
+
+// BODY
+    body = (word (whitespace / EOF))*
+    word = syllable+
+    syllable = text? "(" music ")"
+    whitespace = r'[ \n\r\t\f\v]+'
+    // text either contains a tag (e.g. "bla<i>foo</i>bla") 
+    // or is a string without brackets, not starting with a space
+    text = r'([^\(]*\<[a-z]+\>[^\<]*\</[a-z]+\>[^\(]*)|([^ \n\r\t\f\v\(][^\(\n]*)'
+    
+// MUSIC
+    music = (clef / note / barline / spacer / advanced)*
+    clef = r'(c|f)b?[1-4]'
+    barline = r",0|,_|,[1-6]?|'|`|::|:\?|:|;[1-6]|;"
+    spacer = r'\!|@|//|/0|/\[-?[0-9]\]|/| '
+
+    note = prefix* position suffix*
+    prefix = '-'
+    suffix = neume_shape? alteration? rhythmic_sign? empty_note_or_accent*
+    position = r'[a-mA-M]'
+    neume_shape = r'~|>|<|v|V|o(~|<)?|w|s<?|q|0|1'
+        // for 'q', see gregorio-project.github.io/gabc/details.html#podatus
+    alteration = r'x|y|#'
+    rhythmic_sign = r'\.\.?|\'(0|1)?|_[0-5]*'
+    empty_note_or_accent = r'r[0-5]?|R'
+
+// ADVANCED MUSIC
+    advanced = end_of_line / polyphony / brace / code / choral_sign / translation
+    end_of_line = r'[zZ](0|-)?|\+'
+        // TODO is z- proper gabc? GregoBase chant 8748 contains it for example
+        // TODO is this the right place for the plus?
+    polyphony = '{' note+ '}'
+    brace = r'\[(o|u)(b|cba|cb):(0|1)(({|})|(;\d+(\.\d+)?mm))?\]'
+    code = r'\[(nv:gv:ev)[^\]]+\]'
+    choral_sign = r'\[cs:[^\]]+\]'
+    translation = r'\[alt:[^\]]+\]'
