@@ -336,3 +336,15 @@ class Barline(music21.bar.Barline):
             'volpiano': self.volpiano,
             'text': self.text,
         } 
+
+class Chant(object):
+
+    def __init__(self, elements=[]):
+        self.elements = elements
+
+    @property
+    def plain(self):
+        return {
+            'type': 'chant',
+            'elements': [el.plain for el in self.elements]
+        }
