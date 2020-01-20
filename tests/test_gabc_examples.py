@@ -1,6 +1,6 @@
 import unittest
 import glob
-from gabc2volpiano.parser import GABCParser
+from volpyano import GABCParser
 
 class TestParseExamples(unittest.TestCase):
 
@@ -35,6 +35,22 @@ class TestParseExamples(unittest.TestCase):
         examples = glob.glob('examples/*.gabc')
         for filename in examples:
             self.run_test(filename)
-        
+
+class TestSpecialCases(unittest.TestCase):
+    """Tests of examples where parsing failed initially"""
+    
+    def test_clef_change(self):
+        gabc = '<sp>V/</sp>.(z0::c3) Sur(hi~)ge'
+        parser = GABCParser(root='body')
+        parse = parser.parse(gabc)
+        self.assertFalse(parse.error)
+
+    def test_polyphony(self):
+        gabc = 'Quó(dh)ni(h)am(jhhghvG{ix}Ef_g//eg!ivHGhvFDe.)'
+        parser = GABCParser(root='body')
+        parse = parser.parse(gabc)
+        self.assertFalse(parse.error)
+
+
 if __name__ == '__main__':
     unittest.main()

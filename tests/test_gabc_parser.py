@@ -1,7 +1,7 @@
 import unittest
-from gabc2volpiano.parser import GABCParser
+from volpyano import GABCParser
 
-class TestParserClass(unittest.TestCase):
+class TestGABCParserClass(unittest.TestCase):
 
     def test_invalid_arguments(self):
         func = lambda: GABCParser(grammar_path='foo')

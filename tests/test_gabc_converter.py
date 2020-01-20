@@ -11,8 +11,8 @@ Todo:
 """
 import unittest
 from arpeggio import visit_parse_tree
-from gabc2volpiano.parser import GABCParser
-from gabc2volpiano.converter import *
+from volpyano import GABCParser, VolpianoConverter, MissingClef
+from volpyano.gabc_converter import position_to_midi, OPTIONS, VolpianoConverterVisitor
 
 class TestPositionToMidiConversion(unittest.TestCase):
 

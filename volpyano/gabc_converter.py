@@ -1,7 +1,7 @@
 import json
 from arpeggio import PTNodeVisitor
 from arpeggio import visit_parse_tree
-from gabc2volpiano.parser import GABCParser
+from .gabc_parser import GABCParser
 
 OPTIONS = {
     

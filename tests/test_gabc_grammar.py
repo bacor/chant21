@@ -11,7 +11,7 @@ TODO
 """
 import unittest
 from arpeggio import NoMatch
-from gabc2volpiano.parser import GABCParser
+from volpyano import GABCParser
 
 class TestFile(unittest.TestCase):
     def test_file(self):
