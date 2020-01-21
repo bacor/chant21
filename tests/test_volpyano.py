@@ -1,5 +1,6 @@
 import unittest
-from volpyano import VOLPIANO, Note, Neume, Syllable, Word
+from volpyano import VOLPIANO, Neume, Syllable, Word
+from volpyano import VolpianoNote as Note
 
 class TestNote(unittest.TestCase):
     def test_note_shapes(self):
@@ -96,12 +97,13 @@ class TestNeume(unittest.TestCase):
         a = Note('a')
         b = Note('b')
         c = Note('c')
-        neume = Neume(a, b, c)
+        neume = Neume()
+        neume.append([a, b, c])
         pass
 
     def test_string_init(self):
         neume = Neume('abc')
-        self.assertEqual(len(neume.children), 3)
+        self.assertEqual(len(neume), 3)
         self.assertEqual(neume.volpiano, 'abc')
 
     def test_volpiano(self):
@@ -111,7 +113,7 @@ class TestNeume(unittest.TestCase):
     def test_plain(self):
         neume = Neume('abc')
         keys = set(neume.plain.keys())
-        target_keys = set(['type', 'volpiano', 'children'])
+        target_keys = set(['type', 'volpiano', 'notes'])
         self.assertSetEqual(keys, target_keys)
         self.assertEqual(neume.plain['volpiano'], neume.volpiano)
 
@@ -135,48 +137,59 @@ class TestNeume(unittest.TestCase):
 
 class TestSyllable(unittest.TestCase):
 
-    def test_syllable(self):
-        neume1 = Neume(Note('f'), Note('g'), Note('f'))
-        neume2 = Neume(Note('e'), Note('f'))
-        syll = Syllable('hey', (neume1, neume2))
-        self.assertEqual(syll.text, 'hey')
+    def test_neume_init(self):
+        neume1 = Neume('fgf')
+        neume2 = Neume('ef')
+        syll = Syllable()
+        syll.append([neume1, neume2])
+        self.assertEqual(len(syll), 2)
     
     def test_string_init(self):
-        syll = Syllable('hey', 'fgf-fg')
-        self.assertEqual(syll.text, 'hey')
+        syll = Syllable('fgf-fg')
+        # self.assertEqual(syll.text, 'hey')
+        self.assertEqual(len(syll), 2)
     
     def test_volpiano(self):
-        syll = Syllable('hey', 'fgf-ef')
+        syll = Syllable('fgf-ef')
         self.assertEqual(syll.volpiano, 'fgf-ef')
 
+    def test_text(self):
+        syll = Syllable('fgf-ef', text='bla-')
+        self.assertEqual(syll.text, 'bla')
+
+        syll.text = 'foo'
+        self.assertEqual(syll.text, 'foo')
+
     def test_plain(self):
-        syll = Syllable('hey', 'fgf-ef')
+        syll = Syllable('fgf-ef')
         keys = set(syll.plain.keys())
-        target_keys = set(['type', 'text', 'volpiano', 'children'])
+        target_keys = set(['type', 'text', 'volpiano', 'neumes'])
         self.assertSetEqual(keys, target_keys) 
 
     def test_equality(self):
-        self.assertEqual(Syllable('foo', 'fgf-ef'), Syllable('foo', 'fgf-ef'))
-        self.assertNotEqual(Syllable('foo', 'fgf-ef'), Syllable('bar', 'fgf-ef'))
-        self.assertNotEqual(Syllable('foo', 'fg-ef-f'), Syllable('foo', 'fg-ef'))
-        self.assertNotEqual(Syllable('foo', 'fg-ff'), Syllable('foo', 'fg-ef'))
+        self.assertEqual(Syllable('fgf-ef', text='foo'), Syllable('fgf-ef', text='foo'))
+        self.assertNotEqual(Syllable('fgf-ef', text='foo'), Syllable('fgf-ef', text='bar'))
+        self.assertNotEqual(Syllable('fg-ef-f', text='foo'), Syllable('fg-ef', text='foo'))
+        self.assertNotEqual(Syllable('fg-ff'), Syllable('fg-ef'))
 
 class TestWord(unittest.TestCase):
     def test_word(self):
         he = Syllable('He', 'fgf')
         llo = Syllable('llo', 'fg')
-        hello = Word(he, llo)
+        hello = Word()
+        hello.append([he, llo])
+        pass
 
     def test_string_init(self):
-        hello = Word('he-llo', 'fgf--fgg-ffg')
+        hello = Word('fgf--fgg-ffg')
         pass
 
     def test_volpiano(self):
-        hello = Word('he-llo', 'fgf--fgg-ffg')
+        hello = Word('fgf--fgg-ffg')
         self.assertEqual(hello.volpiano, 'fgf--fgg-ffg')
 
     def test_text(self):
-        hello = Word('he-llo', 'fgf--fgg-ffg')
+        hello = Word('fgf--fgg-ffg', text='he-llo')
         self.assertEqual(hello.text, 'he-llo')
         self.assertEqual(hello.raw_text, 'hello')
 

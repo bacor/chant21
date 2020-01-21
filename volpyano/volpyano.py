@@ -13,43 +13,63 @@ VOLPIANO = {
     'others': "[]{¶",
 }
 
-class Note(music21.note.Note):
+def subdict(dictionary, keys):
+    return { k: dictionary[k] for k in keys if k in dictionary }
+    
+class VolpianoNote(music21.note.Note):
 
-    def __init__(self, volpiano, clef='g', *args, bIsFlat=False, eIsFlat=False, 
+    def __init__(self, volpiano='f', clef='g', *args, bIsFlat=False, eIsFlat=False, 
         **kwargs):
         """"""
         super().__init__(*args, **kwargs)
-        self.volpiano = volpiano
+        self.stemDirection = 'noStem'
         self.bIsFlat = bIsFlat
         self.eIsFlat = eIsFlat
+        self.clef = clef
+        self.volpiano = volpiano
 
+    @property 
+    def volpiano(self):
+        return self._volpiano
+
+    @volpiano.setter
+    def volpiano(self, char):
+        self._volpiano = char
+        
         # >> Adapted from
         # https://github.com/cuthbertLab/music21/blob/master/music21/volpiano.py#L255
-        self.stemDirection = 'noStem'
-
-        if volpiano in VOLPIANO['notes']:
-            distanceFromLowestLine = VOLPIANO['notes'].index(volpiano) - 6
+        if char in VOLPIANO['notes']:
+            distanceFromLowestLine = VOLPIANO['notes'].index(char) - 6
             self.editorial.liquescence = False
         else:
-            distanceFromLowestLine = VOLPIANO['liquescents'].index(volpiano) - 6
+            distanceFromLowestLine = VOLPIANO['liquescents'].index(char) - 6
             self.notehead = 'x'
             self.editorial.liquescence = True
         
-        if clef == 'g':
+        if self.clef == 'g':
             clef = music21.clef.TrebleClef()
-        if clef == 'f':
+        if self.clef == 'f':
             clef = music21.clef.BassClef()
 
         clefLowestLine = clef.lowestLine
         diatonicNoteNum = clefLowestLine + distanceFromLowestLine
 
         self.pitch.diatonicNoteNum = diatonicNoteNum
-        if self.pitch.step == 'B' and bIsFlat:
+        if self.pitch.step == 'B' and self.bIsFlat:
             self.pitch.accidental = music21.pitch.Accidental('flat')
-        elif self.pitch.step == 'E' and eIsFlat:
+        elif self.pitch.step == 'E' and self.eIsFlat:
             self.pitch.accidental = music21.pitch.Accidental('flat')
         # <<
-        
+
+    @property
+    def text(self):
+        if len(self.lyrics) > 0:
+            return self.lyrics[0].rawText
+
+    @text.setter
+    def text(self, text):
+        self.lyric = text
+
     @property
     def plain(self):
         """A plain Python object representing the note"""
@@ -61,16 +81,16 @@ class Note(music21.note.Note):
             'eIsFlat': self.eIsFlat,
         }
 
-class Neume(music21.spanner.Spanner):
+class Neume(music21.stream.Stream):
     
-    def __init__(self, *children, **kwargs):
+    def __init__(self, volpiano=None, **kwargs):
         """A neume object.
 
         You can either pass an iterable of `Note` objects, or a volpiano string
         of notes:
         
         ```python
-        >>> neume1 = Neume(Note('f'), Note('g'), Note('f'))
+        >>> neume1 = Neume(VolpianoNote('f'), VolpianoNote('g'), VolpianoNote('f'))
         >>> neume2 = Neume('fgf')
         >>> neume1 == neume2
         True
@@ -89,43 +109,43 @@ class Neume(music21.spanner.Spanner):
                 used if children are specified as a volpiano string. Defaults
                 to `'g'`.
         """
-        if type(children[0]) == str:
-            note_kws = {
-                'eIsFlat': kwargs.get('eIsFlat', False),
-                'bIsFlat': kwargs.get('bIsFlat', False),
-                'clef': kwargs.get('clef', 'g'),
-            }
-            self.children = [Note(note, **note_kws) for note in children[0]]
-        else:
-            self.children = children
-        
-        super().__init__(*self.children, **kwargs)
+        super().__init__(**kwargs)
+
+        if volpiano is not None:
+            note_kws = subdict(kwargs, ['eIsFlat', 'bIsFlat', 'clef'])
+            notes = [VolpianoNote(note, **note_kws) for note in volpiano]
+            self.append(notes)
 
     def __repr__(self):
         """A string representation of the neume"""
-        return f'<volpyano.neume.Neume {self.volpiano}>'
+        return f'<volpyano.Neume {self.volpiano}>'
 
     def __eq__(self, other):
         """Test neume equality checking equality of the notes"""
         if type(self) != type(other):
             return False
-        elif self.length != other.length:
+        elif len(self) != len(other):
             return False
         else:
-            for i in range(self.length):
-                if self.children[i] != other.children[i]:
+            for i in range(len(self)):
+                if self[i] != other[i]:
                     return False
         return True
-    
+
     @property
-    def length(self):
-        """The number of notes"""
-        return len(self.children)
+    def text(self):
+        if len(self) > 0:
+            return self[0].text
+    
+    @text.setter
+    def text(self, value):
+        if len(self) > 0:
+            self[0].text = value
 
     @property
     def volpiano(self):
         """The Volpiano string representing this neume"""
-        return ''.join(c.volpiano for c in self.children)
+        return ''.join(note.volpiano for note in self.elements)
 
     @property
     def plain(self):
@@ -133,12 +153,12 @@ class Neume(music21.spanner.Spanner):
         return {
             'type': 'neume',
             'volpiano': self.volpiano,
-            'children': [c.plain for c in self.children],
+            'notes': [note.plain for note in self.elements],
         }
 
-class Syllable(music21.spanner.Spanner):
+class Syllable(music21.stream.Stream):
 
-    def __init__(self, text, neumes, **kwargs):
+    def __init__(self, volpiano=None, text=None, **kwargs):
         """A Syllable.
 
         You can either pass an iterable of `Neume` objects, or a volpiano string
@@ -156,47 +176,54 @@ class Syllable(music21.spanner.Spanner):
             neumes (string or iterable): This can either be an iterable of 
                 `Neume` objects, or a volpiano syllable string.
         """
-        self.text = text
-        if type(neumes[0]) == str:
-            neume_kws = {
-                'eIsFlat': kwargs.get('eIsFlat', False),
-                'bIsFlat': kwargs.get('bIsFlat', False),
-                'clef': kwargs.get('clef', 'g'),
-            }
-            neumes = neumes.split('-')
-            self.children = [Neume(c, **neume_kws) for c in neumes]
-        else:
-            self.children = neumes
+        super().__init__(**kwargs)
         
-        super().__init__(self.children, **kwargs)
+        if volpiano is not None:
+            neume_kws = subdict(kwargs, ['eIsFlat', 'bIsFlat', 'clef'])
+            neumes = [Neume(n, **neume_kws) for n in volpiano.split('-')]
+            self.append(neumes)  
+            
+        if text is not None:
+            self.text = text
         
     def __repr__(self):
         """A string representation of the syllable"""
-        return f'<volpyano.syllable.Syllable {self.text}<{self.volpiano}>>'
+        return f'<volpyano.Syllable {self.text}<{self.volpiano}>>'
 
     def __eq__(self, other):
         """Test syllable equality by checking text and neumes identity"""
         if type(self) != type(other):
             return False
-        elif self.length != other.length:
+        elif len(self) != len(other):
+            return False
+        elif len(self.elements) != len(other.elements):
             return False
         elif self.text != other.text:
             return False
         else:
-            for i in range(self.length):
-                if self.children[i] != other.children[i]:
+            for i in range(len(self)):
+                if self[i] != other[i]:
                     return False
         return True
 
     @property
-    def length(self):
-        """The number of neumes"""
-        return len(self.children)
+    def text(self):
+        if len(self) > 0:
+            return self[0].text
+
+    @text.setter
+    def text(self, value):
+        if len(self) > 0:
+            self[0].text = value
 
     @property
     def volpiano(self):
         """The Volpiano for the music corresponding to the syllable"""
-        return '-'.join(c.volpiano for c in self.children)
+        return '-'.join(neume.volpiano for neume in self.neumes)
+
+    @property
+    def neumes(self):
+        return self.getElementsByClass(Neume)
 
     @property
     def plain(self):
@@ -205,37 +232,32 @@ class Syllable(music21.spanner.Spanner):
             'type': 'syllable',
             'text': self.text,
             'volpiano': self.volpiano,
-            'children': [c.plain for c in self.children]
+            'neumes': [neume.plain for neume in self.neumes]
         }
 
-class Word(music21.spanner.Spanner):
+class Word(music21.stream.Stream):
     
-    def __init__(self, *syllables, **kwargs):
-        if len(syllables) == 2 and type(syllables[0]) == str:
-            syll_kws = {
-                'eIsFlat': kwargs.get('eIsFlat', False),
-                'bIsFlat': kwargs.get('bIsFlat', False),
-                'clef': kwargs.get('clef', 'g'),
-            }
-            text, volpiano = syllables
-            txt_syllables = text.split('-')
-            vol_syllables = volpiano.split('--')
-            self.children = [Syllable(txt, vol, **syll_kws) 
-                             for txt, vol in zip(txt_syllables, vol_syllables)]
-        else:
-            self.children = syllables
+    def __init__(self, volpiano=None, text=None, **kwargs):
+        super().__init__(**kwargs)
 
-        super().__init__(self.children, **kwargs)
-
+        if volpiano is not None:
+            syll_kws = subdict(kwargs, ['eIsFlat', 'bIsFlat', 'clef'])
+            syllables = [Syllable(s, **syll_kws) for s in volpiano.split('--')]
+            self.append(syllables)
+        
+        if text is not None:
+            self.text = text
+        
     def __repr__(self):
         """A string representation of the word"""
         syllables = []
-        for syll in self.children:
+        for syll in self.syllables:
             if len(syll.volpiano) > 5:
                 syll_str = f'{syll.text}-<{syll.volpiano[:5]}...>'
             else:
                 syll_str = f'{syll.text}-<{syll.volpiano}>'
             syllables.append(syll_str)
+            
         string = ' '.join(syllables)
         return f'<volpyano.Word <{string}>'
 
@@ -243,38 +265,55 @@ class Word(music21.spanner.Spanner):
         """Test equality by checking equality of syllables"""
         if type(self) != type(other):
             return False
-        elif self.length != other.length: 
+        elif len(self) != len(other): 
             return False
         else:
-            for i in range(self.length):
-                if self.children[i] != other.children[i]:
+            for i in range(len(self)):
+                if self[i] != other[i]:
                     return False
         return True
 
     @property
-    def length(self):
-        """The number of syllables"""
-        return len(self.children)
-
-    @property
     def text(self):
-        return '-'.join(c.text for c in self.children)
+        return '-'.join(syll.text for syll in self.syllables)
+
+    @text.setter
+    def text(self, value):
+        syllables = value.split('-')
+        if len(syllables) != len(self):
+            raise ValueError('The passed number of syllables does not match')
+        
+        if len(syllables) == 1:
+            self[0].text = syllables[0]
+        
+        else:
+            for i in range(len(self)):
+                if i == 0:
+                    self[i].text = syllables[i] + '-'
+                elif i == len(self) - 1:
+                    self[i].text = '-' + syllables[i]
+                else:
+                    self[i].text = '-' + syllables[i] + '-'
 
     @property
     def raw_text(self):
-        return ''.join(c.text for c in self.children)
+        return ''.join(c.text for c in self.syllables)
+    
+    @property
+    def syllables(self):
+        return self.getElementsByClass(Syllable)
 
     @property
     def volpiano(self):
         """The Volpiano for the music corresponding to the word"""
-        return '--'.join(c.volpiano for c in self.children)
+        return '--'.join(c.volpiano for c in self.syllables)
 
     @property
     def plain(self):
         """A plain Python object representing the word"""
         return {
             'type': 'word',
-            'children': self.children
+            'syllables': [syll.plain for syll in self.syllables]
         }
 
 #TODO implement
@@ -336,6 +375,13 @@ class Barline(music21.bar.Barline):
             'volpiano': self.volpiano,
             'text': self.text,
         } 
+
+#TODO implement
+class Incomplete():
+    pass
+
+class Section(music21.spanner.Spanner):
+    pass
 
 class Chant(object):
 
