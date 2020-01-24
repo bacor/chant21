@@ -5,7 +5,7 @@ grammar_fn = 'gabc.peg'
 grammar_dir = os.path.dirname(__file__)
 GRAMMAR_PATH = os.path.join(grammar_dir, grammar_fn)
 
-class GABCParser():
+class ParserGABC():
     """
     Class for parsing GABC (wrapper around an Arpeggio parser) 
 

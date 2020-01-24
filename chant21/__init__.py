@@ -9,4 +9,6 @@ from .chant import Syllable
 from .chant import Neume
 from .chant import Note
 
-from .gabc_parser import GABCParser
+# Make GABC converter available to music21.converter
+from .converter_gabc import ConverterGABC
+from .parser_gabc import ParserGABC

@@ -1,17 +1,17 @@
 import unittest
-from chant21 import GABCParser
+from chant21 import ParserGABC
 
-class TestGABCParserClass(unittest.TestCase):
+class TestParserGABC(unittest.TestCase):
 
     def test_invalid_arguments(self):
-        func = lambda: GABCParser(grammar_path='foo')
+        func = lambda: ParserGABC(grammar_path='foo')
         self.assertRaises(Exception, func)
 
-        func = lambda: GABCParser(root='gabc_faile')
+        func = lambda: ParserGABC(root='gabc_faile')
         self.assertRaises(Exception, func)
 
     def test_parse_string(self):
-        parser = GABCParser()
+        parser = ParserGABC()
         file_str = 'attr1:value1;\nattr2:value2;%%\n\na(f)b(g) c(h)\ni(j)'
         parse = parser.parse(file_str)
 
@@ -26,7 +26,7 @@ class TestGABCParserClass(unittest.TestCase):
         self.assertEqual(parse[2].value, 'a | ( | f | ) | b | ( | g | ) |   | c | ( | h | ) | \n | i | ( | j | ) | ')
 
     def test_parse_file(self):
-        parser = GABCParser()
+        parser = ParserGABC()
         parse = parser.parse_file('examples/minimal.gabc')
         self.assertEqual(parse[0].value, 'attribute | : | value | ;\n')
         self.assertEqual(parse[1].value, '%%\n')
