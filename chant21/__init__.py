@@ -10,5 +10,5 @@ from .chant import Neume
 from .chant import Note
 
 # Make GABC converter available to music21.converter
-from .converter_gabc import ConverterGABC
-from .parser_gabc import ParserGABC
+from .converterGABC import ConverterGABC
+from .parserGABC import ParserGABC

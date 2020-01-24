@@ -26,9 +26,9 @@ from chant21 import Clef
 from chant21 import ParserGABC
 
 from arpeggio import visit_parse_tree as visitParseTree
-from chant21.converter_gabc import GABCVisitor
-from chant21.converter_gabc import gabcPositionToStep
-from chant21.converter_gabc import MissingClef
+from chant21.converterGABC import GABCVisitor
+from chant21.converterGABC import gabcPositionToStep
+from chant21.converterGABC import MissingClef
 
 class TestFile(unittest.TestCase):
     def test_file(self):

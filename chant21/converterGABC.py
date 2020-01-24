@@ -17,7 +17,7 @@ from .chant import Alteration
 from .chant import Comma
 from .chant import Barline
 from .chant import Clef
-from .parser_gabc import ParserGABC
+from .parserGABC import ParserGABC
 
 OPTIONS = {
     'neume_boundaries': ['/', '//', '/[-2]', '/[-1]', '/[0]', '/[1]', '/[2]', '/[3]', '/[4]'],
