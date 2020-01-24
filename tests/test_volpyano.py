@@ -6,7 +6,7 @@ from chant21.volpyano import Word
 from chant21.volpyano import VolpianoNote as Note
 
 class TestNote(unittest.TestCase):
-    def test_note_shapes(self):
+    def test_noteShapes(self):
         note = Note('g')
         self.assertEqual(note.stemDirection, 'noStem')
         self.assertEqual(note.notehead, 'normal')
@@ -15,7 +15,7 @@ class TestNote(unittest.TestCase):
         self.assertEqual(liquescent.stemDirection, 'noStem')
         self.assertEqual(liquescent.notehead, 'x')
 
-    def test_note_steps(self):
+    def test_noteSteps(self):
         self.assertEqual(Note('8').step, 'F')
         self.assertEqual(Note('9').step, 'G')
         self.assertEqual(Note('a').step, 'A')
@@ -37,7 +37,7 @@ class TestNote(unittest.TestCase):
         self.assertEqual(Note('r').step, 'C')
         self.assertEqual(Note('s').step, 'D')
 
-    def test_liquescent_steps(self):
+    def test_liquescentSteps(self):
         self.assertEqual(Note('(').step, 'F')
         self.assertEqual(Note(')').step, 'G')
         self.assertEqual(Note('A').step, 'A')
@@ -104,7 +104,7 @@ class TestNeume(unittest.TestCase):
         neume.append([a, b, c])
         pass
 
-    def test_string_init(self):
+    def test_stringInit(self):
         neume = Neume('abc')
         self.assertEqual(len(neume), 3)
         self.assertEqual(neume.volpiano, 'abc')
@@ -140,14 +140,14 @@ class TestNeume(unittest.TestCase):
 
 class TestSyllable(unittest.TestCase):
 
-    def test_neume_init(self):
+    def test_neumeInit(self):
         neume1 = Neume('fgf')
         neume2 = Neume('ef')
         syll = Syllable()
         syll.append([neume1, neume2])
         self.assertEqual(len(syll), 2)
     
-    def test_string_init(self):
+    def test_stringInit(self):
         syll = Syllable('fgf-fg')
         # self.assertEqual(syll.text, 'hey')
         self.assertEqual(len(syll), 2)
@@ -183,7 +183,7 @@ class TestWord(unittest.TestCase):
         hello.append([he, llo])
         pass
 
-    def test_string_init(self):
+    def test_stringInit(self):
         hello = Word('fgf--fgg-ffg')
         pass
 

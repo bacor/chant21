@@ -15,37 +15,37 @@ from chant21 import ParserGABC
 class TestFile(unittest.TestCase):
     def test_file(self):
         parser = ParserGABC()
-        file_str = 'attr1:value1;\nattr2:value2;\n%%\n\na(f)b(g) c(h)\ni(j)'
-        parse = parser.parse(file_str)
+        fileStr = 'attr1:value1;\nattr2:value2;\n%%\n\na(f)b(g) c(h)\ni(j)'
+        parse = parser.parse(fileStr)
         self.assertEqual(parse[0].rule_name, 'header')
         self.assertEqual(parse[1].rule_name, 'separator')
         self.assertEqual(parse[2].rule_name, 'body')
         self.assertEqual(parse[3].rule_name, 'EOF')
 
-    def test_empty_header(self):
+    def test_emptyHeader(self):
         parser = ParserGABC()
-        file_str = '%%\na(f)b(g)'
-        parse = parser.parse(file_str)
+        fileStr = '%%\na(f)b(g)'
+        parse = parser.parse(fileStr)
         self.assertEqual(parse[0].rule_name, 'separator')
         self.assertEqual(parse[1].rule_name, 'body')
         self.assertEqual(parse[1].value, 'a | ( | f | ) | b | ( | g | ) | ')
     
-    def test_empty_body(self):
+    def test_emptyBody(self):
         parser = ParserGABC()
-        file_str = 'attr1:value1;\n%%\n'
-        parse = parser.parse(file_str)
+        fileStr = 'attr1:value1;\n%%\n'
+        parse = parser.parse(fileStr)
         self.assertEqual(parse[0].rule_name, 'header')
         self.assertEqual(parse[1].rule_name, 'separator')
         self.assertEqual(parse[2].rule_name, 'EOF')
 
-    def test_empty_header_and_body(self):
+    def test_emptyHeaderAndBody(self):
         parser = ParserGABC()
-        file_str = '%%\n'
-        parse = parser.parse(file_str)
+        fileStr = '%%\n'
+        parse = parser.parse(fileStr)
         self.assertEqual(parse[0].value, '%%\n')
         self.assertEqual(parse[1].rule_name, 'EOF')
 
-    def test_body_confused_for_header(self):
+    def test_bodyConfusedForHeader(self):
         """Tests that the body is not confused for the header when it contains
         both colons and semicolons"""
         parser = ParserGABC(root='file')
@@ -89,7 +89,7 @@ class TestHeader(unittest.TestCase):
         # Attribute end
         self.assertEqual(attr2[3].value, ';')
 
-    def test_brackets_spaces(self):
+    def test_bracketsSpaces(self):
         parser = ParserGABC(root='header')
         header_str = "attr1:value1 (test);"
         parse = parser.parse(header_str)
@@ -113,7 +113,7 @@ class TestBody(unittest.TestCase):
         self.assertEqual(parse[2].rule_name, 'word')
         self.assertEqual(parse[2].value, 'C | ( | h | )')
 
-    def test_other_whitespace(self):
+    def test_otherWhitespace(self):
         parser = ParserGABC(root='body')
         spaces = [' ', '\n', '\t', '\f', '\v', '\r', '  ', '\n   \t']
         for space in spaces:
@@ -123,7 +123,7 @@ class TestBody(unittest.TestCase):
             self.assertEqual(parse[1].rule_name, 'whitespace')
             self.assertEqual(parse[1].value, space)
 
-    def test_words_with_spaces(self):
+    def test_wordsWithSpaces(self):
         parser = ParserGABC(root='body')
         parse = parser.parse('A(f)B (g) C(h)')
         self.assertEqual(parse[0].rule_name, 'word')
@@ -132,7 +132,7 @@ class TestBody(unittest.TestCase):
         self.assertEqual(parse[2].rule_name, 'word')
         self.assertEqual(parse[2].value, 'C | ( | h | )')
 
-    def test_word_with_space_and_barlines(self):
+    def test_wordWithSpaceAndBarlines(self):
         parser = ParserGABC(root='body')
         parse = parser.parse('a(f)b (g) (;)')
         self.assertEqual(parse[0].rule_name, 'word')
@@ -153,7 +153,7 @@ class TestWord(unittest.TestCase):
         self.assertEqual(parse[1].rule_name, 'syllable')
         self.assertEqual(parse[1].value, 'B | ( | g | )')
 
-    def test_word_with_spaces(self):
+    def test_wordWithSpaces(self):
         parser = ParserGABC(root='word')
         parse = parser.parse('A (f)B(g)')
         self.assertEqual(parse.rule_name, 'word')
@@ -172,7 +172,7 @@ class TestBarsAndClefs(unittest.TestCase):
         self.assertEqual(parse[1].rule_name, 'clef')
         self.assertEqual(parse[2].value, ')')
 
-    def test_clef_types(self):
+    def test_clefTypes(self):
         parser = ParserGABC(root='clef')
         clefs = 'c1 c2 c3 c4 f1 f2 f3 f4 cb3'.split()
         for clef_str in clefs:
@@ -202,7 +202,7 @@ class TestSyllable(unittest.TestCase):
         super(TestSyllable, self).__init__(*args, **kwargs)
         self.parser = ParserGABC(root='syllable')
 
-    def test_text_music(self):
+    def test_textMusic(self):
         parse = self.parser.parse('a_string(fgf)')
 
         self.assertEqual(parse.rule_name, 'syllable')
@@ -223,7 +223,7 @@ class TestSyllable(unittest.TestCase):
         """Test whether a syllable starting with a space does not match"""
         self.assertRaises(NoMatch, lambda: self.parser.parse(' a(f)'))
 
-    def test_spaces_in_music(self):
+    def test_spacesInMusic(self):
         parse = self.parser.parse('(f , g)')
         self.assertEqual(parse[1][1].rule_name, 'spacer')
         self.assertEqual(parse[1][2].rule_name, 'comma')
@@ -257,7 +257,7 @@ class TestAdvancedMusic(unittest.TestCase):
         self.assertEqual(parse[1].rule_name, 'note')
         self.assertEqual(parse[2].rule_name, 'note')
 
-    def test_end_of_line(self):
+    def test_endOfLine(self):
         # http://gregorio-project.github.io/gabc/details.html#endofline
         parser = ParserGABC(root='music')
         parse = parser.parse('z0::c3')
@@ -338,7 +338,7 @@ class TestNote(unittest.TestCase):
         self.assertEqual(parse[1][1].value, "r3")
         self.assertEqual(parse[1][1].rule_name, 'empty_note_or_accent')
 
-    def test_empty_notes(self):
+    def test_emptyNotes(self):
         parse = self.parser.parse('gr')
         self.assertEqual(parse[0].rule_name, 'position')
         self.assertEqual(parse[0].value, 'g')
@@ -354,7 +354,7 @@ class TestNote(unittest.TestCase):
         self.assertEqual(parse[1].value, "r0")
         self.assertEqual(parse[1][0].rule_name, 'empty_note_or_accent')
 
-    def test_rhythmic_signs(self):
+    def test_rhythmicSigns(self):
         parse = self.parser.parse('g_')
         self.assertEqual(parse[0].rule_name, 'position')
         self.assertEqual(parse[0].value, 'g')
@@ -384,7 +384,7 @@ class TestNote(unittest.TestCase):
         self.assertEqual(parse[1].rule_name, 'suffix')
         self.assertEqual(parse[1].value, '_502')
 
-    def test_one_note_neumes(self):
+    def test_oneNoteNeumes(self):
         # Test single suffix
         parse = self.parser.parse('G~')
         self.assertEqual(parse[0].rule_name, 'position')

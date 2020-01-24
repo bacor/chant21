@@ -6,7 +6,7 @@ from music21 import converter
 
 from arpeggio import Terminal
 from arpeggio import PTNodeVisitor
-from arpeggio import visit_parse_tree
+from arpeggio import visit_parse_tree as visitParseTree
 
 from .chant import Chant
 from .chant import Note
@@ -347,7 +347,7 @@ class ConverterGABC(converter.subConverters.SubConverter):
 
     def parseData(self, strData, number=None):
         parse = self.fileParser.parse(strData)
-        chant = visit_parse_tree(parse, self.visitor)
+        chant = visitParseTree(parse, self.visitor)
         self.stream = chant
 
 converter.registerSubconverter(ConverterGABC)

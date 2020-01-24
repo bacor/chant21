@@ -1,20 +1,20 @@
 import unittest
 import glob
-from volpyano import GABCParser
+from chant21 import ParserGABC
 
 class TestParseExamples(unittest.TestCase):
 
     def run_test(self, example):
-        parser = GABCParser()
-        parse = parser.parse_file(example)
+        parser = ParserGABC()
+        parse = parser.parseFile(example)
         self.assertFalse(parse.error)
         return parse
 
-    def test_salve_regina(self):
+    def test_salveRegina(self):
         filename = 'examples/an--salve_regina_simple_tone--solesmes.gabc'
         self.run_test(filename)
         
-    def test_ut_queant_laxis(self):
+    def test_utQueantLaxis(self):
         filename = 'examples/hy--ut_queant_laxis--solesmes.gabc'
         self.run_test(filename)
 
@@ -22,16 +22,16 @@ class TestParseExamples(unittest.TestCase):
         filename = 'examples/ky--kyrie_ad_lib_x_-_orbis_factor--solesmes.gabc'
         self.run_test(filename)
 
-    def test_populus_sion(self):
+    def test_populusSion(self):
         filename = 'examples/populus_sion.gabc'
         self.run_test(filename)
 
-    def _test_ab_ortu_solis(self):
+    def _test_abOrtuSolis(self):
         filename = 'examples/tr--ab_ortu_solis--solesmes.gabc'
         self.run_test(filename)
         
-    def _test_all_examples(self):
-        parser = GABCParser()
+    def _test_allExamples(self):
+        parser = ParserGABC()
         examples = glob.glob('examples/*.gabc')
         for filename in examples:
             self.run_test(filename)
@@ -39,15 +39,15 @@ class TestParseExamples(unittest.TestCase):
 class TestSpecialCases(unittest.TestCase):
     """Tests of examples where parsing failed initially"""
     
-    def _test_clef_change(self):
+    def _test_clefChange(self):
         gabc = '<sp>V/</sp>.(z0::c3) Sur(hi~)ge'
-        parser = GABCParser(root='body')
+        parser = ParserGABC(root='body')
         parse = parser.parse(gabc)
         self.assertFalse(parse.error)
 
     def _test_polyphony(self):
         gabc = 'Quó(dh)ni(h)am(jhhghvG{ix}Ef_g//eg!ivHGhvFDe.)'
-        parser = GABCParser(root='body')
+        parser = ParserGABC(root='body')
         parse = parser.parse(gabc)
         self.assertFalse(parse.error)
 
