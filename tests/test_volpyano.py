@@ -1,6 +1,9 @@
 import unittest
-from volpyano import VOLPIANO, Neume, Syllable, Word
-from volpyano import VolpianoNote as Note
+from chant21.volpyano import VOLPIANO
+from chant21.volpyano import Neume
+from chant21.volpyano import Syllable
+from chant21.volpyano import Word
+from chant21.volpyano import VolpianoNote as Note
 
 class TestNote(unittest.TestCase):
     def test_note_shapes(self):

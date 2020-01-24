@@ -1,5 +1,5 @@
 import unittest
-from volpyano import GABCParser
+from chant21 import GABCParser
 
 class TestGABCParserClass(unittest.TestCase):
 
@@ -27,7 +27,7 @@ class TestGABCParserClass(unittest.TestCase):
 
     def test_parse_file(self):
         parser = GABCParser()
-        parse = parser.parse_file('tests/minimal.gabc')
+        parse = parser.parse_file('examples/minimal.gabc')
         self.assertEqual(parse[0].value, 'attribute | : | value | ;\n')
         self.assertEqual(parse[1].value, '%%\n')
         self.assertEqual(parse[2].value, 'A | ( | f | ) | B | ( | g | ) |   | C | ( | h | ) | ')

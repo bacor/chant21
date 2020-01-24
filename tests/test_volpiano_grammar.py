@@ -1,5 +1,5 @@
 import unittest
-from volpyano.volpyano_parser import VolpianoParser
+from chant21.volpyano_parser import VolpianoParser
 
 class TestSyllable(unittest.TestCase):
     """Tests using `syllable` as the root node"""

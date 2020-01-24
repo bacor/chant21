@@ -17,7 +17,7 @@
 //   is this correct syntax?
 
 // FILE
-    gabc_file = header separator body EOF
+    file = header separator body EOF
     separator = r'(\n)*%%(\n)+'
 
 // HEADER
@@ -28,27 +28,32 @@
         // Allow the use of ; when followed by a space
 
 // BODY
-    body = (word (whitespace / EOF))*
+    body = ((bar_or_clef / word) (whitespace / EOF))*
+    
+    bar_or_clef = text? "(" (clef / barline)* ")"
+    clef = r'(c|f)b?[1-4]'
+    barline = r",0|,_|,[1-6]?|'|`|::|:\?|:|;[1-6]|;"
+    
     word = syllable+
     syllable = text? "(" music ")"
     whitespace = r'[ \n\r\t\f\v]+'
     // text either contains a tag (e.g. "bla<i>foo</i>bla") 
     // or is a string without brackets, not starting with a space
     text = r'([^\(]*\<[a-z]+\>[^\<]*\</[a-z]+\>[^\(]*)|([^ \n\r\t\f\v\(][^\(\n]*)'
-    
+
 // MUSIC
-    music = (clef / note / barline / spacer / advanced)*
-    clef = r'(c|f)b?[1-4]'
-    barline = r",0|,_|,[1-6]?|'|`|::|:\?|:|;[1-6]|;"
+    music = (alteration / note / comma / spacer / advanced)*
+    alteration = position r'x|y|#'
     spacer = r'\!|@|//|/0|/\[-?[0-9]\]|/| '
+    comma = ")("? r",0|,_|,[1-6]?|'|`" ")("? 
 
     note = prefix* position suffix*
     prefix = '-'
-    suffix = neume_shape? alteration? rhythmic_sign? empty_note_or_accent*
+    suffix = neume_shape? rhythmic_sign? empty_note_or_accent*
     position = r'[a-mA-M]'
     neume_shape = r'~|>|<|v|V|o(~|<)?|w|s<?|q|0|1'
         // for 'q', see gregorio-project.github.io/gabc/details.html#podatus
-    alteration = r'x|y|#'
+    // alteration = r'x|y|#'
     rhythmic_sign = r'\.\.?|\'(0|1)?|_[0-5]*'
     empty_note_or_accent = r'r[0-5]?|R'
 

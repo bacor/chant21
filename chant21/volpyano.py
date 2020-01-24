@@ -18,7 +18,7 @@ def subdict(dictionary, keys):
     
 class VolpianoNote(music21.note.Note):
 
-    def __init__(self, volpiano='f', clef='g', *args, bIsFlat=False, eIsFlat=False, 
+    def __init__(self, volpiano='c', clef='g', *args, bIsFlat=False, eIsFlat=False, 
         **kwargs):
         """"""
         super().__init__(*args, **kwargs)
@@ -28,7 +28,7 @@ class VolpianoNote(music21.note.Note):
         self.clef = clef
         self.volpiano = volpiano
 
-    @property 
+    @property
     def volpiano(self):
         return self._volpiano
 
@@ -116,9 +116,9 @@ class Neume(music21.stream.Stream):
             notes = [VolpianoNote(note, **note_kws) for note in volpiano]
             self.append(notes)
 
-    def __repr__(self):
-        """A string representation of the neume"""
-        return f'<volpyano.Neume {self.volpiano}>'
+    # def __repr__(self):
+    #     """A string representation of the neume"""
+    #     return f'<volpyano.Neume {self.volpiano}>'
 
     def __eq__(self, other):
         """Test neume equality checking equality of the notes"""
@@ -134,18 +134,26 @@ class Neume(music21.stream.Stream):
 
     @property
     def text(self):
-        if len(self) > 0:
-            return self[0].text
+        if len(self.notes) > 0:
+            firstNote = self.notes[0]
+            return firstNote.lyric
     
     @text.setter
     def text(self, value):
-        if len(self) > 0:
-            self[0].text = value
+        if len(self.notes) > 0:
+            firstNote = self.notes[0]
+            firstNote.lyric = value
+        else:
+            raise Exception('Cannot set text on neume without notes')
 
     @property
     def volpiano(self):
         """The Volpiano string representing this neume"""
         return ''.join(note.volpiano for note in self.elements)
+
+    @property
+    def notes(self):
+        return self.getElementsByClass(music21.note.Note)
 
     @property
     def plain(self):
@@ -186,9 +194,9 @@ class Syllable(music21.stream.Stream):
         if text is not None:
             self.text = text
         
-    def __repr__(self):
-        """A string representation of the syllable"""
-        return f'<volpyano.Syllable {self.text}<{self.volpiano}>>'
+    # def __repr__(self):
+    #     """A string representation of the syllable"""
+    #     return f'<volpyano.Syllable {self.text}<{self.volpiano}>>'
 
     def __eq__(self, other):
         """Test syllable equality by checking text and neumes identity"""
@@ -208,13 +216,17 @@ class Syllable(music21.stream.Stream):
 
     @property
     def text(self):
-        if len(self) > 0:
-            return self[0].text
+        if len(self.neumes) > 0:
+            firstNeume = self.neumes[0]
+            return firstNeume.text
 
     @text.setter
     def text(self, value):
-        if len(self) > 0:
-            self[0].text = value
+        if len(self.neumes) > 0:
+            firstNeume = self.neumes[0]
+            firstNeume.text = value
+        else:
+            raise Exception('Cannot set text on syllable without neumes')
 
     @property
     def volpiano(self):
@@ -248,18 +260,18 @@ class Word(music21.stream.Stream):
         if text is not None:
             self.text = text
         
-    def __repr__(self):
-        """A string representation of the word"""
-        syllables = []
-        for syll in self.syllables:
-            if len(syll.volpiano) > 5:
-                syll_str = f'{syll.text}-<{syll.volpiano[:5]}...>'
-            else:
-                syll_str = f'{syll.text}-<{syll.volpiano}>'
-            syllables.append(syll_str)
+    # def __repr__(self):
+    #     """A string representation of the word"""
+    #     syllables = []
+    #     for syll in self.syllables:
+    #         if len(syll.volpiano) > 5:
+    #             syll_str = f'{syll.text}-<{syll.volpiano[:5]}...>'
+    #         else:
+    #             syll_str = f'{syll.text}-<{syll.volpiano}>'
+    #         syllables.append(syll_str)
             
-        string = ' '.join(syllables)
-        return f'<volpyano.Word <{string}>'
+    #     string = ' '.join(syllables)
+    #     return f'<volpyano.Word <{string}>'
 
     def __eq__(self, other):
         """Test equality by checking equality of syllables"""
@@ -280,20 +292,20 @@ class Word(music21.stream.Stream):
     @text.setter
     def text(self, value):
         syllables = value.split('-')
-        if len(syllables) != len(self):
+        if len(syllables) != len(self.syllables):
             raise ValueError('The passed number of syllables does not match')
         
         if len(syllables) == 1:
-            self[0].text = syllables[0]
+            self.syllables[0].text = syllables[0]
         
         else:
-            for i in range(len(self)):
+            for i in range(len(self.syllables)):
                 if i == 0:
-                    self[i].text = syllables[i] + '-'
+                    self.syllables[i].text = syllables[i] + '-'
                 elif i == len(self) - 1:
-                    self[i].text = '-' + syllables[i]
+                    self.syllables[i].text = '-' + syllables[i]
                 else:
-                    self[i].text = '-' + syllables[i] + '-'
+                    self.syllables[i].text = '-' + syllables[i] + '-'
 
     @property
     def raw_text(self):
@@ -315,10 +327,6 @@ class Word(music21.stream.Stream):
             'type': 'word',
             'syllables': [syll.plain for syll in self.syllables]
         }
-
-#TODO implement
-class Accidental(music21.pitch.Accidental):
-    pass
 
 #TODO implement
 class GClef(music21.clef.TrebleClef):
@@ -352,36 +360,38 @@ class FClef(music21.clef.BassClef):
             'text': self.text,
         } 
 
-#TODO implement
-class Barline(music21.bar.Barline):
-    def __init__(self, volpiano, text='', **kwargs):
-        barlineTypes = {
-            '3': 'regular',
-            '4': 'double',
-            '5': 'final',
-            '6': 'tick',  # TODO 
-            '6': 'short', # TODO 
-        }
-        if volpiano not in barlineTypes:
-            raise ValueError('Invalid barline')
-        self.text = text
-        self.volpiano = volpiano
-        super().__init__(barlineTypes[volpiano], **kwargs)
+
+class Alteration(music21.base.Music21Object):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        # Ensure that alterations always occur before their notes
+        self.priority = -1
+
+class BreathMark(music21.base.Music21Object):
+    """Indicates a breathmark"""
+    pass
+
+class NonWord(music21.stream.Stream):
+    
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.text = None
+        self.priority = -2
+
+    @property
+    def text(self):
+        return self.editorial.text
+
+    @text.setter
+    def text(self, text):
+        self.editorial.text = text
 
     @property
     def plain(self):
+        # TODO
         return {
-            'type': 'barline',
-            'volpiano': self.volpiano,
-            'text': self.text,
-        } 
-
-#TODO implement
-class Incomplete():
-    pass
-
-class Section(music21.spanner.Spanner):
-    pass
+            
+        }
 
 class Chant(object):
 

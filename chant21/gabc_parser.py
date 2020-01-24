@@ -4,7 +4,6 @@ import os.path
 grammar_fn = 'gabc.peg'
 grammar_dir = os.path.dirname(__file__)
 GRAMMAR_PATH = os.path.join(grammar_dir, grammar_fn)
-GRAMMAR_ROOT = 'gabc_file'
 
 class GABCParser():
     """
@@ -16,7 +15,7 @@ class GABCParser():
 
     def __init__(self, 
         grammar_path: str = GRAMMAR_PATH,
-        root: str = GRAMMAR_ROOT,
+        root: str = 'file',
         **kwargs) -> None:
         """
         Args:
