@@ -17,7 +17,7 @@
 //   is this correct syntax?
 
 // FILE
-    file = header separator body EOF
+    file = (header separator)? body EOF
     separator = r'(\n)*%%(\n)+'
 
 // HEADER
