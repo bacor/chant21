@@ -255,10 +255,14 @@ class TestSyllable(unittest.TestCase):
         self.assertEqual(n1.rule_name, 'note')
         self.assertEqual(comma.rule_name, 'comma')
         self.assertEqual(n2.rule_name, 'note')
-        # self.assertEqual(parse[1][1].rule_name, 'spacer')
-        # self.assertEqual(parse[1][2].rule_name, 'comma')
-        # self.assertEqual(parse[1][2].value, ',')
-        # self.assertEqual(parse[1][3].rule_name, 'spacer')
+
+    def test_commaWithSpaces(self):
+        parser = ParserGABC(root='syllable')
+        parse = parser.parse('(f) (,) (g)')
+        n1, comma, n2 = parse[1]
+        self.assertEqual(n1.rule_name, 'note')
+        self.assertEqual(comma.rule_name, 'comma')
+        self.assertEqual(n2.rule_name, 'note')
 
     def test_tags(self):
         parse = self.parser.parse('<i>test</i>(f)')
