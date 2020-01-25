@@ -16,6 +16,10 @@ class ChantElement(music21.base.Music21Object):
     def plain(self):
         raise NotImplementedError()
 
+class NoMusic(ChantElement):
+    """An element containing only text, and no music"""
+    pass
+
 class Comma(ChantElement, music21.articulations.BreathMark):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)

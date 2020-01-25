@@ -52,7 +52,6 @@ class TestSpecialCases(unittest.TestCase):
         parse = parser.parse(gabc)
         self.assertFalse(parse.error)
 
-
 class TestConvertExamples(unittest.TestCase):
     def test_kyrie(self):
         filename = 'examples/ky--kyrie_ad_lib_x_-_orbis_factor--solesmes.gabc'

@@ -8,6 +8,7 @@ from .chant import Word
 from .chant import Syllable
 from .chant import Neume
 from .chant import Note
+from .chant import NoMusic
 
 # Make GABC converter available to music21.converter
 from .converterGABC import ConverterGABC

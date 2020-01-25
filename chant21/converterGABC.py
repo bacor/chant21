@@ -17,6 +17,7 @@ from .chant import Alteration
 from .chant import Comma
 from .chant import Barline
 from .chant import Clef
+from .chant import NoMusic
 from .parserGABC import ParserGABC
 
 OPTIONS = {
@@ -158,14 +159,20 @@ class GABCVisitor(PTNodeVisitor):
                 curClef = element
                 curGABCClef = curClef.editorial.gabc
                 curMeasure.append(element)
+            elif isinstance(NoMusic):
+                curMeasure.append(element)
             else:
                 raise Exception('Unknown element')
         ch.append(curMeasure)
         return ch
 
     def visit_bar_or_clef(self, node, children):
-        elIndex = 1 if 'text' in children.results else 0
-        element = children[elIndex]
+        if 'clef' in children.results:
+            element = children.results['clef'][0]
+        elif 'barline' in children.results:
+            element = children.results['barline'][0]
+        else:
+            element = NoMusic()
         element.text = children.results.get('text', [None])[0]
         return element
         

@@ -23,6 +23,7 @@ from chant21 import Alteration
 from chant21 import Comma
 from chant21 import Barline
 from chant21 import Clef
+from chant21 import NoMusic
 from chant21 import ParserGABC
 
 from arpeggio import visit_parse_tree as visitParseTree
@@ -255,12 +256,19 @@ class TestBarClefs(unittest.TestCase):
             self.assertIsInstance(element, clef21.TrebleClef)
             self.assertEqual(element.editorial.gabc, clef)
 
-    def test_missing_clef(self):
+    def test_missingClef(self):
         parser = ParserGABC(root='body')
         parse = parser.parse('a(fgf)')
         test_fn = lambda: visitParseTree(parse, GABCVisitor())
         self.assertRaises(MissingClef, test_fn)
-        
+
+    def test_noMusic(self):
+        parser = ParserGABC(root='bar_or_clef')
+        parse = parser.parse('*()')
+        element = visitParseTree(parse, GABCVisitor())
+        self.assertIsInstance(element, NoMusic)
+        self.assertEqual(element.text, '*')
+
 class TestSyllables(unittest.TestCase):
     def test_syllable(self):
         parser = ParserGABC(root='syllable')
