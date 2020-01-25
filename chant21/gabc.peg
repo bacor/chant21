@@ -29,7 +29,7 @@
         // Allow the use of ; when followed by a space
 
 // BODY
-    body = ((macro / (bar_or_clef (bar_or_clef / word)) / bar_or_clef / word) (whitespace / EOF))*
+    body = ((macro / (bar_or_clef (bar_or_clef / word)?) / word bar_or_clef?) (whitespace / EOF))*
         // This is a little hacky:
         // (bar_or_clef (bar_or_clef / word) accounts bar_or_clefs
         // followed directly by either a bar_or_clef or a word

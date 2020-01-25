@@ -241,6 +241,21 @@ class TestBarsAndClefs(unittest.TestCase):
         self.assertEqual(parse[0].rule_name, 'bar_or_clef')
         self.assertEqual(parse[1].rule_name, 'bar_or_clef')
 
+    def test_barlineDirectlyAfterMusic(self):
+        parser = ParserGABC(root='body')
+
+        # The normal situation, with space:
+        parse = parser.parse('A(f) (;)')
+        word, _, bar, _ = parse
+        self.assertEqual(word.rule_name, 'word')
+        self.assertEqual(bar.rule_name, 'bar_or_clef')
+
+        # The weird situation, without space:
+        parse = parser.parse('A(f)(;)')
+        word, bar, _ = parse
+        self.assertEqual(word.rule_name, 'word')
+        self.assertEqual(bar.rule_name, 'bar_or_clef')
+
 class TestSyllable(unittest.TestCase):
 
     def __init__(self, *args, **kwargs):
