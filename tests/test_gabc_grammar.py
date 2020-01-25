@@ -226,6 +226,14 @@ class TestBarsAndClefs(unittest.TestCase):
         self.assertEqual(bar.rule_name, 'barline')
         self.assertEqual(clef.rule_name, 'clef')
     
+    def test_barlinesFollowedByText(self):
+        parser = ParserGABC(root='body')
+        parse = parser.parse('(:)a()')
+        self.assertEqual(len(parse), 3)
+        bar, textEl, _ = parse 
+        self.assertEqual(parse[0].rule_name, 'bar_or_clef')
+        self.assertEqual(parse[1].rule_name, 'bar_or_clef')
+
 class TestSyllable(unittest.TestCase):
 
     def __init__(self, *args, **kwargs):

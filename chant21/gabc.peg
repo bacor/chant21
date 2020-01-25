@@ -28,7 +28,7 @@
         // Allow the use of ; when followed by a space
 
 // BODY
-    body = ((bar_or_clef / word) (whitespace / EOF))*
+    body = ((bar_or_clef+ / word) (whitespace / EOF))*
     
     // TODO Better name for this node?
     bar_or_clef = text? "(" (clef / barline / end_of_line)* ")"
