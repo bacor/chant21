@@ -56,7 +56,8 @@
         // TODO: check if these are not typos
     spacer = r'\!|@|//|/0|/\[-?[0-9]\]|/| '
     comma = r"(\) ?\()"? r",0|,_|,[1-6]?|'|`|( ; )" r"(\) ?\()"?
-
+        // Note: pausa minor (;) is also a comma when between spaces
+        
     note = prefix* position suffix*
     prefix = '-'
     suffix = neume_shape? rhythmic_sign? empty_note_or_accent*
