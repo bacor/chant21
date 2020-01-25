@@ -349,6 +349,9 @@ class GABCVisitor(PTNodeVisitor):
     def visit_macro(self, node, children):
         return None
 
+    def visit_code(self, node, children):
+        return None
+
 ###
 
 class ConverterGABC(converter.subConverters.SubConverter):

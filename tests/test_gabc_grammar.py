@@ -53,15 +53,7 @@ class TestFile(unittest.TestCase):
         self.assertEqual(parse[0].value, '%%\n')
         self.assertEqual(parse[1].rule_name, 'body')
         self.assertEqual(parse[2].rule_name, 'EOF')
-
-    def test_macro(self):
-        parser = ParserGABC(root='file')
-        parse = parser.parse('%%\ndef-m1:\grealign;\ndef-m2:\grealign;\n(c2) a(f)')
-        _, macro1, macro2, body, _ = parse
-        self.assertEqual(macro1.rule_name, 'macro')
-        self.assertEqual(macro2.rule_name, 'macro')
-        self.assertEqual(body.rule_name, 'body')
-
+    
 class TestHeader(unittest.TestCase):
 
     def test_header(self):
@@ -311,7 +303,7 @@ class TestSyllable(unittest.TestCase):
         self.assertEqual(parse[0].rule_name, 'text')
         self.assertEqual(parse[0].value, '<i>test</i>')
 
-class TestAdvancedMusic(unittest.TestCase):
+class TestAdvanced(unittest.TestCase):
     
     def test_accidental(self):
         parser = ParserGABC(root='music')
@@ -343,6 +335,35 @@ class TestAdvancedMusic(unittest.TestCase):
             self.assertEqual(parse[0].rule_name, 'advanced')
             self.assertEqual(parse[0][0].rule_name, 'brace')
             self.assertEqual(parse[0][0].value, gabc)
+
+    def test_verbatimCode(self):
+        parser = ParserGABC(root='code')
+        codeExamples = [
+            '[nv:\mycode]', 
+            '[gv:\mycode]', 
+            '[ev:\mycode]', 
+        ]
+        for code in codeExamples:
+            parse = parser.parse(code)
+            self.assertEqual(parse.rule_name, 'code')
+            self.assertEqual(parse[1].rule_name, 'verbatim_code')
+    
+    def test_macroReferences(self):
+        parser = ParserGABC(root='code')
+        codeExamples = ['[nm1]', '[gm1]', '[em1]']
+        for code in codeExamples:
+            parse = parser.parse(code)
+            self.assertEqual(parse.rule_name, 'code')
+            self.assertEqual(parse[1].rule_name, 'macro_reference')
+
+    def test_macroAboveBody(self):
+        parser = ParserGABC(root='body')
+        parse = parser.parse('(c2) def-m1:\grealign;\ndef-m2:\grealign;\na(f)')
+        clef, _, macro1, _, macro2, _, word, _ = parse
+        self.assertEqual(macro1.rule_name, 'macro')
+        self.assertEqual(macro2.rule_name, 'macro')
+        self.assertEqual(clef.rule_name, 'bar_or_clef')
+        self.assertEqual(word.rule_name, 'word')
 
 class TestNote(unittest.TestCase):
 

@@ -18,9 +18,8 @@
 // * Support macros: def-m1: \grealign;
 
 // FILE
-    file = (header separator)? macro* body EOF
+    file = (header separator)? body EOF
     separator = r'(\n)*%%(\n)+'
-    macro = r"def-m[0-9]:[^;]+;\n"
 
 // HEADER
     header = attribute*
@@ -30,7 +29,7 @@
         // Allow the use of ; when followed by a space
 
 // BODY
-    body = (((bar_or_clef (bar_or_clef / word)) / bar_or_clef / word) (whitespace / EOF))*
+    body = ((macro / (bar_or_clef (bar_or_clef / word)) / bar_or_clef / word) (whitespace / EOF))*
         // This is a little hacky:
         // (bar_or_clef (bar_or_clef / word) accounts bar_or_clefs
         // followed directly by either a bar_or_clef or a word
@@ -68,10 +67,15 @@
     rhythmic_sign = r'\.\.?|\'(0|1)?|_[0-5]*'
     empty_note_or_accent = r'r[0-5]?|R'
 
-// ADVANCED MUSIC
+// ADVANCED
     advanced = polyphony / brace / code / choral_sign / translation
     polyphony = '{' (alteration / note)+ '}'
     brace = r'\[(o|u)(b|cba|cb):(0|1)(({|})|(;\d+(\.\d+)?mm))?\]'
-    code = r'\[(nv:gv:ev)[^\]]+\]'
     choral_sign = r'\[cs:[^\]]+\]'
     translation = r'\[alt:[^\]]+\]'
+
+    // CODE
+    code = "[" ( macro_reference / verbatim_code ) "]"
+    macro_reference = r'(n|g|e)m[0-9]'
+    verbatim_code = r'(n|g|e)v:[^\]]+'
+    macro = r"def-m[0-9]:[^;]+;"
