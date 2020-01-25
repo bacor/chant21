@@ -65,7 +65,7 @@
 
 // ADVANCED MUSIC
     advanced = polyphony / brace / code / choral_sign / translation
-    polyphony = '{' note+ '}'
+    polyphony = '{' (alteration / note)+ '}'
     brace = r'\[(o|u)(b|cba|cb):(0|1)(({|})|(;\d+(\.\d+)?mm))?\]'
     code = r'\[(nv:gv:ev)[^\]]+\]'
     choral_sign = r'\[cs:[^\]]+\]'

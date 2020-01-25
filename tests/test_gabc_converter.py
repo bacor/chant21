@@ -133,7 +133,7 @@ class TestAlterations(unittest.TestCase):
         self.assertEqual(notes[1].name, 'C')
         self.assertEqual(notes[2].name, 'B')
 
-    def test_word_boundaries(self):
+    def test_wordBoundaries(self):
         """Test whether word boundaries reset accidentals"""
         parser = ParserGABC(root='body')    
         parse = parser.parse('(c2) a(exfe) c(e)')
@@ -143,7 +143,7 @@ class TestAlterations(unittest.TestCase):
         self.assertEqual(notes[1].name, 'B-')
         self.assertEqual(notes[2].name, 'B')
     
-    def test_syllable_boundaries(self):
+    def test_syllableBoundaries(self):
         """Test whether flats are NOT reset by syllable boundaries"""
         parser = ParserGABC(root='body')    
         parse = parser.parse('(c2) a(exe)b(e)')
@@ -152,7 +152,7 @@ class TestAlterations(unittest.TestCase):
         self.assertEqual(notes[0].name, 'B-')
         self.assertEqual(notes[1].name, 'B-')
 
-    def test_flat_clefs(self):
+    def test_flatClefs(self):
         """Test whether flats are NOT reset by syllable boundaries"""
         parser = ParserGABC(root='body')    
         parse = parser.parse('(cb2) (e)')
@@ -160,7 +160,7 @@ class TestAlterations(unittest.TestCase):
         notes = stream.flat.notes
         self.assertEqual(notes[0].name, 'B-')
 
-    def test_naturals_in_flat_clefs(self):
+    def test_naturalsInFlatClefs(self):
         """Test whether naturals work in flat clefs"""
         parser = ParserGABC(root='body')    
         parse = parser.parse('(cb2) (eeyee,e) (e)')
@@ -175,6 +175,15 @@ class TestAlterations(unittest.TestCase):
         self.assertEqual(notes[3].pitch.accidental.name, 'flat')
         self.assertEqual(notes[4].name, 'B-')
         self.assertEqual(notes[4].pitch.accidental.name, 'flat')
+
+    def test_polyphonicAlterations(self):
+        parser = ParserGABC(root='music')
+        parse = parser.parse('f{ix}g')
+        elements = visitParseTree(parse, GABCVisitor())
+        n1, alt, n2 = elements
+        self.assertIsInstance(n1, Neume)
+        self.assertIsInstance(alt, Alteration)
+        self.assertIsInstance(n2, Neume)
 
 class TestText(unittest.TestCase):
 

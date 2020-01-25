@@ -333,7 +333,12 @@ class GABCVisitor(PTNodeVisitor):
         return None
 
     def visit_polyphony(self, node, children):
-        return None
+        """Polyphony is ignored, except for polyphonic alterations: 
+        basically alterations printed on top of other notes"""
+        if 'alteration' in children.results:
+            return children.results.get('alteration')[0]
+        else:
+            return None
 
     def visit_brace(self, node, children):
         return None

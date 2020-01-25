@@ -476,6 +476,14 @@ class TestAlterations(unittest.TestCase):
         parser = ParserGABC(root='music')
         parse = parser.parse(gabc)
         self.assertEqual(parse.value, 'i | x | ~ | f | g | f | g')
+    
+    def test_polyphonicAlterations(self):
+        parser = ParserGABC(root='music')
+        parse = parser.parse('f{ix}g')
+        n1, advanced, n2 = parse
+        self.assertEqual(len(advanced), 1)
+        self.assertEqual(advanced[0].rule_name, 'polyphony')
+        self.assertEqual(advanced[0][1].rule_name, 'alteration')
 
 if __name__  ==  '__main__':
     unittest.main()
