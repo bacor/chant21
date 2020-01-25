@@ -27,7 +27,7 @@ class TestParseExamples(unittest.TestCase):
         filename = 'examples/populus_sion.gabc'
         self.run_test(filename)
 
-    def _test_abOrtuSolis(self):
+    def test_abOrtuSolis(self):
         filename = 'examples/tr--ab_ortu_solis--solesmes.gabc'
         self.run_test(filename)
         
@@ -52,12 +52,32 @@ class TestSpecialCases(unittest.TestCase):
         parse = parser.parse(gabc)
         self.assertFalse(parse.error)
 
+
 class TestConvertExamples(unittest.TestCase):
     def test_kyrie(self):
         filename = 'examples/ky--kyrie_ad_lib_x_-_orbis_factor--solesmes.gabc'
         chant = converter.parse(filename)
         self.assertTrue(True)
 
+    def test_salveRegina(self):
+        filename = 'examples/an--salve_regina_simple_tone--solesmes.gabc'
+        chant = converter.parse(filename)
+        self.assertTrue(True)
+        
+    def test_utQueantLaxis(self):
+        filename = 'examples/hy--ut_queant_laxis--solesmes.gabc'
+        chant = converter.parse(filename)
+        self.assertTrue(True)
+
+    def test_populusSion(self):
+        filename = 'examples/populus_sion.gabc'
+        chant = converter.parse(filename)
+        self.assertTrue(True)
+
+    def test_abOrtuSolis(self):
+        filename = 'examples/tr--ab_ortu_solis--solesmes.gabc'
+        chant = converter.parse(filename)
+        self.assertTrue(True)
 
 if __name__ == '__main__':
     unittest.main()

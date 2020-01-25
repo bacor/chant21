@@ -17,7 +17,7 @@
 //   is this correct syntax?
 
 // FILE
-    file = (header separator)? body EOF
+    file = header separator body EOF
     separator = r'(\n)*%%(\n)+'
 
 // HEADER
@@ -43,7 +43,9 @@
 
 // MUSIC
     music = (alteration / note / comma / spacer / advanced)*
-    alteration = position r'x|y|#'
+    alteration = position r'x|y|#' suffix? 
+        // Suffixes on alterations make no sense but sometimes occur
+        // TODO: check if these are not typos
     spacer = r'\!|@|//|/0|/\[-?[0-9]\]|/| '
     comma = ")("? r",0|,_|,[1-6]?|'|`" ")("? 
 

@@ -432,5 +432,12 @@ class TestAlterations(unittest.TestCase):
         self.assertEqual(parse.rule_name, 'alteration')
         self.assertEqual(parse[1].value, '#')
 
+    def test_alterationSuffixes(self):
+        """Test suffixes on accidentals, which make no sense but sometimes occur"""
+        gabc = "ix~fgfg"
+        parser = ParserGABC(root='music')
+        parse = parser.parse(gabc)
+        self.assertEqual(parse.value, 'i | x | ~ | f | g | f | g')
+
 if __name__  ==  '__main__':
     unittest.main()
