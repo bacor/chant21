@@ -1,5 +1,6 @@
 import unittest
 import glob
+from music21 import converter
 from chant21 import ParserGABC
 
 class TestParseExamples(unittest.TestCase):
@@ -50,6 +51,12 @@ class TestSpecialCases(unittest.TestCase):
         parser = ParserGABC(root='body')
         parse = parser.parse(gabc)
         self.assertFalse(parse.error)
+
+class TestConvertExamples(unittest.TestCase):
+    def test_kyrie(self):
+        filename = 'examples/ky--kyrie_ad_lib_x_-_orbis_factor--solesmes.gabc'
+        chant = converter.parse(filename)
+        print(chant)
 
 
 if __name__ == '__main__':

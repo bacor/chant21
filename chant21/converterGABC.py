@@ -150,7 +150,7 @@ class GABCVisitor(PTNodeVisitor):
                         eIsNatural = False  
                     
             elif isinstance(element, Barline):
-                curMeasure.append(element)
+                # This also adds the element to the measure strem
                 curMeasure.rightBarline = element
                 ch.append(curMeasure)
                 curMeasure = stream.Measure()

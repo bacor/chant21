@@ -237,6 +237,16 @@ class TestBarClefs(unittest.TestCase):
             self.assertEqual(bar.text, 'a')
             self.assertEqual(bar.editorial.gabc, barline)
 
+    def test_measures(self):
+        parser = ParserGABC(root='body')
+        parse = parser.parse('(c2) a(f) (:) b(g)')
+        chant = visitParseTree(parse, GABCVisitor())
+        self.assertEqual(len(chant), 2)
+        m1, m2 = chant
+        ed = m1.rightBarline.editorial
+        self.assertEqual(ed.gabc, ':')
+        self.assertIsNone(ed.text)
+
     def test_clefs(self):
         parser = ParserGABC(root='clef')
         for clef in ['c1', 'c2', 'c3', 'c4', 'f3', 'f4', 'cb3', 'cb4']:
