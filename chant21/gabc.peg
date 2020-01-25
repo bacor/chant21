@@ -37,7 +37,8 @@
     // TODO Better name for this node?
     bar_or_clef = text? "(" (clef / barline / end_of_line)* ")"
     clef = r'(c|f)b?[1-4]'
-    barline = r",0|,_|,[1-6]?|'|`|::|:\?|:|;[1-6]|;"
+    barline = r",0|,_|,[1-6]?|'|`|::|:\?|:|;[1-6]"
+        // TODO add other comma-like signs to comma
     end_of_line = r'[zZ](0|-)?|\+'
         // TODO is z- proper gabc? GregoBase chant 8748 contains it for example
         // TODO is this the right place for the plus?
@@ -55,9 +56,12 @@
         // Suffixes on alterations make no sense but sometimes occur
         // TODO: check if these are not typos
     spacer = r'\!|@|//|/0|/\[-?[0-9]\]|/| '
-    comma = r"(\) ?\()"? r",0|,_|,[1-6]?|'|`|( ; )" r"(\) ?\()"?
+
+    comma = c / (")(" c ")(") / (") (" c ") (") / (") (" c ")") / (")(" c ")")
+    c = r",0|,_|,[1-6]?|'|`|;"
+    # comma = r"(\) ?\()"? r",0|,_|,[1-6]?|'|`|;" r"(\) ?\()"?
         // Note: pausa minor (;) is also a comma when between spaces
-        
+
     note = prefix* position suffix*
     prefix = '-'
     suffix = neume_shape? rhythmic_sign? empty_note_or_accent*

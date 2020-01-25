@@ -134,11 +134,11 @@ class TestBody(unittest.TestCase):
 
     def test_wordWithSpaceAndBarlines(self):
         parser = ParserGABC(root='body')
-        parse = parser.parse('a(f)b (g) (;)')
+        parse = parser.parse('a(f)b (g) (:)')
         self.assertEqual(parse[0].rule_name, 'word')
         self.assertEqual(parse[1].rule_name, 'whitespace')
         self.assertEqual(parse[2].rule_name, 'bar_or_clef')
-        self.assertEqual(parse[2].value, '( | ; | )')
+        self.assertEqual(parse[2].value, '( | : | )')
 
 class TestWord(unittest.TestCase):
     def test_word(self):
@@ -162,7 +162,7 @@ class TestWord(unittest.TestCase):
 
     def test_barline(self):
         parser = ParserGABC(root='word')
-        self.assertRaises(NoMatch, lambda: parser.parse('(;)'))
+        self.assertRaises(NoMatch, lambda: parser.parse('(:)'))
 
 class TestBarsAndClefs(unittest.TestCase):
     def test_clef(self):
@@ -245,13 +245,13 @@ class TestBarsAndClefs(unittest.TestCase):
         parser = ParserGABC(root='body')
 
         # The normal situation, with space:
-        parse = parser.parse('A(f) (;)')
+        parse = parser.parse('A(f) (:)')
         word, _, bar, _ = parse
         self.assertEqual(word.rule_name, 'word')
         self.assertEqual(bar.rule_name, 'bar_or_clef')
 
         # The weird situation, without space:
-        parse = parser.parse('A(f)(;)')
+        parse = parser.parse('A(f)(:)')
         word, bar, _ = parse
         self.assertEqual(word.rule_name, 'word')
         self.assertEqual(bar.rule_name, 'bar_or_clef')
@@ -294,19 +294,22 @@ class TestSyllable(unittest.TestCase):
 
     def test_comma(self):
         parser = ParserGABC(root='syllable')
-        parse = parser.parse('(f)(,)(g)')
-        n1, comma, n2 = parse[1]
-        self.assertEqual(n1.rule_name, 'note')
-        self.assertEqual(comma.rule_name, 'comma')
-        self.assertEqual(n2.rule_name, 'note')
-
-    def test_commaWithSpaces(self):
-        parser = ParserGABC(root='syllable')
-        parse = parser.parse('(f) (,) (g)')
-        n1, comma, n2 = parse[1]
-        self.assertEqual(n1.rule_name, 'note')
-        self.assertEqual(comma.rule_name, 'comma')
-        self.assertEqual(n2.rule_name, 'note')
+        comma_examples = [
+            '(f)(,)(g)',
+            '(f)(;)(g)'
+            '(f,g)',
+            '(f;g)',
+            '(f) (,) (g)',
+            '(f) (;) (g)'
+        ]
+        for gabc in comma_examples:
+            parse = parser.parse(gabc)
+            n1, comma, n2 = parse[1]
+            self.assertEqual(n1.rule_name, 'note')
+            self.assertEqual(n1.value, 'f')
+            self.assertEqual(comma.rule_name, 'comma')
+            self.assertEqual(n2.rule_name, 'note')
+            self.assertEqual(n2.value, 'g')
 
     def test_commaInBody(self):
         parser = ParserGABC(root='body')
@@ -315,15 +318,32 @@ class TestSyllable(unittest.TestCase):
         self.assertEqual(parse[0].rule_name, 'word')
         self.assertEqual(len(parse[0]), 1)
 
+        parse = parser.parse('(f) (,) A(g)')
+        word1, _, word2, _ = parse
+        self.assertEqual(word1.rule_name, 'word')
+        self.assertEqual(word1.value, '( | f | ) ( | , | )')
+        self.assertEqual(word2.rule_name, 'word')
+        self.assertEqual(word2.value, 'A | ( | g | )')
+
     def test_pausaMinorInMusic(self):
         """A pausa minor is allowed in the music if surrounded by spaces"""
         parser = ParserGABC(root='music')
         parse = parser.parse('f,g ; f')
-        n1, c1, n2, c2, n3 = parse
+        n1, c1, n2, _, c2, _, n3 = parse
         self.assertEqual(c1.rule_name, 'comma')
         self.assertEqual(c1.value, ',')
         self.assertEqual(c2.rule_name, 'comma')
-        self.assertEqual(c2.value, ' ; ')
+        self.assertEqual(c2.value, ';')
+
+    def test_pausaMinorInBody(self):
+        parser = ParserGABC(root='body')
+        parse = parser.parse('(f;f) (;)')
+        print(parse)
+        # TODO fix this: how to deal with comma's
+        # and pausa minima etc within melismas.
+        # Perhaps the quesiton is whether we want pausa min
+        # to end a measure in music21. If not; treat
+        # them as comma's.
 
     def test_tags(self):
         parse = self.parser.parse('<i>test</i>(f)')
