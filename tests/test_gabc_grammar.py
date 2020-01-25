@@ -196,6 +196,24 @@ class TestBarsAndClefs(unittest.TestCase):
         self.assertEqual(parse[1].value, '::')
         self.assertEqual(parse[2].value, ')')
 
+    def test_clefChange(self):
+        # http://gregorio-project.github.io/gabc/details.html#endofline
+        parser = ParserGABC(root='bar_or_clef')
+        parse = parser.parse('(z::c3)')
+        _, lineEnd, bar, clef, _ = parse
+        self.assertEqual(lineEnd.rule_name, 'end_of_line')
+        self.assertEqual(bar.rule_name, 'barline')
+        self.assertEqual(clef.rule_name, 'clef')
+
+        gabc = "<sp>V/</sp>.(z0::c3)"
+        parse = parser.parse(gabc)
+        text, _, lineEnd, bar, clef, _ = parse
+        self.assertEqual(text.value, '<sp>V/</sp>.')
+        self.assertEqual(text.rule_name, 'text')
+        self.assertEqual(lineEnd.rule_name, 'end_of_line')
+        self.assertEqual(bar.rule_name, 'barline')
+        self.assertEqual(clef.rule_name, 'clef')
+    
 class TestSyllable(unittest.TestCase):
 
     def __init__(self, *args, **kwargs):
@@ -257,17 +275,6 @@ class TestAdvancedMusic(unittest.TestCase):
         self.assertEqual(parse[1].rule_name, 'note')
         self.assertEqual(parse[2].rule_name, 'note')
 
-    def test_endOfLine(self):
-        # http://gregorio-project.github.io/gabc/details.html#endofline
-        parser = ParserGABC(root='music')
-        parse = parser.parse('z0::c3')
-        self.assertEqual(parse[0].rule_name, 'advanced')
-        self.assertEqual(parse[0][0].rule_name, 'end_of_line')
-
-        parse = parser.parse('z::c3')
-        self.assertEqual(parse[0].rule_name, 'advanced')
-        self.assertEqual(parse[0][0].rule_name, 'end_of_line')
-    
     def test_polyphony(self):
         gabc = '{i}'
         parser = ParserGABC(root='music')

@@ -30,9 +30,13 @@
 // BODY
     body = ((bar_or_clef / word) (whitespace / EOF))*
     
-    bar_or_clef = text? "(" (clef / barline)* ")"
+    // TODO Better name for this node?
+    bar_or_clef = text? "(" (clef / barline / end_of_line)* ")"
     clef = r'(c|f)b?[1-4]'
     barline = r",0|,_|,[1-6]?|'|`|::|:\?|:|;[1-6]|;"
+    end_of_line = r'[zZ](0|-)?|\+'
+        // TODO is z- proper gabc? GregoBase chant 8748 contains it for example
+        // TODO is this the right place for the plus?
     
     word = syllable+
     syllable = text? "(" music ")"
@@ -60,10 +64,7 @@
     empty_note_or_accent = r'r[0-5]?|R'
 
 // ADVANCED MUSIC
-    advanced = end_of_line / polyphony / brace / code / choral_sign / translation
-    end_of_line = r'[zZ](0|-)?|\+'
-        // TODO is z- proper gabc? GregoBase chant 8748 contains it for example
-        // TODO is this the right place for the plus?
+    advanced = polyphony / brace / code / choral_sign / translation
     polyphony = '{' note+ '}'
     brace = r'\[(o|u)(b|cba|cb):(0|1)(({|})|(;\d+(\.\d+)?mm))?\]'
     code = r'\[(nv:gv:ev)[^\]]+\]'
