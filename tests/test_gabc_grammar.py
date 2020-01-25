@@ -196,6 +196,18 @@ class TestBarsAndClefs(unittest.TestCase):
         self.assertEqual(parse[1].value, '::')
         self.assertEqual(parse[2].value, ')')
 
+    def test_barlinesAndCommas(self):
+        parser = ParserGABC(root='body')
+        parse = parser.parse('a(:) b(f) (,) (g) (::)')
+        bar1, _, word, _, bar2, _ = parse
+        self.assertEqual(bar1.rule_name, 'bar_or_clef')
+        self.assertEqual(bar1.value, 'a | ( | : | )')
+        self.assertEqual(word.rule_name, 'word')
+        self.assertEqual(len(word), 1)
+        self.assertEqual(word[0].rule_name, 'syllable')
+        self.assertEqual(bar2.rule_name, 'bar_or_clef')
+        self.assertEqual(bar2.value, '( | :: | )')
+
     def test_clefChange(self):
         # http://gregorio-project.github.io/gabc/details.html#endofline
         parser = ParserGABC(root='bar_or_clef')
@@ -263,6 +275,13 @@ class TestSyllable(unittest.TestCase):
         self.assertEqual(n1.rule_name, 'note')
         self.assertEqual(comma.rule_name, 'comma')
         self.assertEqual(n2.rule_name, 'note')
+
+    def test_commaInBody(self):
+        parser = ParserGABC(root='body')
+        parse = parser.parse('(f) (,) (g)')
+        self.assertEqual(len(parse), 2)
+        self.assertEqual(parse[0].rule_name, 'word')
+        self.assertEqual(len(parse[0]), 1)
 
     def test_tags(self):
         parse = self.parser.parse('<i>test</i>(f)')
