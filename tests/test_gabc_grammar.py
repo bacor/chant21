@@ -284,11 +284,13 @@ class TestSyllable(unittest.TestCase):
         self.assertRaises(NoMatch, lambda: self.parser.parse(' a(f)'))
 
     def test_spacesInMusic(self):
-        parse = self.parser.parse('(f , g)')
-        self.assertEqual(parse[1][1].rule_name, 'spacer')
-        self.assertEqual(parse[1][2].rule_name, 'comma')
-        self.assertEqual(parse[1][2].value, ',')
-        self.assertEqual(parse[1][3].rule_name, 'spacer')
+        parser = ParserGABC(root='music')
+        parse = parser.parse('f , g')
+        n1, sp1, comma, sp2, n2 = parse
+        self.assertEqual(sp1.rule_name, 'spacer')
+        self.assertEqual(comma.rule_name, 'comma')
+        self.assertEqual(comma.value, ',')
+        self.assertEqual(sp2.rule_name, 'spacer')
 
     def test_comma(self):
         parser = ParserGABC(root='syllable')
@@ -312,6 +314,16 @@ class TestSyllable(unittest.TestCase):
         self.assertEqual(len(parse), 2)
         self.assertEqual(parse[0].rule_name, 'word')
         self.assertEqual(len(parse[0]), 1)
+
+    def test_pausaMinorInMusic(self):
+        """A pausa minor is allowed in the music if surrounded by spaces"""
+        parser = ParserGABC(root='music')
+        parse = parser.parse('f,g ; f')
+        n1, c1, n2, c2, n3 = parse
+        self.assertEqual(c1.rule_name, 'comma')
+        self.assertEqual(c1.value, ',')
+        self.assertEqual(c2.rule_name, 'comma')
+        self.assertEqual(c2.value, ' ; ')
 
     def test_tags(self):
         parse = self.parser.parse('<i>test</i>(f)')

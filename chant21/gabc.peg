@@ -55,7 +55,7 @@
         // Suffixes on alterations make no sense but sometimes occur
         // TODO: check if these are not typos
     spacer = r'\!|@|//|/0|/\[-?[0-9]\]|/| '
-    comma = r"(\) ?\()"? r",0|,_|,[1-6]?|'|`" r"(\) ?\()"?
+    comma = r"(\) ?\()"? r",0|,_|,[1-6]?|'|`|( ; )" r"(\) ?\()"?
 
     note = prefix* position suffix*
     prefix = '-'
