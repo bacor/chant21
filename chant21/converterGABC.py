@@ -43,7 +43,7 @@ def gabcPositionToStep(notePosition, clef, adjustClefOctave=0):
                         cb1=4, cb2=4, cb3=5, cb4=5,
                         f1=4, f2=4, f3=4, f4=4)
 
-    noteIndex = positions.index(notePosition)
+    noteIndex = positions.index(notePosition.lower())
     cIndex = positions.index(cPosition[clef])
     stepsAboveC = noteIndex - cIndex
     octavesAboveC = stepsAboveC // 7
