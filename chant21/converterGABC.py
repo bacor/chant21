@@ -346,6 +346,9 @@ class GABCVisitor(PTNodeVisitor):
     def visit_whitespace(self, node, children):
         return None
 
+    def visit_macro(self, node, children):
+        return None
+
 ###
 
 class ConverterGABC(converter.subConverters.SubConverter):

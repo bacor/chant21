@@ -37,6 +37,14 @@ class TestParseExamples(unittest.TestCase):
         for filename in examples:
             self.run_test(filename)
 
+    def test_fn(self):
+        GABC_FN = '/Users/Bas/repos/projects/GregoBaseCorpus/gabc/{idx:0>5}.gabc'
+        #: def-m1: \grealign;
+        filename = GABC_FN.format(idx=457)
+        parser = ParserGABC()
+        parse = parser.parseFile(filename)
+        self.assertFalse(parse.error)
+
 class TestSpecialCases(unittest.TestCase):
     """Tests of examples where parsing failed initially"""
     

@@ -15,10 +15,12 @@
 // * In GregoBase, there are a number of chants containing "/v" or "v" before
 //   a note: e.g. "Dé(*vfe/gh)" (id 3974). This breaks the parser (16x) but
 //   is this correct syntax?
+// * Support macros: def-m1: \grealign;
 
 // FILE
-    file = (header separator)? body EOF
+    file = (header separator)? macro* body EOF
     separator = r'(\n)*%%(\n)+'
+    macro = r"def-m[0-9]:[^;]+;\n"
 
 // HEADER
     header = attribute*

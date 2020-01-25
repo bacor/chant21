@@ -54,6 +54,14 @@ class TestFile(unittest.TestCase):
         self.assertEqual(parse[1].rule_name, 'body')
         self.assertEqual(parse[2].rule_name, 'EOF')
 
+    def test_macro(self):
+        parser = ParserGABC(root='file')
+        parse = parser.parse('%%\ndef-m1:\grealign;\ndef-m2:\grealign;\n(c2) a(f)')
+        _, macro1, macro2, body, _ = parse
+        self.assertEqual(macro1.rule_name, 'macro')
+        self.assertEqual(macro2.rule_name, 'macro')
+        self.assertEqual(body.rule_name, 'body')
+
 class TestHeader(unittest.TestCase):
 
     def test_header(self):
@@ -204,9 +212,6 @@ class TestBarsAndClefs(unittest.TestCase):
         clef, word, _ = parse
         self.assertEqual(clef.rule_name, 'bar_or_clef')
         self.assertEqual(word.rule_name, 'word')
-
-        parse2 = parser.parse('(c4)CHrí(d.e!fw!g_h)stus(g)')
-        print(parse2)
 
     def test_barline(self):
         parser = ParserGABC(root='bar_or_clef')

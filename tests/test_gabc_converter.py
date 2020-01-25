@@ -371,6 +371,14 @@ class TestNotes(unittest.TestCase):
             output = visitParseTree(parse, GABCVisitor())
             self.assertEqual(output, position)
 
+class TestIgnoredFeatures(unittest.TestCase):
+    def test_macros(self):
+        """Test whether a file with macro's is converted properly despite them"""
+        parser = ParserGABC(root='file')
+        parse = parser.parse('%%\ndef-m1:\grealign;\ndef-m2:\grealign;\n(c2) a(f)')
+        elements = visitParseTree(parse, GABCVisitor())
+        self.assertTrue(True)
+
 class TestConverter(unittest.TestCase):
 
     def test_conversion(self):
