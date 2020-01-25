@@ -180,6 +180,34 @@ class TestBarsAndClefs(unittest.TestCase):
             self.assertEqual(parse.rule_name, 'clef')
             self.assertEqual(parse.value, clef_str)
 
+    def test_clefChange(self):
+        # http://gregorio-project.github.io/gabc/details.html#endofline
+        parser = ParserGABC(root='bar_or_clef')
+        parse = parser.parse('(z::c3)')
+        _, lineEnd, bar, clef, _ = parse
+        self.assertEqual(lineEnd.rule_name, 'end_of_line')
+        self.assertEqual(bar.rule_name, 'barline')
+        self.assertEqual(clef.rule_name, 'clef')
+
+        gabc = "<sp>V/</sp>.(z0::c3)"
+        parse = parser.parse(gabc)
+        text, _, lineEnd, bar, clef, _ = parse
+        self.assertEqual(text.value, '<sp>V/</sp>.')
+        self.assertEqual(text.rule_name, 'text')
+        self.assertEqual(lineEnd.rule_name, 'end_of_line')
+        self.assertEqual(bar.rule_name, 'barline')
+        self.assertEqual(clef.rule_name, 'clef')
+
+    def test_clefsFollowedByMusic(self):
+        parser = ParserGABC(root='body')
+        parse = parser.parse('(c4)a(fg)')
+        clef, word, _ = parse
+        self.assertEqual(clef.rule_name, 'bar_or_clef')
+        self.assertEqual(word.rule_name, 'word')
+
+        parse2 = parser.parse('(c4)CHrí(d.e!fw!g_h)stus(g)')
+        print(parse2)
+
     def test_barline(self):
         parser = ParserGABC(root='bar_or_clef')
         parse = parser.parse(':*(:)')
@@ -207,24 +235,6 @@ class TestBarsAndClefs(unittest.TestCase):
         self.assertEqual(word[0].rule_name, 'syllable')
         self.assertEqual(bar2.rule_name, 'bar_or_clef')
         self.assertEqual(bar2.value, '( | :: | )')
-
-    def test_clefChange(self):
-        # http://gregorio-project.github.io/gabc/details.html#endofline
-        parser = ParserGABC(root='bar_or_clef')
-        parse = parser.parse('(z::c3)')
-        _, lineEnd, bar, clef, _ = parse
-        self.assertEqual(lineEnd.rule_name, 'end_of_line')
-        self.assertEqual(bar.rule_name, 'barline')
-        self.assertEqual(clef.rule_name, 'clef')
-
-        gabc = "<sp>V/</sp>.(z0::c3)"
-        parse = parser.parse(gabc)
-        text, _, lineEnd, bar, clef, _ = parse
-        self.assertEqual(text.value, '<sp>V/</sp>.')
-        self.assertEqual(text.rule_name, 'text')
-        self.assertEqual(lineEnd.rule_name, 'end_of_line')
-        self.assertEqual(bar.rule_name, 'barline')
-        self.assertEqual(clef.rule_name, 'clef')
     
     def test_barlinesFollowedByText(self):
         parser = ParserGABC(root='body')
