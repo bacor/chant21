@@ -159,7 +159,7 @@ class GABCVisitor(PTNodeVisitor):
                 curClef = element
                 curGABCClef = curClef.editorial.gabc
                 curMeasure.append(element)
-            elif isinstance(NoMusic):
+            elif isinstance(element, NoMusic):
                 curMeasure.append(element)
             else:
                 raise Exception('Unknown element')
