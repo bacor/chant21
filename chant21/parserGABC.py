@@ -41,7 +41,10 @@ class ParserGABC():
         Returns:
             arpeggio.NonTerminal: The parse tree
         """
-        return self.parser.parse(gabc)
+        parse = self.parser.parse(gabc)
+        if parse.position_end < len(gabc):
+            raise IncompleteParseError(f'Parsing ended at position {parse.position_end} (input length {len(gabc)})')
+        return parse
 
     def parseFile(self, filename: str):
         """Parse a gabc file
@@ -62,3 +65,6 @@ class ParserGABC():
         with open(filename, 'r') as handle:
             contents = handle.read()
             return self.parse(contents)
+
+class IncompleteParseError(Exception):
+    pass
