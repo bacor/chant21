@@ -145,14 +145,6 @@ class TestBody(unittest.TestCase):
         self.assertEqual(parse[2].rule_name, 'word')
         self.assertEqual(parse[2].value, 'C | ( | h | )')
 
-    # def test_wordWithSpaceAndBarlines(self):
-    #     parser = ParserGABC(root='body')
-    #     parse = parser.parse('a(f)b (g) (:)')
-    #     self.assertEqual(parse[0].rule_name, 'word')
-    #     self.assertEqual(parse[1].rule_name, 'whitespace')
-    #     self.assertEqual(parse[2].rule_name, 'not_music')
-    #     self.assertEqual(parse[2].value, '( | : | )')
-
 class TestWord(unittest.TestCase):
     def test_word(self):
         parser = ParserGABC(root='word')

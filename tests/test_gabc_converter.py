@@ -375,7 +375,7 @@ class TestNotes(unittest.TestCase):
     
     def test_notePrefix(self):
         parser = ParserGABC(root='note')
-        parse = parser.parse(f'-f')
+        parse = parser.parse('-f')
         note = visitParseTree(parse, GABCVisitor())
         ed = note.editorial
         self.assertEqual(ed.gabcPosition, 'f')
@@ -388,6 +388,13 @@ class TestNotes(unittest.TestCase):
             parse = parser.parse(position)
             output = visitParseTree(parse, GABCVisitor())
             self.assertEqual(output, position)
+
+    def test_emptyNotes(self):
+        parser = ParserGABC(root='note')
+        parse = parser.parse('gr')
+        note = visitParseTree(parse, GABCVisitor())
+        self.assertFalse(note.noteheadFill, False)
+        self.assertEqual(note.editorial.gabcEmptyNote, 'r')
 
 class TestIgnoredFeatures(unittest.TestCase):
     def test_macros(self):

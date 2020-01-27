@@ -338,8 +338,15 @@ class GABCVisitor(PTNodeVisitor):
 
     # Ignored properties
     
-    def _visit_empty_note_or_accent(self, node, children):
-        return None
+    def visit_empty_note_or_accent(self, node, children):
+        if node.value in ['r', 'r0']:
+            def modifier(n):
+                n.noteheadFill = False
+                n.editorial.gabcEmptyNote = node.value
+                return n
+            return modifier
+        else: 
+            return None
     
     def visit_end_of_line(self, node, children):
         return None
