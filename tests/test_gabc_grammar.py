@@ -246,6 +246,27 @@ class TestNotMusic(unittest.TestCase):
         self.assertEqual(bar2.rule_name, 'not_music')
         self.assertEqual(bar2.value, '( | :: | )')
     
+    def test_multipleNonMusicElements(self):
+        parser = ParserGABC(root='body')
+        parse = parser.parse('A(g) (::)(:)')
+        word, _, finalis, major, _ = parse
+        self.assertEqual(word.rule_name, 'word')
+        self.assertEqual(finalis.rule_name, 'not_music')
+        self.assertEqual(finalis[1][0].rule_name, 'pausa_finalis')
+        self.assertEqual(major.rule_name, 'not_music')
+        self.assertEqual(major[1][0].rule_name, 'pausa_major')
+
+    def test_multipleNonMusicElementsWithSpaces(self):
+        """This is a little weird: the parse tree is completely different
+        from the example in test_multipleNonMusicElements."""
+        #TODO fix this?
+        parser = ParserGABC(root='body')
+        parse = parser.parse('A(g) (::) (:)')
+        word, _ = parse
+        note, finalis, major = word[0][2]
+        self.assertEqual(finalis[1][0].rule_name, 'pausa_finalis')
+        self.assertEqual(major[0][0].rule_name, 'pausa_major')
+
     def test_barlinesFollowedByText(self):
         parser = ParserGABC(root='body')
         parse = parser.parse('(:)a()')
