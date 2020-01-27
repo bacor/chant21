@@ -43,8 +43,10 @@ class ParserGABC():
         """
         _debug = self.parser.debug
         self.parser.debug = debug or _debug
-        
         parse = self.parser.parse(gabc)
+
+        if type(parse) == list and len(parse) == 0 and len(gabc) > 0:
+            raise EmptyParseError()
         if parse.position_end < len(gabc):
             raise IncompleteParseError(f'Parsing ended at position {parse.position_end} (input length {len(gabc)})')
         
@@ -72,4 +74,8 @@ class ParserGABC():
             return self.parse(contents)
 
 class IncompleteParseError(Exception):
+    pass
+
+
+class EmptyParseError(Exception):
     pass
