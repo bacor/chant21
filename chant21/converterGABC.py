@@ -166,51 +166,30 @@ class GABCVisitor(PTNodeVisitor):
                     eIsNatural = False  
                     
                     if isinstance(el, bar.Barline):
-                        # This also adds the element to the measure strem
+                        # First remove the barline and then add it as a
+                        # barline to the measue (which adds it to the measure stream)
+                        word.remove(el, recurse=True)
                         curMeasure.rightBarline = el
                         ch.append(curMeasure)
                         curMeasure = stream.Measure()
                     elif isinstance(el, articulations.BreathMark):
-                        lastNote = curMeasure.flat.notes[-1]
+                        lastNote = el.previous(note.Note)#curMeasure.flat.notes[-1]
                         lastNote.articulations.append(el)
-                        curMeasure.append(el)
 
                 elif isinstance(el, Clef):
                     curClef = el
                     curGABCClef = curClef.editorial.gabc
-                    curMeasure.append(el)
-                elif isinstance(el, NoMusic):
-                    curMeasure.append(el)
                 else:
                     raise Exception('Unknown element')
 
         ch.append(curMeasure)
         return ch
-
-    # def visit_not_music(self, node, children):
-    #     if 'clef' in children.results:
-    #         element = children.results['clef'][0]
-    #     elif 'pausa' in children.results:
-    #         element = children.results['pausa'][0]
-    #     else:
-    #         element = NoMusic()
-    #     element.text = children.results.get('text', [None])[0]
-    #     return element
         
     def visit_word(self, node, children):
         word = Word()
         word.append(children)
-        
-        # Set syllable positions
-        #TODO Move to word class
-        # if len(word.syllables) == 1:
-        #     word.syllables[0].lyrics[0].syllabic = 'single'
-        # elif len(word.syllables) > 1:
-        #     for syll in word.syllables:
-        #         syll.lyrics[0].syllabic = 'middle'
-        #     word.syllables[0].lyrics[0].syllabic = 'begin'
-        #     word.syllables[-1].lyrics[0].syllabic = 'end'
-
+        word.mergeMelismasWithPausas()
+        word.updateSyllableLyrics()
         return word
 
     def visit_syllable(self, node, children):
@@ -218,11 +197,7 @@ class GABCVisitor(PTNodeVisitor):
         elements = children.results.get('music', [[]])[0]
         syllable = Syllable()
         syllable.append(elements)
-        # if text is not None:
         syllable.text = text
-            # note.Lyric(text=text, applyRaw=True)
-        
-
         return syllable
         
     def visit_music(self, node, children):
@@ -238,8 +213,8 @@ class GABCVisitor(PTNodeVisitor):
             elif (isinstance(element, Pausa) 
                 or isinstance(element, Alteration)
                 or isinstance(element, Clef)):
-                if len(curNeume) > 0 and isinstance(element, articulations.BreathMark):
-                    curNeume[-1].articulations.append(element)
+                # if len(curNeume) > 0 and isinstance(element, articulations.BreathMark):
+                #     curNeume[-1].articulations.append(element)
                 if len(curNeume) > 0:
                     elements.append(curNeume)
                     curNeume = Neume()

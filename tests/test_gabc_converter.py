@@ -202,12 +202,12 @@ class TestText(unittest.TestCase):
         parser = ParserGABC(root='body')    
         parse = parser.parse('a(c2) word(e)1(f) word2(g)')
         chant = visitParseTree(parse, GABCVisitor())
-        clef, word1, word2 = chant.recurse(classFilter='ChantElement')
-        self.assertEqual(clef.text, 'a')
-        self.assertEqual(word1.text, 'word1')
-        self.assertEqual(word2.text, 'word2')
+        w1, w2, w3 = chant[0]
+        self.assertEqual(w1.text, 'a')
+        self.assertEqual(w2.text, 'word1')
+        self.assertEqual(w3.text, 'word2')
 
-        syll1, syll2 = word1.elements
+        syll1, syll2 = w2.elements
         self.assertEqual(syll1.text, 'word')
         self.assertEqual(syll2.text, '1')
         self.assertEqual(syll1.flat.notes[0].lyric, 'word')
@@ -217,36 +217,42 @@ class TestText(unittest.TestCase):
         parser = ParserGABC(root='body')    
         parse = parser.parse('(c2) bla(eye)')
         chant = visitParseTree(parse, GABCVisitor())
-        clef, word = chant.recurse(classFilter='ChantElement')
-        self.assertIsNone(clef.text)
-        self.assertEqual(word.text, 'bla')
-        note = word.flat.notes[0]
+        word1, word2 = chant[0]
+        self.assertIsNone(word1.text)
+        self.assertEqual(word2.text, 'bla')
+        note = word2.flat.notes[0]
         self.assertEqual(note.lyric, 'bla')
     
     def test_singleSyllable(self):
         parser = ParserGABC(root='word')    
         parse = parser.parse('s1(f)')
         word = visitParseTree(parse, GABCVisitor())
-        s1, = word.syllables
-        self.assertEqual(s1.lyrics[0].syllabic, 'single')
+        n = word.flat.notes[0]
+        self.assertEqual(n.lyrics[0].syllabic, 'single')
 
     def test_twoSyllables(self):
         parser = ParserGABC(root='word')    
         parse = parser.parse('s1(f)s2(f)')
         word = visitParseTree(parse, GABCVisitor())
-        s1, s2 = word.syllables
-        self.assertEqual(s1.lyrics[0].syllabic, 'begin')
-        self.assertEqual(s2.lyrics[0].syllabic, 'end')
+        syll1, syll2 = word.syllables
+        lyric1 = syll1.flat.notes[0].lyrics[0]
+        lyric2 = syll2.flat.notes[0].lyrics[0]
+        self.assertEqual(lyric1.syllabic, 'begin')
+        self.assertEqual(lyric2.syllabic, 'end')
 
     def test_threeOrMoreSyllables(self):
         parser = ParserGABC(root='word')    
         parse = parser.parse('s1(f)s2(f)s3(g)s4(f)')
         word = visitParseTree(parse, GABCVisitor())
         s1, s2, s3, s4 = word.syllables
-        self.assertEqual(s1.lyrics[0].syllabic, 'begin')
-        self.assertEqual(s2.lyrics[0].syllabic, 'middle')
-        self.assertEqual(s3.lyrics[0].syllabic, 'middle')
-        self.assertEqual(s4.lyrics[0].syllabic, 'end')
+        lyric1 = s1.flat.notes[0].lyrics[0]
+        lyric2 = s2.flat.notes[0].lyrics[0]
+        lyric3 = s3.flat.notes[0].lyrics[0]
+        lyric4 = s4.flat.notes[0].lyrics[0]
+        self.assertEqual(lyric1.syllabic, 'begin')
+        self.assertEqual(lyric2.syllabic, 'middle')
+        self.assertEqual(lyric3.syllabic, 'middle')
+        self.assertEqual(lyric4.syllabic, 'end')
 
 class TestBarClefs(unittest.TestCase):
     def test_pausa(self):
@@ -263,16 +269,15 @@ class TestBarClefs(unittest.TestCase):
                 element = visitParseTree(parse, GABCVisitor())
                 self.assertIsInstance(element, pausaClass)
                 self.assertEqual(element.editorial.gabc, gabc)
-
+        
     def test_measures(self):
         parser = ParserGABC(root='body')
         parse = parser.parse('(c2) a(f) (:) b(g)')
         ch = visitParseTree(parse, GABCVisitor())
-        self.assertEqual(len(chant), 2)
+        self.assertEqual(len(ch), 2)
         m1, m2 = ch
         ed = m1.rightBarline.editorial
         self.assertEqual(ed.gabc, ':')
-        self.assertIsNone(ed.text)
 
     def test_clefs(self):
         parser = ParserGABC(root='clef')
@@ -282,23 +287,11 @@ class TestBarClefs(unittest.TestCase):
             self.assertIsInstance(element, clef21.TrebleClef)
             self.assertEqual(element.editorial.gabc, clef)
 
-    # def test_clefInBody(self):
-    #     parser = ParserGABC(root='body')
-    #     parse = parser.parse('(c2) a(f) (:) b(g)')
-    #     body = visitParseTree(parse, GABCVisitor())
-
     def test_missingClef(self):
         parser = ParserGABC(root='body')
         parse = parser.parse('a(fgf)')
         test_fn = lambda: visitParseTree(parse, GABCVisitor())
         self.assertRaises(MissingClef, test_fn)
-
-    # def test_noMusic(self):
-    #     parser = ParserGABC(root='syllable')
-    #     parse = parser.parse('*()')
-    #     element = visitParseTree(parse, GABCVisitor())
-    #     self.assertIsInstance(element, NoMusic)
-    #     self.assertEqual(element.text, '*')
 
 class TestSyllables(unittest.TestCase):
     def test_syllable(self):
@@ -319,13 +312,17 @@ class TestSyllables(unittest.TestCase):
         
     def test_syllablesWithCommas(self):
         parser = ParserGABC(root='word')    
-        gabc = 'a(f)(,)(f)b(f)'
+        gabc = 'a(f)(,)(f)b(f)(,)(f)c(g)'
         parse = parser.parse(gabc)
         word = visitParseTree(parse, GABCVisitor())
-        self.assertEqual(len(word), 4)
-        self.assertIsInstance(word[1][0], Pausa)
-        self.assertEqual(len(word.flat.notes), 3)
-    
+        self.assertEqual(len(word), 3)
+        syll1, syll2, syll3 = word.elements
+        self.assertEqual(len(syll1.flat), 3)
+        self.assertIsInstance(syll1.flat[1], Pausa)
+        self.assertEqual(len(syll2.flat), 3)
+        self.assertIsInstance(syll2.flat[1], Pausa)
+        self.assertEqual(len(syll3.flat), 1)
+                
 class TestNeumes(unittest.TestCase):
 
     def test_singleNeume(self):
@@ -354,17 +351,16 @@ class TestNeumes(unittest.TestCase):
         self.assertEqual(len(elements[1]), 2)
 
     def test_articulationBeforeComma(self):
-        parser = ParserGABC(root='music')
-        parse = parser.parse("fgf,g")
-        elements = visitParseTree(parse, GABCVisitor())
-        self.assertEqual(len(elements), 3)
-        self.assertIsInstance(elements[0], Neume)
-        self.assertIsInstance(elements[1], Pausa)
-        self.assertIsInstance(elements[2], Neume)
-        note = elements[0][-1]
-        self.assertEqual(len(note.articulations), 1)
-        self.assertIsInstance(note.articulations[0], articulations.BreathMark)
-        self.assertIsInstance(note.articulations[0], Pausa)
+        parser = ParserGABC(root='body')
+        parse = parser.parse("(c2) A(a,d)")
+        ch = visitParseTree(parse, GABCVisitor())
+        clef, n1, pausa, n2 = ch.flat
+        self.assertIsInstance(clef, Clef)
+        self.assertIsInstance(n1, Note)
+        self.assertIsInstance(pausa, PausaMinima)
+        self.assertIsInstance(n2, Note)
+        self.assertEqual(len(n1.articulations), 1)
+        self.assertEquals(n1.articulations[0], pausa)
     
 class TestNotes(unittest.TestCase):
     
