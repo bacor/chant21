@@ -390,6 +390,9 @@ class GABCVisitor(PTNodeVisitor):
     def visit_code(self, node, children):
         return None
 
+    def visit_custos(self, node, children):
+        return None
+
 ###
 
 class ConverterGABC(converter.subConverters.SubConverter):

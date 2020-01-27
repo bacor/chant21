@@ -32,7 +32,7 @@ class ParserGABC():
             
         self.parser = ParserPEG(grammar, root, skipws=False, **kwargs)
 
-    def parse(self, gabc: str):
+    def parse(self, gabc: str, debug=False):
         """Parse a gabc string
 
         Args:
@@ -41,9 +41,14 @@ class ParserGABC():
         Returns:
             arpeggio.NonTerminal: The parse tree
         """
+        _debug = self.parser.debug
+        self.parser.debug = debug or _debug
+        
         parse = self.parser.parse(gabc)
         if parse.position_end < len(gabc):
             raise IncompleteParseError(f'Parsing ended at position {parse.position_end} (input length {len(gabc)})')
+        
+        self.parser.debug = _debug
         return parse
 
     def parseFile(self, filename: str):

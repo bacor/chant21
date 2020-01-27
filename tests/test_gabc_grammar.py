@@ -271,6 +271,21 @@ class TestNotMusic(unittest.TestCase):
         self.assertEqual(syll2.rule_name, 'syllable')
         self.assertEqual(syll2[1][0].rule_name, 'pausa_in_music')
 
+    def test_custos(self):
+        parser = ParserGABC(root='not_music')
+        parse = parser.parse('(::i+)')
+        _, bar, custos, _ = parse
+        self.assertEqual(custos.rule_name, 'custos')
+        self.assertEqual(custos.value, 'i+')
+    
+    def test_emptyCustos(self):
+        """Custos without position, makes no sense, but included anyway"""
+        parser = ParserGABC(root='not_music')
+        parse = parser.parse('(::+)')
+        _, bar, custos, _ = parse
+        self.assertEqual(custos.rule_name, 'custos')
+        self.assertEqual(custos.value, '+')
+
 class TestSyllable(unittest.TestCase):
 
     def __init__(self, *args, **kwargs):
@@ -311,7 +326,7 @@ class TestSyllable(unittest.TestCase):
         parser = ParserGABC(root='syllable')
         comma_examples = [
             '(f)(,)(g)',
-            '(f)(;)(g)'
+            '(f)(;)(g)',
             '(f,g)',
             '(f;g)',
             '(f) (,) (g)',

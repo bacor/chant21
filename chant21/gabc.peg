@@ -36,7 +36,7 @@ body = ((macro / (not_music* word? not_music*)) (whitespace / EOF))*
         // text either contains a tag (e.g. "bla<i>foo</i>bla") 
         // or is a string without brackets, not starting with a space
 
-    not_music = text? "(" (clef / pausa / end_of_line)* ")"
+    not_music = text? "(" (clef / pausa / end_of_line / custos)* ")"
         clef = r'(c|f)b?[1-4]'
         pausa = pausa_finalis / pausa_major / pausa_minor / pausa_minima
             pausa_minima = r',[_0-6]?' / '`'
@@ -44,9 +44,9 @@ body = ((macro / (not_music* word? not_music*)) (whitespace / EOF))*
             pausa_major = r':[\?\']?'
             pausa_finalis = '::'
 
-        end_of_line = r'[zZ](0|-)?|\+'
+        end_of_line = r'[zZ](0|-)?'
             // TODO is z- proper gabc? GregoBase chant 8748 contains it for example
-            // TODO is this the right place for the plus?
+        custos = r'[a-m]?\+'
     
     word = syllable+
         syllable = text? "(" music ")"
