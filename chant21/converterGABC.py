@@ -102,110 +102,114 @@ class GABCVisitor(PTNodeVisitor):
         curGABCClef = None
 
         # First pass: add measurs
-        for element in children:
-            if isinstance(element, Word):
-                curMeasure.append(element)
+        for word in children:
+            if not isinstance(word, Word): raise Exception('Quoi?')
+            element = word
+            curMeasure.append(word)
 
-                # Scope of accidentals ends with word boundaries
-                curClefHasFlat = curGABCClef in ['cb1', 'cb2', 'cb3', 'cb4']
-                bIsFlat = False or curClefHasFlat
-                bIsNatural = False
-                eIsFlat = False
-                eIsNatural = False
+            # Scope of accidentals ends with word boundaries
+            curClefHasFlat = curGABCClef in ['cb1', 'cb2', 'cb3', 'cb4']
+            bIsFlat = False or curClefHasFlat
+            bIsNatural = False
+            eIsFlat = False
+            eIsNatural = False
 
-                # Update the pitches of all notes based on the the clef
-                # and accidentals
-                for el in element.flat:
-                    if isinstance(el, note.Note):
-                        if curGABCClef is None: 
-                            raise MissingClef('Missing clef! Cannot process notes without a clef.')
-                        position = el.editorial.gabcPosition
-                        stepWithOctave = gabcPositionToStep(position, curGABCClef)
-                        el.nameWithOctave = stepWithOctave
-                        
-                        if bIsNatural and el.step == 'B':
-                            el.pitch.accidental = pitch.Accidental('natural')
-                        elif eIsNatural and el.step == 'E':
-                            el.pitch.accidental = pitch.Accidental('natural')
-                        elif bIsFlat and el.step == 'B':
-                            el.pitch.accidental = pitch.Accidental('flat')
-                        elif eIsFlat and el.step == 'E':
-                            el.pitch.accidental = pitch.Accidental('flat')
-
-                    elif isinstance(el, Alteration):
-                        if curGABCClef is None: 
-                            raise MissingClef('Missing clef! Cannot process notes without a clef.')
-                        position = el.editorial.gabcPosition
-                        alteration = el.editorial.gabcAlteration
-                        step = gabcPositionToStep(position, curGABCClef)[0]
-                        
-                        # Reset alterations
-                        bIsFlat = False or curClefHasFlat
-                        bIsNatural = False
-                        eIsFlat = False
-                        eIsNatural = False
-
-                        # Update
-                        if alteration == 'x' and step == 'E':
-                            eIsFlat = True
-                        elif alteration == 'x' and step == 'B':
-                            bIsFlat = True
-                        elif alteration == 'y' and step == 'B':
-                            bIsNatural = True
-                        elif alteration == 'y' and step == 'E':
-                            eIsNatural = True
-                        else:
-                            raise Exception('Unsupported alteration')
-                
-                    # Scope of accidentals ends at breathmarks
-                    if isinstance(el, Pausa):
-                        bIsFlat = False or curClefHasFlat
-                        bIsNatural = False
-                        eIsFlat = False
-                        eIsNatural = False  
+            # Update the pitches of all notes based on the the clef
+            # and accidentals
+            for el in word.flat:
+                if isinstance(el, note.Note):
+                    if curGABCClef is None: 
+                        raise MissingClef('Missing clef! Cannot process notes without a clef.')
+                    position = el.editorial.gabcPosition
+                    stepWithOctave = gabcPositionToStep(position, curGABCClef)
+                    el.nameWithOctave = stepWithOctave
                     
-            elif isinstance(element, bar.Barline):
-                # This also adds the element to the measure strem
-                curMeasure.rightBarline = element
-                ch.append(curMeasure)
-                curMeasure = stream.Measure()
-            elif isinstance(element, Clef):
-                curClef = element
-                curGABCClef = curClef.editorial.gabc
-                curMeasure.append(element)
-            elif isinstance(element, NoMusic):
-                curMeasure.append(element)
-            elif isinstance(element, articulations.BreathMark):
-                lastNote = curMeasure.flat.notes[-1]
-                lastNote.articulations.append(element)
-                curMeasure.append(element)
-            else:
-                raise Exception('Unknown element')
+                    if bIsNatural and el.step == 'B':
+                        el.pitch.accidental = pitch.Accidental('natural')
+                    elif eIsNatural and el.step == 'E':
+                        el.pitch.accidental = pitch.Accidental('natural')
+                    elif bIsFlat and el.step == 'B':
+                        el.pitch.accidental = pitch.Accidental('flat')
+                    elif eIsFlat and el.step == 'E':
+                        el.pitch.accidental = pitch.Accidental('flat')
+
+                elif isinstance(el, Alteration):
+                    if curGABCClef is None: 
+                        raise MissingClef('Missing clef! Cannot process notes without a clef.')
+                    position = el.editorial.gabcPosition
+                    alteration = el.editorial.gabcAlteration
+                    step = gabcPositionToStep(position, curGABCClef)[0]
+                    
+                    # Reset alterations
+                    bIsFlat = False or curClefHasFlat
+                    bIsNatural = False
+                    eIsFlat = False
+                    eIsNatural = False
+
+                    # Update
+                    if alteration == 'x' and step == 'E':
+                        eIsFlat = True
+                    elif alteration == 'x' and step == 'B':
+                        bIsFlat = True
+                    elif alteration == 'y' and step == 'B':
+                        bIsNatural = True
+                    elif alteration == 'y' and step == 'E':
+                        eIsNatural = True
+                    else:
+                        raise Exception('Unsupported alteration')
+            
+                # Scope of accidentals ends at breathmarks
+                elif isinstance(el, Pausa):
+                    bIsFlat = False or curClefHasFlat
+                    bIsNatural = False
+                    eIsFlat = False
+                    eIsNatural = False  
+                    
+                    if isinstance(el, bar.Barline):
+                        # This also adds the element to the measure strem
+                        curMeasure.rightBarline = el
+                        ch.append(curMeasure)
+                        curMeasure = stream.Measure()
+                    elif isinstance(el, articulations.BreathMark):
+                        lastNote = curMeasure.flat.notes[-1]
+                        lastNote.articulations.append(el)
+                        curMeasure.append(el)
+
+                elif isinstance(el, Clef):
+                    curClef = el
+                    curGABCClef = curClef.editorial.gabc
+                    curMeasure.append(el)
+                elif isinstance(el, NoMusic):
+                    curMeasure.append(el)
+                else:
+                    raise Exception('Unknown element')
+
         ch.append(curMeasure)
         return ch
 
-    def visit_not_music(self, node, children):
-        if 'clef' in children.results:
-            element = children.results['clef'][0]
-        elif 'pausa' in children.results:
-            element = children.results['pausa'][0]
-        else:
-            element = NoMusic()
-        element.text = children.results.get('text', [None])[0]
-        return element
+    # def visit_not_music(self, node, children):
+    #     if 'clef' in children.results:
+    #         element = children.results['clef'][0]
+    #     elif 'pausa' in children.results:
+    #         element = children.results['pausa'][0]
+    #     else:
+    #         element = NoMusic()
+    #     element.text = children.results.get('text', [None])[0]
+    #     return element
         
     def visit_word(self, node, children):
         word = Word()
         word.append(children)
         
         # Set syllable positions
-        if len(word.syllables) == 1:
-            word.syllables[0].lyrics[0].syllabic = 'single'
-        elif len(word.syllables) > 1:
-            for syll in word.syllables:
-                syll.lyrics[0].syllabic = 'middle'
-            word.syllables[0].lyrics[0].syllabic = 'begin'
-            word.syllables[-1].lyrics[0].syllabic = 'end'
+        #TODO Move to word class
+        # if len(word.syllables) == 1:
+        #     word.syllables[0].lyrics[0].syllabic = 'single'
+        # elif len(word.syllables) > 1:
+        #     for syll in word.syllables:
+        #         syll.lyrics[0].syllabic = 'middle'
+        #     word.syllables[0].lyrics[0].syllabic = 'begin'
+        #     word.syllables[-1].lyrics[0].syllabic = 'end'
 
         return word
 
@@ -214,7 +218,11 @@ class GABCVisitor(PTNodeVisitor):
         elements = children.results.get('music', [[]])[0]
         syllable = Syllable()
         syllable.append(elements)
-        syllable.text = note.Lyric(text=text, applyRaw=True)
+        # if text is not None:
+        syllable.text = text
+            # note.Lyric(text=text, applyRaw=True)
+        
+
         return syllable
         
     def visit_music(self, node, children):
@@ -227,7 +235,9 @@ class GABCVisitor(PTNodeVisitor):
                 curNeume.append(element)
 
             # Special symbols that are inserted outside Neumes
-            elif isinstance(element, Pausa) or isinstance(element, Alteration):
+            elif (isinstance(element, Pausa) 
+                or isinstance(element, Alteration)
+                or isinstance(element, Clef)):
                 if len(curNeume) > 0 and isinstance(element, articulations.BreathMark):
                     curNeume[-1].articulations.append(element)
                 if len(curNeume) > 0:
@@ -250,17 +260,6 @@ class GABCVisitor(PTNodeVisitor):
     
     def visit_pausa(self, node, children):
         return children[0]
-
-        # pausa = Pausa()
-        # if len(children) == 3:
-        #     # children is of the form [")(", ",", ")("]
-        #     pausa.editorial.gabc = children[1]
-        # else:
-        #     pausa.editorial.gabc = children[0]
-        # return pausa
-
-    def visit_pausa_in_music(self, node, children):
-        return self.visit_pausa(node, children)
     
     def visit_pausa_finalis(self, node, children):
         el = PausaFinalis()

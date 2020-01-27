@@ -78,20 +78,28 @@ class Syllable(music21.stream.Stream):
 
     @property
     def text(self):
-        notes = self.flat.notes
-        if len(notes) > 0:
-            return notes[0].lyric
+        if len(self.elements) > 0:
+            return self.elements[0].text
+        # notes = self.flat.notes
+        # if len(notes) > 0:
+        #     if notes[0].lyric:
+        #         return notes[0].lyric
+        #     else:
+        #         return self.editorial.get('text', None)
 
     @text.setter
     def text(self, value):
-        notes = self.flat.notes
-        if len(notes) > 0:
-            if type(value) is str:
-                notes[0].lyric = value
-            elif isinstance(value, music21.note.Lyric):
-                notes[0].lyrics = [value]
-        else:
-            raise Exception('Cannot set text on syllable without notes')
+        if len(self.elements) > 0:
+            self.elements[0].text = value
+        # notes = self.flat.notes
+        # if len(notes) > 0:
+        #     if type(value) is str:
+        #         notes[0].lyric = value
+        #     elif isinstance(value, music21.note.Lyric):
+        #         notes[0].lyrics = [value]
+        # else:
+        #     self.editorial.text = value
+        #     # raise Exception('Cannot set text on syllable without notes')
     
     @property
     def lyrics(self):

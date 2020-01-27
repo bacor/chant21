@@ -37,6 +37,13 @@ class TestParseExamples(unittest.TestCase):
         for filename in examples:
             self.run_test(filename)
 
+    def test_GBCParsing(self):
+        GABC_FN = '/Users/Bas/repos/projects/GregoBaseCorpus/gabc/{idx:0>5}.gabc'
+        filename = GABC_FN.format(idx=1)
+        parser = ParserGABC()
+        parse = parser.parseFile(filename)
+        self.assertFalse(parse.error)
+
 class TestSpecialCases(unittest.TestCase):
     """Tests of examples where parsing failed initially"""
     
@@ -51,6 +58,20 @@ class TestSpecialCases(unittest.TestCase):
         parser = ParserGABC(root='body')
         parse = parser.parse(gabc)
         self.assertFalse(parse.error)
+
+    def test_ex(self):
+        gabc = """(f3)TU(_e!fg)a(f) est(f') * Po(h)tén(hgh)ti(fg)a,(ffe.) (,)tu(f)um(h) re((hvG__F'E)gnum,(f!gwh/ih'hg~) Dó(f)mi(fg/hv_GF'g)ne :(gf..) (;)tu(f_iH'G___/h_vGF'g) es(g_f) su(fg)per(f') om(g>)nes(hih) gen(h_vGF'g>)tes :(ffe.) *(:)Da(h) pa(hg)cem,(f) dó(ghg)mi(ef!gvFE'f)ne,(efe___ec.) (,)in(f) di(f_hG'E)é(hv_hv_)bus(ih'hg) no(fg!hv_GF'g)stris.(gf..) <sp>V/</sp>.(::)Cre(f)á(e.f!gwh/
+hi)tor(h) óm(ij~)ni(i)um,(h.) (,)De(hi)us,(h') ter(h)rí(h)bi(hg)lis(hi) et(gh) for(fgwh_g)tis,(gf..) (;)jus(f)tus(ef) et(f!gwh_G!F'E__) mi(f)sé(hg/hih)ri(hv_GF'g)cors.(ffe.) *(::)Da(h) pa(hg)cem.(f) <sp>V/</sp>. (::)Gló(e.f!gwh/hi)ri(h)a(h) Pa(hg)tri,(hi) et(gh) Fí(f)li(f!gwh_g)o,(gf..) (;)et(f) Spi(f)rí(f!gwh_G!F'E__)tu(f)i(hg/hih) San(hv_GF'g>)cto.(ffe.) *(::)Da(h) pa(hg)cem.(f) (::)"""
+        parser = ParserGABC(root='body')
+        parse = parser.parse(gabc)
+        print(parse)
+    
+    def test_ex2(self):
+        gabc="Re(c4f)ctor(f) (;)"
+        # gabc = 'f(g) (::h+)'
+        parser = ParserGABC(root='body')
+        parse = parser.parse(gabc, debug=True)
+        print(parse)
 
 class TestConvertExamples(unittest.TestCase):
     def test_kyrie(self):
@@ -77,6 +98,12 @@ class TestConvertExamples(unittest.TestCase):
         filename = 'examples/tr--ab_ortu_solis--solesmes.gabc'
         chant = converter.parse(filename)
         self.assertTrue(True)
+
+    def test_GBCConversion(self):
+        GABC_FN = '/Users/Bas/repos/projects/GregoBaseCorpus/gabc/{idx:0>5}.gabc'
+        filename = GABC_FN.format(idx=1)
+        chant = converter.parse(filename)
+        self.assertFalse(parse.error)
 
 if __name__ == '__main__':
     unittest.main()
