@@ -15,72 +15,67 @@
 // * In GregoBase, there are a number of chants containing "/v" or "v" before
 //   a note: e.g. "Dé(*vfe/gh)" (id 3974). This breaks the parser (16x) but
 //   is this correct syntax?
-// * Support macros: def-m1: \grealign;
 
 // FILE
-    file = (header separator)? body EOF
+file = (header separator)* body EOF
     separator = r'(\n)*%%(\n)+'
 
 // HEADER
-    header = attribute*
+header = attribute*
     attribute = attribute_key r':[ ]*' attribute_value r';(\n)*'
     attribute_key = r'[^:;%]+'
     attribute_value = r'[^%;]+(;\ [^%;]+)*'
         // Allow the use of ; when followed by a space
 
 // BODY
-    body = ((macro / (bar_or_clef (bar_or_clef / word)?) / word bar_or_clef?) (whitespace / EOF))*
-        // This is a little hacky:
-        // (bar_or_clef (bar_or_clef / word) accounts bar_or_clefs
-        // followed directly by either a bar_or_clef or a word
+body = ((macro / (not_music* word? not_music*)) (whitespace / EOF))*
     
-    // TODO Better name for this node?
-    bar_or_clef = text? "(" (clef / barline / end_of_line)* ")"
-    clef = r'(c|f)b?[1-4]'
-    barline = r",0|,_|,[1-6]?|'|`|::|:\?|:|;[1-6]"
-        // TODO add other comma-like signs to comma
-    end_of_line = r'[zZ](0|-)?|\+'
-        // TODO is z- proper gabc? GregoBase chant 8748 contains it for example
-        // TODO is this the right place for the plus?
+    whitespace = r'[ \n\r\t\f\v]+'
+    
+    text = r'([^\(]*\<[a-z]+\>[^\<]*\</[a-z]+\>[^\(]*)|([^ \n\r\t\f\v\(][^\(\n]*)'
+        // text either contains a tag (e.g. "bla<i>foo</i>bla") 
+        // or is a string without brackets, not starting with a space
+
+    not_music = text? "(" (clef / pausa / end_of_line)* ")"
+        clef = r'(c|f)b?[1-4]'
+        pausa = pausa_finalis / pausa_major / pausa_minor / pausa_minima
+            pausa_minima = r',[_0-6]?' / '`'
+            pausa_minor = r';[1-6]?'
+            pausa_major = r':[\?\']?'
+            pausa_finalis = '::'
+
+        end_of_line = r'[zZ](0|-)?|\+'
+            // TODO is z- proper gabc? GregoBase chant 8748 contains it for example
+            // TODO is this the right place for the plus?
     
     word = syllable+
-    syllable = text? "(" music ")"
-    whitespace = r'[ \n\r\t\f\v]+'
-    // text either contains a tag (e.g. "bla<i>foo</i>bla") 
-    // or is a string without brackets, not starting with a space
-    text = r'([^\(]*\<[a-z]+\>[^\<]*\</[a-z]+\>[^\(]*)|([^ \n\r\t\f\v\(][^\(\n]*)'
-
+        syllable = text? "(" music ")"
+    
 // MUSIC
-    music = (alteration / note / comma / spacer / advanced)*
+    music = (alteration / note / pausa_in_music / spacer / advanced)*
     alteration = position r'x|y|#' suffix? 
         // Suffixes on alterations make no sense but sometimes occur
         // TODO: check if these are not typos
     spacer = r'\!|@|//|/0|/\[-?[0-9]\]|/| '
+    pausa_in_music = pausa / (")(" pausa ")(") / (") (" pausa ") (")
 
-    comma = c / (")(" c ")(") / (") (" c ") (") / (") (" c ")") / (")(" c ")")
-    c = r",0|,_|,[1-6]?|'|`|;"
-    # comma = r"(\) ?\()"? r",0|,_|,[1-6]?|'|`|;" r"(\) ?\()"?
-        // Note: pausa minor (;) is also a comma when between spaces
-
-    note = prefix* position suffix*
+// NOTES
+note = prefix* position suffix*
+    position = r'[a-mA-M]'
     prefix = '-'
     suffix = neume_shape? rhythmic_sign? empty_note_or_accent*
-    position = r'[a-mA-M]'
-    neume_shape = r'~|>|<|v|V|o(~|<)?|w|s<?|q|0|1'
-        // for 'q', see gregorio-project.github.io/gabc/details.html#podatus
-    // alteration = r'x|y|#'
-    rhythmic_sign = r'\.\.?|\'(0|1)?|_[0-5]*'
-    empty_note_or_accent = r'r[0-5]?|R'
+        neume_shape = r'~|>|<|v|V|o(~|<)?|w|s<?|q|0|1'
+            // for 'q', see gregorio-project.github.io/gabc/details.html#podatus
+        rhythmic_sign = r'\.\.?|\'(0|1)?|_[0-5]*'
+        empty_note_or_accent = r'r[0-5]?|R'
 
 // ADVANCED
-    advanced = polyphony / brace / code / choral_sign / translation
+advanced = polyphony / brace / code / choral_sign / translation
     polyphony = '{' (alteration / note)+ '}'
     brace = r'\[(o|u)(b|cba|cb):(0|1)(({|})|(;\d+(\.\d+)?mm))?\]'
     choral_sign = r'\[cs:[^\]]+\]'
     translation = r'\[alt:[^\]]+\]'
-
-    // CODE
     code = "[" ( macro_reference / verbatim_code ) "]"
-    macro_reference = r'(n|g|e)m[0-9]'
-    verbatim_code = r'(n|g|e)v:[^\]]+'
-    macro = r"def-m[0-9]:[^;]+;"
+        macro_reference = r'(n|g|e)m[0-9]'
+        verbatim_code = r'(n|g|e)v:[^\]]+'
+        macro = r"def-m[0-9]:[^;]+;"

@@ -20,10 +20,27 @@ class NoMusic(ChantElement):
     """An element containing only text, and no music"""
     pass
 
-class Comma(ChantElement, music21.articulations.BreathMark):
+class Pausa(ChantElement):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.priority = -1
+
+class PausaMinima(Pausa, music21.articulations.BreathMark):
+    pass
+
+class PausaMinor(Pausa, music21.articulations.BreathMark):
+    pass
+
+class PausaMajor(Pausa, music21.bar.Barline):
+    pass
+
+class PausaFinalis(Pausa, music21.bar.Barline):
+    pass
+
+# class Pausa(ChantElement, music21.articulations.BreathMark):
+#     def __init__(self, **kwargs):
+#         super().__init__(**kwargs)
+#         self.priority = -1
 
 class Barline(ChantElement, music21.bar.Barline):
     pass

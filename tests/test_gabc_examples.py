@@ -37,6 +37,13 @@ class TestParseExamples(unittest.TestCase):
         for filename in examples:
             self.run_test(filename)
 
+    def test_fn(self):
+        GABC_FN = '/Users/Bas/repos/projects/GregoBaseCorpus/gabc/{idx:0>5}.gabc'
+        filename = GABC_FN.format(idx=8218)
+        parser = ParserGABC()
+        parse = parser.parseFile(filename)
+        self.assertFalse(parse.error)
+
 class TestSpecialCases(unittest.TestCase):
     """Tests of examples where parsing failed initially"""
     
@@ -51,6 +58,12 @@ class TestSpecialCases(unittest.TestCase):
         parser = ParserGABC(root='body')
         parse = parser.parse(gabc)
         self.assertFalse(parse.error)
+
+    def test_ex(self):
+        gabc="A(f)(:) (Z)"
+        parser = ParserGABC(root='body')
+        parse = parser.parse(gabc)
+        print(parse)
 
 class TestConvertExamples(unittest.TestCase):
     def test_kyrie(self):

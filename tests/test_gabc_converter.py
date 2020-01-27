@@ -20,11 +20,14 @@ from chant21 import Note
 from chant21 import Neume
 from chant21 import Syllable
 from chant21 import Alteration
-from chant21 import Comma
-from chant21 import Barline
 from chant21 import Clef
 from chant21 import NoMusic
 from chant21 import ParserGABC
+from chant21 import Pausa
+from chant21 import PausaMinima
+from chant21 import PausaMinor
+from chant21 import PausaMajor
+from chant21 import PausaFinalis
 
 from arpeggio import visit_parse_tree as visitParseTree
 from chant21.converterGABC import GABCVisitor
@@ -67,6 +70,14 @@ class TestFile(unittest.TestCase):
         header = visitParseTree(parse, GABCVisitor())
         target = dict(attr1='value1', attr2='value2')
         self.assertDictEqual(header, target)
+
+    def test_multipleHeaders(self):
+        parser = ParserGABC()
+        fileStr = 'attr1:value1;\n%%\nattr2:value2;\n%%\n(c2) A(f)'
+        parse = parser.parse(fileStr)
+        chant = visitParseTree(parse, GABCVisitor())
+        self.assertEqual(chant.editorial.attr1, 'value1')
+        self.assertEqual(chant.editorial.attr2, 'value2')
 
 class TestGABCPitchConversion(unittest.TestCase):
     def test_positions(self):
@@ -238,14 +249,21 @@ class TestText(unittest.TestCase):
         self.assertEqual(s4.lyrics[0].syllabic, 'end')
 
 class TestBarClefs(unittest.TestCase):
-    def test_bar(self):
-        parser = ParserGABC(root='bar_or_clef')
-        for barline in [':', '::', ';1', ';2', ';3', ':?']:
-            parse = parser.parse(f'a({barline})')
-            bar = visitParseTree(parse, GABCVisitor())
-            self.assertIsInstance(bar, Barline)
-            self.assertEqual(bar.text, 'a')
-            self.assertEqual(bar.editorial.gabc, barline)
+    def test_pausa(self):
+        parser = ParserGABC(root='not_music')
+        pausaTypes = [
+            (PausaFinalis, ['::']),
+            (PausaMajor, [':', ':?', ':\'']),
+            (PausaMinor, [';', ';1', ';2']),
+            (PausaMinima, [',', ',_', ',0', ',1', '`'])
+        ]
+        for pausaClass, examples in pausaTypes:
+            for gabc in examples:
+                parse = parser.parse(f'a({gabc})')
+                element = visitParseTree(parse, GABCVisitor())
+                self.assertIsInstance(element, pausaClass)
+                self.assertEqual(element.text, 'a')
+                self.assertEqual(element.editorial.gabc, gabc)
 
     def test_measures(self):
         parser = ParserGABC(root='body')
@@ -272,7 +290,7 @@ class TestBarClefs(unittest.TestCase):
         self.assertRaises(MissingClef, test_fn)
 
     def test_noMusic(self):
-        parser = ParserGABC(root='bar_or_clef')
+        parser = ParserGABC(root='not_music')
         parse = parser.parse('*()')
         element = visitParseTree(parse, GABCVisitor())
         self.assertIsInstance(element, NoMusic)
@@ -301,7 +319,7 @@ class TestSyllables(unittest.TestCase):
         parse = parser.parse(gabc)
         word = visitParseTree(parse, GABCVisitor())
         self.assertEqual(len(word), 2)
-        self.assertIsInstance(word[0][1], Comma)
+        self.assertIsInstance(word[0][1], Pausa)
         self.assertEqual(len(word.flat.notes), 3)
     
 class TestNeumes(unittest.TestCase):
@@ -337,12 +355,12 @@ class TestNeumes(unittest.TestCase):
         elements = visitParseTree(parse, GABCVisitor())
         self.assertEqual(len(elements), 3)
         self.assertIsInstance(elements[0], Neume)
-        self.assertIsInstance(elements[1], Comma)
+        self.assertIsInstance(elements[1], Pausa)
         self.assertIsInstance(elements[2], Neume)
         note = elements[0][-1]
         self.assertEqual(len(note.articulations), 1)
         self.assertIsInstance(note.articulations[0], articulations.BreathMark)
-        self.assertIsInstance(note.articulations[0], Comma)
+        self.assertIsInstance(note.articulations[0], Pausa)
     
 class TestNotes(unittest.TestCase):
     

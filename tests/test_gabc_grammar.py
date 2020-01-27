@@ -54,6 +54,19 @@ class TestFile(unittest.TestCase):
         self.assertEqual(parse[1].rule_name, 'body')
         self.assertEqual(parse[2].rule_name, 'EOF')
     
+    def test_multipleHeaders(self):
+        parser = ParserGABC()
+        fileStr = 'attr1:value1;\n%%\nattr2:value2;\n%%\n(c2) A(f)'
+        parse = parser.parse(fileStr)
+        h1, sep1, h2, sep2, body, _ = parse
+        self.assertEqual(h1.rule_name, 'header')
+        self.assertEqual(h1.value, 'attr1 | : | value1 | ;\n')
+        self.assertEqual(sep1.rule_name, 'separator')
+        self.assertEqual(h2.rule_name, 'header')
+        self.assertEqual(h2.value, 'attr2 | : | value2 | ;\n')
+        self.assertEqual(sep2.rule_name, 'separator')
+        self.assertEqual(body.rule_name, 'body')
+
 class TestHeader(unittest.TestCase):
 
     def test_header(self):
@@ -91,14 +104,14 @@ class TestHeader(unittest.TestCase):
 
     def test_bracketsSpaces(self):
         parser = ParserGABC(root='header')
-        header_str = "attr1:value1 (test);"
-        parse = parser.parse(header_str)
+        headerStr = "attr1:value1 (test);"
+        parse = parser.parse(headerStr)
         self.assertFalse(parse.error)
 
     def test_semicolons(self):
         parser = ParserGABC(root='header')
-        header_str = "attr1:value1; value2;"
-        parse = parser.parse(header_str)
+        headerStr = "attr1:value1; value2;"
+        parse = parser.parse(headerStr)
         self.assertEqual(parse[0][2].value, 'value1; value2')
         # TODO test raises error when not followed by space
 
@@ -137,7 +150,7 @@ class TestBody(unittest.TestCase):
         parse = parser.parse('a(f)b (g) (:)')
         self.assertEqual(parse[0].rule_name, 'word')
         self.assertEqual(parse[1].rule_name, 'whitespace')
-        self.assertEqual(parse[2].rule_name, 'bar_or_clef')
+        self.assertEqual(parse[2].rule_name, 'not_music')
         self.assertEqual(parse[2].value, '( | : | )')
 
 class TestWord(unittest.TestCase):
@@ -160,13 +173,13 @@ class TestWord(unittest.TestCase):
         self.assertEqual(parse[0].rule_name, 'syllable')
         self.assertEqual(parse[0].value, 'A  | ( | f | )')
 
-    def test_barline(self):
-        parser = ParserGABC(root='word')
-        self.assertRaises(NoMatch, lambda: parser.parse('(:)'))
+    # def test_barline(self):
+    #     parser = ParserGABC(root='word')
+    #     self.assertRaises(NoMatch, lambda: parser.parse('(:)'))
 
-class TestBarsAndClefs(unittest.TestCase):
+class TestNotMusic(unittest.TestCase):
     def test_clef(self):
-        parser = ParserGABC(root='bar_or_clef')
+        parser = ParserGABC(root='not_music')
         parse = parser.parse('(c3)')
         self.assertEqual(parse[0].value, '(')
         self.assertEqual(parse[1].rule_name, 'clef')
@@ -182,11 +195,11 @@ class TestBarsAndClefs(unittest.TestCase):
 
     def test_clefChange(self):
         # http://gregorio-project.github.io/gabc/details.html#endofline
-        parser = ParserGABC(root='bar_or_clef')
+        parser = ParserGABC(root='not_music')
         parse = parser.parse('(z::c3)')
         _, lineEnd, bar, clef, _ = parse
         self.assertEqual(lineEnd.rule_name, 'end_of_line')
-        self.assertEqual(bar.rule_name, 'barline')
+        self.assertEqual(bar.rule_name, 'pausa')
         self.assertEqual(clef.rule_name, 'clef')
 
         gabc = "<sp>V/</sp>.(z0::c3)"
@@ -195,29 +208,29 @@ class TestBarsAndClefs(unittest.TestCase):
         self.assertEqual(text.value, '<sp>V/</sp>.')
         self.assertEqual(text.rule_name, 'text')
         self.assertEqual(lineEnd.rule_name, 'end_of_line')
-        self.assertEqual(bar.rule_name, 'barline')
+        self.assertEqual(bar.rule_name, 'pausa')
         self.assertEqual(clef.rule_name, 'clef')
 
     def test_clefsFollowedByMusic(self):
         parser = ParserGABC(root='body')
         parse = parser.parse('(c4)a(fg)')
         clef, word, _ = parse
-        self.assertEqual(clef.rule_name, 'bar_or_clef')
+        self.assertEqual(clef.rule_name, 'not_music')
         self.assertEqual(word.rule_name, 'word')
 
     def test_barline(self):
-        parser = ParserGABC(root='bar_or_clef')
+        parser = ParserGABC(root='not_music')
         parse = parser.parse(':*(:)')
         self.assertEqual(parse[0].rule_name, 'text')
         self.assertEqual(parse[0].value, ':*')
         self.assertEqual(parse[1].value, '(')
-        self.assertEqual(parse[2].rule_name, 'barline')
+        self.assertEqual(parse[2].rule_name, 'pausa')
         self.assertEqual(parse[2].value, ':')
         self.assertEqual(parse[3].value, ')')
 
         parse = parser.parse('(::)')
         self.assertEqual(parse[0].value, '(')
-        self.assertEqual(parse[1].rule_name, 'barline')
+        self.assertEqual(parse[1].rule_name, 'pausa')
         self.assertEqual(parse[1].value, '::')
         self.assertEqual(parse[2].value, ')')
 
@@ -225,12 +238,12 @@ class TestBarsAndClefs(unittest.TestCase):
         parser = ParserGABC(root='body')
         parse = parser.parse('a(:) b(f) (,) (g) (::)')
         bar1, _, word, _, bar2, _ = parse
-        self.assertEqual(bar1.rule_name, 'bar_or_clef')
+        self.assertEqual(bar1.rule_name, 'not_music')
         self.assertEqual(bar1.value, 'a | ( | : | )')
         self.assertEqual(word.rule_name, 'word')
         self.assertEqual(len(word), 1)
         self.assertEqual(word[0].rule_name, 'syllable')
-        self.assertEqual(bar2.rule_name, 'bar_or_clef')
+        self.assertEqual(bar2.rule_name, 'not_music')
         self.assertEqual(bar2.value, '( | :: | )')
     
     def test_barlinesFollowedByText(self):
@@ -238,8 +251,8 @@ class TestBarsAndClefs(unittest.TestCase):
         parse = parser.parse('(:)a()')
         self.assertEqual(len(parse), 3)
         bar, textEl, _ = parse 
-        self.assertEqual(parse[0].rule_name, 'bar_or_clef')
-        self.assertEqual(parse[1].rule_name, 'bar_or_clef')
+        self.assertEqual(parse[0].rule_name, 'not_music')
+        self.assertEqual(parse[1].rule_name, 'not_music')
 
     def test_barlineDirectlyAfterMusic(self):
         parser = ParserGABC(root='body')
@@ -248,13 +261,15 @@ class TestBarsAndClefs(unittest.TestCase):
         parse = parser.parse('A(f) (:)')
         word, _, bar, _ = parse
         self.assertEqual(word.rule_name, 'word')
-        self.assertEqual(bar.rule_name, 'bar_or_clef')
+        self.assertEqual(bar.rule_name, 'not_music')
 
         # The weird situation, without space:
         parse = parser.parse('A(f)(:)')
-        word, bar, _ = parse
-        self.assertEqual(word.rule_name, 'word')
-        self.assertEqual(bar.rule_name, 'bar_or_clef')
+        syll1, syll2 = parse[0]
+        self.assertEqual(syll1.rule_name, 'syllable')
+        self.assertEqual(syll1.value, 'A | ( | f | )')
+        self.assertEqual(syll2.rule_name, 'syllable')
+        self.assertEqual(syll2[1][0].rule_name, 'pausa_in_music')
 
 class TestSyllable(unittest.TestCase):
 
@@ -288,7 +303,7 @@ class TestSyllable(unittest.TestCase):
         parse = parser.parse('f , g')
         n1, sp1, comma, sp2, n2 = parse
         self.assertEqual(sp1.rule_name, 'spacer')
-        self.assertEqual(comma.rule_name, 'comma')
+        self.assertEqual(comma.rule_name, 'pausa_in_music')
         self.assertEqual(comma.value, ',')
         self.assertEqual(sp2.rule_name, 'spacer')
 
@@ -307,7 +322,7 @@ class TestSyllable(unittest.TestCase):
             n1, comma, n2 = parse[1]
             self.assertEqual(n1.rule_name, 'note')
             self.assertEqual(n1.value, 'f')
-            self.assertEqual(comma.rule_name, 'comma')
+            self.assertEqual(comma.rule_name, 'pausa_in_music')
             self.assertEqual(n2.rule_name, 'note')
             self.assertEqual(n2.value, 'g')
 
@@ -319,9 +334,11 @@ class TestSyllable(unittest.TestCase):
         self.assertEqual(len(parse[0]), 1)
 
         parse = parser.parse('(f) (,) A(g)')
-        word1, _, word2, _ = parse
+        word1, _, comma, _, word2, _ = parse
         self.assertEqual(word1.rule_name, 'word')
-        self.assertEqual(word1.value, '( | f | ) ( | , | )')
+        self.assertEqual(word1.value, '( | f | )')
+        self.assertEqual(comma.rule_name, 'not_music')
+        self.assertEqual(comma.value, '( | , | )')
         self.assertEqual(word2.rule_name, 'word')
         self.assertEqual(word2.value, 'A | ( | g | )')
 
@@ -330,9 +347,9 @@ class TestSyllable(unittest.TestCase):
         parser = ParserGABC(root='music')
         parse = parser.parse('f,g ; f')
         n1, c1, n2, _, c2, _, n3 = parse
-        self.assertEqual(c1.rule_name, 'comma')
+        self.assertEqual(c1.rule_name, 'pausa_in_music')
         self.assertEqual(c1.value, ',')
-        self.assertEqual(c2.rule_name, 'comma')
+        self.assertEqual(c2.rule_name, 'pausa_in_music')
         self.assertEqual(c2.value, ';')
 
     def test_pausaMinorInBody(self):
@@ -409,7 +426,7 @@ class TestAdvanced(unittest.TestCase):
         clef, _, macro1, _, macro2, _, word, _ = parse
         self.assertEqual(macro1.rule_name, 'macro')
         self.assertEqual(macro2.rule_name, 'macro')
-        self.assertEqual(clef.rule_name, 'bar_or_clef')
+        self.assertEqual(clef.rule_name, 'not_music')
         self.assertEqual(word.rule_name, 'word')
 
 class TestNote(unittest.TestCase):

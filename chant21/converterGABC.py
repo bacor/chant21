@@ -2,7 +2,9 @@ from music21 import stream
 from music21 import pitch
 from music21 import metadata
 from music21 import note
+from music21 import bar
 from music21 import converter
+from music21 import articulations
 
 from arpeggio import Terminal
 from arpeggio import PTNodeVisitor
@@ -14,10 +16,14 @@ from .chant import Neume
 from .chant import Syllable
 from .chant import Word
 from .chant import Alteration
-from .chant import Comma
-from .chant import Barline
+from .chant import Pausa
 from .chant import Clef
 from .chant import NoMusic
+from .chant import PausaMinima
+from .chant import PausaMinor
+from .chant import PausaMajor
+from .chant import PausaFinalis
+
 from .parserGABC import ParserGABC
 
 OPTIONS = {
@@ -62,13 +68,21 @@ class GABCVisitor(PTNodeVisitor):
     """Visiter class for converting a GABC parse tree to Music21"""
     
     def visit_file(self, node, children):
-        header = children.results.get('header', [{}])[0]
-        ch = children.results.get('body', [Chant()])[0]
+        if 'body' in children.results:
+            ch = children.results['body'][0]
+        else:
+            ch = Chant()
+
+        if 'header' in children.results:
+            header = {}
+            for headerSection in children.results['header']:
+                header.update(headerSection)
+        else:
+            header = {}
         
         ch.insert(0, metadata.Metadata())
         if 'title' in header:
             ch.metadata.title = header.get('title')
-
         for key, value in header.items():
             ch.editorial[key] = value
         return ch
@@ -144,13 +158,13 @@ class GABCVisitor(PTNodeVisitor):
                             raise Exception('Unsupported alteration')
                 
                     # Scope of accidentals ends at breathmarks
-                    if isinstance(el, Comma):
+                    if isinstance(el, Pausa):
                         bIsFlat = False or curClefHasFlat
                         bIsNatural = False
                         eIsFlat = False
                         eIsNatural = False  
                     
-            elif isinstance(element, Barline):
+            elif isinstance(element, bar.Barline):
                 # This also adds the element to the measure strem
                 curMeasure.rightBarline = element
                 ch.append(curMeasure)
@@ -161,16 +175,20 @@ class GABCVisitor(PTNodeVisitor):
                 curMeasure.append(element)
             elif isinstance(element, NoMusic):
                 curMeasure.append(element)
+            elif isinstance(element, articulations.BreathMark):
+                lastNote = curMeasure.flat.notes[-1]
+                lastNote.articulations.append(element)
+                curMeasure.append(element)
             else:
                 raise Exception('Unknown element')
         ch.append(curMeasure)
         return ch
 
-    def visit_bar_or_clef(self, node, children):
+    def visit_not_music(self, node, children):
         if 'clef' in children.results:
             element = children.results['clef'][0]
-        elif 'barline' in children.results:
-            element = children.results['barline'][0]
+        elif 'pausa' in children.results:
+            element = children.results['pausa'][0]
         else:
             element = NoMusic()
         element.text = children.results.get('text', [None])[0]
@@ -209,9 +227,9 @@ class GABCVisitor(PTNodeVisitor):
                 curNeume.append(element)
 
             # Special symbols that are inserted outside Neumes
-            elif type(element) in [Barline, Comma, Alteration]:
-                if len(curNeume) > 0 and type(element) is Comma:
-                    curNeume[-1].articulations = [element]
+            elif isinstance(element, Pausa) or isinstance(element, Alteration):
+                if len(curNeume) > 0 and isinstance(element, articulations.BreathMark):
+                    curNeume[-1].articulations.append(element)
                 if len(curNeume) > 0:
                     elements.append(curNeume)
                     curNeume = Neume()
@@ -230,19 +248,39 @@ class GABCVisitor(PTNodeVisitor):
             elements.append(curNeume)
         return elements
     
-    def visit_barline(self, node, children):
-        bar = Barline()
-        bar.editorial.gabc = node.value
-        return bar
+    def visit_pausa(self, node, children):
+        return children[0]
+
+        # pausa = Pausa()
+        # if len(children) == 3:
+        #     # children is of the form [")(", ",", ")("]
+        #     pausa.editorial.gabc = children[1]
+        # else:
+        #     pausa.editorial.gabc = children[0]
+        # return pausa
+
+    def visit_pausa_in_music(self, node, children):
+        return self.visit_pausa(node, children)
     
-    def visit_comma(self, node, children):
-        comma = Comma()
-        if len(children) == 3:
-            # children is of the form [")(", ",", ")("]
-            comma.editorial.gabc = children[1]
-        else:
-            comma.editorial.gabc = children[0]
-        return comma
+    def visit_pausa_finalis(self, node, children):
+        el = PausaFinalis()
+        el.editorial.gabc = node.value
+        return el
+    
+    def visit_pausa_major(self, node, children):
+        el = PausaMajor()
+        el.editorial.gabc = node.value
+        return el
+    
+    def visit_pausa_minor(self, node, children):
+        el = PausaMinor()
+        el.editorial.gabc = node.value
+        return el
+    
+    def visit_pausa_minima(self, node, children):
+        el = PausaMinima()
+        el.editorial.gabc = node.value
+        return el
 
     def visit_spacer(self, node, children):
         if node.value in OPTIONS['neume_boundaries']:
