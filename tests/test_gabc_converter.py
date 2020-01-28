@@ -340,7 +340,34 @@ class TestSyllables(unittest.TestCase):
         self.assertEqual(len(syll2.flat), 3)
         self.assertIsInstance(syll2.flat[1], Pausa)
         self.assertEqual(len(syll3.flat), 1)
+
+    def test_syllablesWithCommas2(self):
+        parser = ParserGABC(root='word')    
+        gabc = 'a(fg/gh)(,)(hi/ij)'
+        parse = parser.parse(gabc)
+        word = visitParseTree(parse, GABCVisitor())
+        self.assertEqual(len(word), 1)
+        neume1, neume2, comma, neume3, neume4 = word[0].elements
+        self.assertIsInstance(neume1, Neume)
+        self.assertIsInstance(neume2, Neume)
+        self.assertIsInstance(comma, Pausa)
+        self.assertIsInstance(neume3, Neume)
+        self.assertIsInstance(neume4, Neume)
                 
+    def test_syllablesWithCommas3(self):
+        """Test whether a new syllable starts if the next syllable
+        has sung text"""
+        parser = ParserGABC(root='word')    
+        gabc = 'a(fg/gh)(,)b(hi/ij)'
+        parse = parser.parse(gabc)
+        word = visitParseTree(parse, GABCVisitor())
+        (neume1, neume2, comma), (neume3, neume4) = word
+        self.assertIsInstance(neume1, Neume)
+        self.assertIsInstance(neume2, Neume)
+        self.assertIsInstance(comma, Pausa)
+        self.assertIsInstance(neume3, Neume)
+        self.assertIsInstance(neume4, Neume)
+
 class TestNeumes(unittest.TestCase):
 
     def test_singleNeume(self):

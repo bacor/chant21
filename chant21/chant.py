@@ -1,9 +1,11 @@
 import music21
 from music21 import articulations
 from music21 import note
+from music21 import spanner
+from copy import deepcopy
 
 class Chant(music21.stream.Part):
-    pass
+  pass
 
 class ChantElement(music21.base.Music21Object):
 
@@ -38,7 +40,9 @@ class PausaMajor(Pausa, music21.bar.Barline):
     pass
 
 class PausaFinalis(Pausa, music21.bar.Barline):
-    pass
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.type = 'final'
 
 class Clef(ChantElement, music21.clef.TrebleClef):
     def __init__(self, **kwargs):
@@ -81,12 +85,16 @@ class Word(music21.stream.Stream):
         while i < numSylls - 1:
             prevSyll, curSyll, nextSyll = self.syllables[i-1:i+2]
             if len(curSyll.flat) == 1 and isinstance(curSyll[0], articulations.BreathMark):
-                prevSyll[0].append(curSyll.elements)
-                prevSyll.append(nextSyll.elements)
-                # TODO we might loose some text here!
+                prevSyll.append(curSyll.elements)
                 self.remove(curSyll)
-                self.remove(nextSyll)
-                numSylls -= 2
+                numSylls -= 1
+
+                # Only merge with next syllable if it has no sung text
+                if not nextSyll.hasSungText:
+                    # TODO we do lose non-sung text here
+                    prevSyll.append(nextSyll.elements)
+                    self.remove(nextSyll)
+                    numSylls -= 1
             i += 1
 
     def updateSyllableLyrics(self):
@@ -102,20 +110,8 @@ class Word(music21.stream.Stream):
             nonEmptyLyrics[0].syllabic = 'begin'
             nonEmptyLyrics[-1].syllabic = 'end'
 
-        # for i, syll in enumerate(syll):
-        #     print(syll)
-            
-        #         print(l)
-        
-        # if len(self.syllables) == 1:
-        #     syll = self.syllables[0]
-        #     if len(syll.notes) > 0:
-        #         syll.lyrics[0].syllabic = 'single'
-        # elif len(word.syllables) > 1:
-        #     for syll in word.syllables:
-        #         syll.lyrics[0].syllabic = 'middle'
-        #     word.syllables[0].lyrics[0].syllabic = 'begin'
-        #     word.syllables[-1].lyrics[0].syllabic = 'end'
+        # TODO long melisma's on a single-syllable word,
+        # are those dealt with properly?
 
 class Syllable(music21.stream.Stream):
 
@@ -138,6 +134,11 @@ class Syllable(music21.stream.Stream):
                 notes[0].lyrics = [value]
         else:
             self.editorial.text = value
+
+    @property
+    def hasSungText(self):
+        #TODO also return false for *, i, ii, etc
+        return self.text != None
 
     @property
     def neumes(self):
