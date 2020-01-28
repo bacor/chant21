@@ -196,80 +196,6 @@ class TestNotMusic(unittest.TestCase):
         self.assertEqual(clef.rule_name, 'music')
         self.assertEqual(clef[0].rule_name, 'clef')
 
-    # def test_barline(self):
-    #     parser = ParserGABC(root='syllable')
-    #     parse = parser.parse(':*(:)')
-    #     self.assertEqual(parse[0].rule_name, 'text')
-    #     self.assertEqual(parse[0].value, ':*')
-    #     self.assertEqual(parse[1].value, '(')
-    #     self.assertEqual(parse[2].rule_name, 'pausa')
-    #     self.assertEqual(parse[2].value, ':')
-    #     self.assertEqual(parse[3].value, ')')
-
-    #     parse = parser.parse('(::)')
-    #     self.assertEqual(parse[0].value, '(')
-    #     self.assertEqual(parse[1].rule_name, 'pausa')
-    #     self.assertEqual(parse[1].value, '::')
-    #     self.assertEqual(parse[2].value, ')')
-
-    # def test_barlinesAndCommas(self):
-    #     parser = ParserGABC(root='body')
-    #     parse = parser.parse('a(:) b(f) (,) (g) (::)')
-    #     w1, _, w2, _, bar2, _ = parse
-    #     self.assertEqual(bar1.rule_name, 'not_music')
-    #     self.assertEqual(bar1.value, 'a | ( | : | )')
-    #     self.assertEqual(word.rule_name, 'word')
-    #     self.assertEqual(len(word), 1)
-    #     self.assertEqual(word[0].rule_name, 'syllable')
-    #     self.assertEqual(bar2.rule_name, 'not_music')
-    #     self.assertEqual(bar2.value, '( | :: | )')
-    
-    # def test_multipleNonMusicElements(self):
-    #     parser = ParserGABC(root='body')
-    #     parse = parser.parse('A(g) (::)(:)')
-    #     word, _, finalis, major, _ = parse
-    #     self.assertEqual(word.rule_name, 'word')
-    #     self.assertEqual(finalis.rule_name, 'not_music')
-    #     self.assertEqual(finalis[1][0].rule_name, 'pausa_finalis')
-    #     self.assertEqual(major.rule_name, 'not_music')
-    #     self.assertEqual(major[1][0].rule_name, 'pausa_major')
-
-    # def test_multipleNonMusicElementsWithSpaces(self):
-    #     """This is a little weird: the parse tree is completely different
-    #     from the example in test_multipleNonMusicElements."""
-    #     #TODO fix this?
-    #     parser = ParserGABC(root='body')
-    #     parse = parser.parse('A(g) (::) (:)')
-    #     word, _ = parse
-    #     note, finalis, major = word[0][2]
-    #     self.assertEqual(finalis[1][0].rule_name, 'pausa_finalis')
-    #     self.assertEqual(major[0][0].rule_name, 'pausa_major')
-
-    # def test_barlinesFollowedByText(self):
-    #     parser = ParserGABC(root='body')
-    #     parse = parser.parse('(:)a()')
-    #     self.assertEqual(len(parse), 3)
-    #     bar, textEl, _ = parse 
-    #     self.assertEqual(parse[0].rule_name, 'not_music')
-    #     self.assertEqual(parse[1].rule_name, 'not_music')
-
-    # def test_barlineDirectlyAfterMusic(self):
-    #     parser = ParserGABC(root='body')
-
-    #     # The normal situation, with space:
-    #     parse = parser.parse('A(f) (:)')
-    #     word, _, bar, _ = parse
-    #     self.assertEqual(word.rule_name, 'word')
-    #     self.assertEqual(bar.rule_name, 'not_music')
-
-    #     # The weird situation, without space:
-    #     parse = parser.parse('A(f)(:)')
-    #     syll1, syll2 = parse[0]
-    #     self.assertEqual(syll1.rule_name, 'syllable')
-    #     self.assertEqual(syll1.value, 'A | ( | f | )')
-    #     self.assertEqual(syll2.rule_name, 'syllable')
-    #     self.assertEqual(syll2[1][0].rule_name, 'pausa_in_music')
-
     def test_custos(self):
         parser = ParserGABC(root='music')
         parse = parser.parse('::i+')
@@ -320,66 +246,6 @@ class TestSyllable(unittest.TestCase):
         self.assertEqual(comma.rule_name, 'pausa')
         self.assertEqual(comma.value, ',')
         self.assertEqual(sp2.rule_name, 'spacer')
-
-    # def test_comma(self):
-    #     parser = ParserGABC(root='syllable')
-    #     comma_examples = [
-    #         '(f)(,)(g)',
-    #         '(f)(;)(g)',
-    #         '(f,g)',
-    #         '(f;g)',
-    #         '(f) (,) (g)',
-    #         '(f) (;) (g)'
-    #     ]
-    #     for gabc in comma_examples:
-    #         parse = parser.parse(gabc)
-    #         n1, comma, n2 = parse[1]
-    #         self.assertEqual(n1.rule_name, 'note')
-    #         self.assertEqual(n1.value, 'f')
-    #         self.assertEqual(comma.rule_name, 'pausa_in_music')
-    #         self.assertEqual(n2.rule_name, 'note')
-    #         self.assertEqual(n2.value, 'g')
-
-    # def test_commaInBody(self):
-    #     parser = ParserGABC(root='body')
-    #     parse = parser.parse('(f) (,) (g)')
-    #     self.assertEqual(len(parse), 2)
-    #     self.assertEqual(parse[0].rule_name, 'word')
-    #     self.assertEqual(len(parse[0]), 1)
-
-    #     parse = parser.parse('(f) (,) A(g)')
-    #     word1, _, comma, _, word2, _ = parse
-    #     self.assertEqual(word1.rule_name, 'word')
-    #     self.assertEqual(word1.value, '( | f | )')
-    #     self.assertEqual(comma.rule_name, 'not_music')
-    #     self.assertEqual(comma.value, '( | , | )')
-    #     self.assertEqual(word2.rule_name, 'word')
-    #     self.assertEqual(word2.value, 'A | ( | g | )')
-
-    # def test_pausaMinorInMusic(self):
-    #     """A pausa minor is allowed in the music if surrounded by spaces"""
-    #     parser = ParserGABC(root='music')
-    #     parse = parser.parse('f,g ; f')
-    #     n1, c1, n2, _, c2, _, n3 = parse
-    #     self.assertEqual(c1.rule_name, 'pausa_in_music')
-    #     self.assertEqual(c1.value, ',')
-    #     self.assertEqual(c2.rule_name, 'pausa_in_music')
-    #     self.assertEqual(c2.value, ';')
-
-    # def test_pausaMinorInBody(self):
-    #     parser = ParserGABC(root='body')
-    #     parse = parser.parse('(f;f) (;)')
-    #     print(parse)
-        # TODO fix this: how to deal with comma's
-        # and pausa minima etc within melismas.
-        # Perhaps the quesiton is whether we want pausa min
-        # to end a measure in music21. If not; treat
-        # them as comma's.
-
-    def test_tags(self):
-        parse = self.parser.parse('<i>test</i>(f)')
-        self.assertEqual(parse[0].rule_name, 'text')
-        self.assertEqual(parse[0].value, '<i>test</i>')
 
 class TestAdvanced(unittest.TestCase):
     
@@ -438,9 +304,7 @@ class TestAdvanced(unittest.TestCase):
         clef, _, macro1, _, macro2, _, word, _ = parse
         self.assertEqual(macro1.rule_name, 'macro')
         self.assertEqual(macro2.rule_name, 'macro')
-        # self.assertEqual(clef.rule_name, 'not_music')
-        # self.assertEqual(word.rule_name, 'word')
-
+        
 class TestNote(unittest.TestCase):
 
     def __init__(self, *args, **kwargs):
@@ -597,5 +461,141 @@ class TestAlterations(unittest.TestCase):
         self.assertEqual(polyphony.rule_name, 'polyphony')
         self.assertEqual(polyphony[1].rule_name, 'alteration')
 
-if __name__  ==  '__main__':
-    unittest.main()
+class TestText(unittest.TestCase):
+    def test_text(self):
+        parser = ParserGABC(root='text')
+        parse = parser.parse('hello')
+        self.assertTrue(parse.value, 'hello')
+    
+    def test_textWithSpaces(self):
+        parser = ParserGABC(root='text')
+        parse = parser.parse('hello world')
+        self.assertTrue(parse.value, 'hello world')
+    
+    def test_textCannotStartWithSpace(self):
+        parser = ParserGABC(root='text')
+        test_fn = lambda: parser.parse(' hello')
+        self.assertRaises(NoMatch, test_fn)
+
+    def test_nonLyricTags(self):
+        parser = ParserGABC(root='text')
+        parse = parser.parse('<sp>V/</sp>.')
+        self.assertEqual(parse[0].rule_name, 'annotation')
+        self.assertEqual(parse[0].value, '<sp>V/</sp>.')
+
+    def test_lyricTags(self):
+        parser = ParserGABC(root='text')
+        h, e, llo = parser.parse('H<i>e</i>llo')
+        self.assertEqual(h.value, 'H')
+        self.assertEqual(e.rule_name, 'tag')
+        self.assertEqual(e.value, '<i> | e | </i>')
+        self.assertEqual(llo.value, 'llo')
+    
+    def test_stars(self):
+        parser = ParserGABC(root='star')
+        examples = [
+            ('*', '*'),
+            ('**', '**'),
+            (' * ', '*'),
+            ('<c>*</c>', '*'),
+            ('<c>*</c>', '*'),
+            ('<c>**</c>', '**')
+        ]
+        for example, value in examples:
+            star = parser.parse(example)
+            self.assertEqual(star.rule_name, 'star')
+            if len(star) > 1:
+                self.assertEqual(star[1].value, value)
+            else:
+                self.assertEqual(star[0].value, value)
+        
+    def test_repeats(self):
+        parser = ParserGABC(root='annotation')
+        examples = [
+            '<i>i</i>',
+            '<i>ii.</i>',
+            '<i>iij.</i>',
+            '<i>ij.</i>',
+            '<i>Repeat :</i>',
+            '<i>Repeat: </i>',
+            '<i>Repeat:</i>',
+            '<i>Repet.</i>',
+            '<i>Repet</i>',
+            '<i>Repetitur:</i>',
+            '<i>Repetitur</i>',
+            '<i>repeats :</i>',
+        ]
+        for example in examples:
+            parse = parser.parse(example)
+            (_, rep, _), = parse
+            self.assertEqual(parse[0].rule_name, 'repeat')
+            self.assertEqual(rep.value, example[3:-4])
+    
+    def test_psalm(self):
+        parser = ParserGABC(root='annotation')
+        examples = [
+            '<i>Ps.</i>',
+            '<i>Ps. 117.</i>',
+            '<i>Ps. 117</i>',
+            '<i>Ps. 50.</i>',
+            '<i>Ps. 50</i>',
+            '<i>Ps.~50.</i>'
+        ]
+        for example in examples:
+            parse = parser.parse(example)
+            (_, el, _), = parse
+            self.assertEqual(parse[0].rule_name, 'psalm')
+            self.assertEqual(el.value, example[3:-4])
+
+    def test_TP(self):
+        parser = ParserGABC(root='annotation')
+        examples = [
+            '<i>T. P. </i>',
+            '<i>T. P.</i>',
+            '<i>T.P.</i>',
+            '<i>T.P</i>',
+            '<i> T.P. </i>',
+            '<i> T.P.</i>'
+        ]
+        for example in examples:
+            parse = parser.parse(example)
+            (_, el, _), = parse
+            self.assertEqual(parse[0].rule_name, 'TP')
+            self.assertEqual(el.value, example[3:-4])
+
+    def test_latex(self):
+        parser = ParserGABC(root='annotation')
+        examples = [
+            '<v>$\\star$</v>',
+            '<v>\\\'y</v>',
+            '<v>\\ae</v>',
+            '<v>\\greheightstar</v>',
+            '<v>\\gresixstar</v>'
+        ]
+        for example in examples:
+            parse = parser.parse(example)
+            (_, el, _), = parse
+            self.assertEqual(parse[0].rule_name, 'latex')
+            self.assertEqual(el.value, example[3:-4])
+
+    def test_others(self):
+        parser = ParserGABC(root='annotation')
+        examples = [
+            ('V', '<sp>V/</sp>',),
+            ('V', '<sp>V/</sp>.'),
+            ('V', '<sp>V/</sp>.'),
+            ('R', '<sp>R/</sp>'),
+            ('R', '<sp>R/</sp>.'),
+            ('R', '<sp>R/</sp>.'),
+            ('A', '<sp>A/</sp>'),
+            ('A', '<sp>A/</sp>.'),
+            ('A', '<sp>A/</sp>.'),
+        ]
+        for rule_name, example in examples:
+            parse = parser.parse(example)
+            self.assertEqual(parse[0].rule_name, rule_name)
+            self.assertEqual(parse[0].value, example)
+
+        # parse = parser.parse(' <sp>A/</sp>.')
+        # self.assertEqual(parse[1].rule_name, 'A')
+        # self.assertEqual(parse[1].value, '<sp>A/</sp>.')

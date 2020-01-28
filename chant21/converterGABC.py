@@ -23,6 +23,7 @@ from .chant import PausaMinima
 from .chant import PausaMinor
 from .chant import PausaMajor
 from .chant import PausaFinalis
+from .chant import Annotation
 
 from .parserGABC import ParserGABC
 
@@ -190,6 +191,8 @@ class GABCVisitor(PTNodeVisitor):
                 elif isinstance(el, Clef):
                     curClef = el
                     curGABCClef = curClef.editorial.gabc
+                elif isinstance(el, Annotation):
+                    pass
                 else:
                     raise Exception('Unknown element')
         
@@ -205,11 +208,14 @@ class GABCVisitor(PTNodeVisitor):
         return word
 
     def visit_syllable(self, node, children):
-        text = children.results.get('text', [None])[0]
         elements = children.results.get('music', [[]])[0]
         syllable = Syllable()
         syllable.append(elements)
-        syllable.text = text
+        
+        if 'text' in children.results:
+            for modifier in children.results.get('text')[0]:
+                syllable = modifier(syllable)
+
         return syllable
         
     def visit_music(self, node, children):
@@ -348,6 +354,36 @@ class GABCVisitor(PTNodeVisitor):
         element.editorial.gabcPosition = position
         element.editorial.gabcAlteration = alteration
         return element
+
+    # Text
+
+    def visit_text(self, node, children):
+        if 'annotation' in children.results:
+            hasTextOutsideAnnotation = False
+            for child in children:
+                if type(child) == str and child.strip() != '':
+                    hasTextOutsideAnnotation = True
+
+            if hasTextOutsideAnnotation:
+                def modifier(syll):
+                    syll.annotation = node.flat_str()
+                    syll.editorial.lyricsMayBeIncorrect = True
+                    return syll
+            else:
+                modifier = children.results['annotation'][0]
+        else:
+            def modifier(syll):
+                syll.lyric = children[0]
+                return syll
+        
+        return [modifier]
+
+    def visit_annotation(self, node, children):
+        def modifier(syll):
+            syll.annotation = children[0]
+            syll.insert(0, Annotation(children[0]))
+            return syll
+        return modifier
 
     # Ignored properties
     

@@ -34,7 +34,6 @@ syllable = text? "(" music ")"
 whitespace = r'[ \n\r\t\f\v]+'
 // text either contains a tag (e.g. "bla<i>foo</i>bla") 
 // or is a string without brackets, not starting with a space
-text = r'([^\(]*\<[a-z]+\>[^\<]*\</[a-z]+\>[^\(]*)|([^ \n\r\t\f\v\(][^\(\n]*)'
 music = (
     custos
     / clef 
@@ -48,6 +47,30 @@ music = (
     / choral_sign 
     / translation 
     / end_of_line)*
+
+// TEXT
+text = (r'[^\(<\*]*' (annotation / tag) r'[^\(]*') / r'[^ \n\r\t\f\v\(][^\(\n]*'
+
+// TODO include whitespace in annotation
+annotation = repeat / psalm / TP / V / R / A / star / '+' / latex
+    V = r'<sp>V/</sp>\.?'
+    R = r'<sp>R/</sp>\.?'
+    A = r'<sp>A/</sp>\.?'
+    star = r'(<c>)?[ ]*' r'\*+' r'[ ]*(</c>)?'
+    repeat = '<i>' (r'i+j?\.?' / r'((R|r)epea?t[a-z]*)[\.? :]*') '</i>'
+    psalm = '<i>' r'Ps[ \.~0-9]*' '</i>'
+    TP = '<i>' r'[ ]?T[\. ]+P[\. ]*' '</i>'
+    latex = '<v>' r'[^<]+' '</v>'
+
+// boldface, smallcaps, mono and ul mostly contains sung text
+tag = italic / bold / smallcaps / monospace / underlined
+    italic = '<i>' r'[^\<]*' '</i>'
+    bold = '<b>' r'[^\<]*' '</b>'
+    smallcaps = '<b>' r'[^\<]*' '</b>'
+    monospace = '<tt>' r'[^\<]*' '</tt>'
+    underlined = '<ul>' r'[^\<]*' '</ul>'
+    // TODO how about Special symbols? eg <sp>ae</sp>
+    // TODO how about Cocde symbols? eg <c>*</c> seems common
 
 // MUSICAL ELEMENTS
 clef = r'(c|f)b?[1-4]'

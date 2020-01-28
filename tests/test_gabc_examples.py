@@ -92,9 +92,11 @@ class TestConvertExamples(unittest.TestCase):
         self.assertTrue(True)
 
     def test_GBCConversion(self):
-        GABC_FN = '/Users/Bas/repos/projects/GregoBaseCorpus/gabc/{idx:0>5}.gabc'
-        filename = GABC_FN.format(idx=1)
+        # GABC_FN = '/Users/Bas/repos/projects/GregoBaseCorpus/gabc/{idx:0>5}.gabc'
+        GABC_FN = '/Users/Bas/Dropbox/Desktop/gabc/{idx:0>5}.gabc'
+        filename = GABC_FN.format(idx=2)
         ch = converter.parse(filename)
+        ch.flat.show()
         self.assertTrue(True)
 
 if __name__ == '__main__':

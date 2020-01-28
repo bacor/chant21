@@ -210,13 +210,13 @@ class TestText(unittest.TestCase):
         parse = parser.parse('a(c2) word(e)1(f) word2(g)')
         chant = visitParseTree(parse, GABCVisitor())
         w1, w2, w3 = chant[0]
-        self.assertEqual(w1.text, 'a')
-        self.assertEqual(w2.text, 'word1')
-        self.assertEqual(w3.text, 'word2')
+        self.assertEqual(w1.flatLyrics, 'a')
+        self.assertEqual(w2.flatLyrics, 'word1')
+        self.assertEqual(w3.flatLyrics, 'word2')
 
         syll1, syll2 = w2.elements
-        self.assertEqual(syll1.text, 'word')
-        self.assertEqual(syll2.text, '1')
+        self.assertEqual(syll1.lyric, 'word')
+        self.assertEqual(syll2.lyric, '1')
         self.assertEqual(syll1.flat.notes[0].lyric, 'word')
         self.assertEqual(syll2.flat.notes[0].lyric, '1')
 
@@ -225,8 +225,8 @@ class TestText(unittest.TestCase):
         parse = parser.parse('(c2) bla(eye)')
         chant = visitParseTree(parse, GABCVisitor())
         word1, word2 = chant[0]
-        self.assertIsNone(word1.text)
-        self.assertEqual(word2.text, 'bla')
+        self.assertIsNone(word1.flatLyrics)
+        self.assertEqual(word2.flatLyrics, 'bla')
         note = word2.flat.notes[0]
         self.assertEqual(note.lyric, 'bla')
     
@@ -260,6 +260,33 @@ class TestText(unittest.TestCase):
         self.assertEqual(lyric2.syllabic, 'middle')
         self.assertEqual(lyric3.syllabic, 'middle')
         self.assertEqual(lyric4.syllabic, 'end')
+
+    def test_annotations(self):
+        parser = ParserGABC(root='word')    
+        parse = parser.parse('<i>i.</i>(f)')
+        syll1, = visitParseTree(parse, GABCVisitor())
+        self.assertEqual(syll1.annotation, 'i.')
+        self.assertIsNone(syll1.lyric)
+
+    def test_annotationsAndLyrics(self):
+        parser = ParserGABC(root='word')    
+        parse = parser.parse('A<i>i.</i> B(f)')
+        syll1, = visitParseTree(parse, GABCVisitor())
+        self.assertEqual(syll1.annotation, 'A<i>i.</i> B')
+        self.assertIsNone(syll1.lyric)
+
+    def test_lyric(self):
+        parser = ParserGABC(root='word')    
+        parse = parser.parse('bla(f)')
+        syll1, = visitParseTree(parse, GABCVisitor())
+        self.assertIsNone(syll1.annotation)
+        self.assertEqual(syll1.lyric, 'bla')
+    
+    def test_annotationsInBody(self):
+        parser = ParserGABC(root='body')    
+        parse = parser.parse('(c2) a(f)b(g) <i>i.</i>(:) c(f) (::)')
+        ch = visitParseTree(parse, GABCVisitor())
+        print(ch)
 
 class TestBarClefs(unittest.TestCase):
     def test_pausa(self):
@@ -316,7 +343,7 @@ class TestSyllables(unittest.TestCase):
         parser = ParserGABC(root='syllable')
         parse = parser.parse('A(fg)')
         syllable = visitParseTree(parse, GABCVisitor())
-        self.assertEqual(syllable.text, 'A')
+        self.assertEqual(syllable.lyric, 'A')
         self.assertEqual(len(syllable.flat.notes), 2)
         self.assertEqual(len(syllable), 1)
 
@@ -324,7 +351,7 @@ class TestSyllables(unittest.TestCase):
         parser = ParserGABC(root='syllable')
         parse = parser.parse('A(fg/fg)')
         syllable = visitParseTree(parse, GABCVisitor())
-        self.assertEqual(syllable.text, 'A')
+        self.assertEqual(syllable.lyric, 'A')
         self.assertEqual(len(syllable.flat.notes), 4)
         self.assertEqual(len(syllable), 2)
         
