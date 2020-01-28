@@ -40,6 +40,11 @@ class MissingClef(Exception):
     """Missing Clef Exception, raised when a clef is missing in the gabc"""
     pass
 
+class UnsupportedAlteration(Exception):
+    """Exception raised when encountering an alteration at a step other than 
+    B and E, which are not supported"""
+    pass
+
 def gabcPositionToStep(notePosition, clef, adjustClefOctave=0):
     """Convert a gabc note position to a step name"""
     positions = 'abcdefghijklm'
@@ -135,7 +140,7 @@ class GABCVisitor(PTNodeVisitor):
 
                 elif isinstance(el, Alteration):
                     if curGABCClef is None: 
-                        raise MissingClef('Missing clef! Cannot process notes without a clef.')
+                        raise MissingClef('Cannot process notes without a clef.')
                     position = el.editorial.gabcPosition
                     alteration = el.editorial.gabcAlteration
                     step = gabcPositionToStep(position, curGABCClef)[0]
@@ -156,7 +161,9 @@ class GABCVisitor(PTNodeVisitor):
                     elif alteration == 'y' and step == 'E':
                         eIsNatural = True
                     else:
-                        raise Exception('Unsupported alteration')
+                        alts = {'x': 'flat', 'y': 'natural', '#': 'sharp'}
+                        altType = alts[el.editorial.gabcAlteration]
+                        raise UnsupportedAlteration(f'Encountered a {altType} sign at step {step}')
             
                 # Scope of accidentals ends at breathmarks
                 elif isinstance(el, Pausa):

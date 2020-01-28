@@ -33,6 +33,7 @@ from arpeggio import visit_parse_tree as visitParseTree
 from chant21.converterGABC import GABCVisitor
 from chant21.converterGABC import gabcPositionToStep
 from chant21.converterGABC import MissingClef
+from chant21.converterGABC import UnsupportedAlteration
 
 class TestFile(unittest.TestCase):
     def test_file(self):
@@ -196,6 +197,12 @@ class TestAlterations(unittest.TestCase):
         self.assertIsInstance(alt, Alteration)
         self.assertIsInstance(n2, Neume)
 
+    def test_unsupportedAlterationsException(self):
+        parser = ParserGABC(root='body')
+        parse = parser.parse('(c2) A(fy)')
+        test_fn = lambda: visitParseTree(parse, GABCVisitor())
+        self.assertRaises(UnsupportedAlteration, test_fn)
+        
 class TestText(unittest.TestCase):
 
     def test_text(self):
