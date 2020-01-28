@@ -173,7 +173,11 @@ class GABCVisitor(PTNodeVisitor):
                         ch.append(curMeasure)
                         curMeasure = stream.Measure()
                     elif isinstance(el, articulations.BreathMark):
-                        lastNote = el.previous(note.Note)#curMeasure.flat.notes[-1]
+                        if len(curMeasure.flat) == 1:
+                            lastNote = ch.flat.notes[-1]
+                        else:
+                            lastNote = el.previous(note.Note)
+                            
                         lastNote.articulations.append(el)
 
                 elif isinstance(el, Clef):
@@ -181,8 +185,9 @@ class GABCVisitor(PTNodeVisitor):
                     curGABCClef = curClef.editorial.gabc
                 else:
                     raise Exception('Unknown element')
-
-        ch.append(curMeasure)
+        
+        if len(curMeasure.flat) > 0:
+            ch.append(curMeasure)
         return ch
         
     def visit_word(self, node, children):
@@ -277,6 +282,7 @@ class GABCVisitor(PTNodeVisitor):
         n = Note()
         position = children.results.get('position')[0]
         n.editorial.gabcPosition = position
+        n.editorial.gabcSuffixes = []
 
         # Suffix and prefix nodes return modifier functions that take a
         # music21.note.Note object as input and return a modified Note. In this
@@ -312,7 +318,7 @@ class GABCVisitor(PTNodeVisitor):
         """Return a modifier function that writes the gabc note shape to the
         the music21.note.Note object"""
         def modifier(n):
-            n.editorial.gabcShape = node.value
+            n.editorial.gabcSuffixes.append({'neumeShape': node.value})
             if node.value == 'w':
                 n.notehead = 'x'
                 n.editorial.liquescence = True
@@ -324,7 +330,7 @@ class GABCVisitor(PTNodeVisitor):
         """Return a modifier function that writes the gabc rhythmic sign
         to the the music21.note.Note object"""
         def modifier(n):
-            n.editorial.gabcRhythmicSign = node.value
+            n.editorial.gabcSuffixes.append({'rhythmicSign': node.value})
             return n
         return modifier
 
@@ -341,8 +347,8 @@ class GABCVisitor(PTNodeVisitor):
     def visit_empty_note_or_accent(self, node, children):
         if node.value in ['r', 'r0']:
             def modifier(n):
+                n.editorial.gabcSuffixes.append({'emptyNote': node.value})
                 n.noteheadFill = False
-                n.editorial.gabcEmptyNote = node.value
                 return n
             return modifier
         else: 
@@ -381,12 +387,13 @@ class ConverterGABC(converter.subConverters.SubConverter):
     registerInputExtensions = ('gabc', 'GABC')
 
     def __init__(self, *args, **kwargs):
-        self.parser = ParserGABC(root='body')
-        self.fileParser = ParserGABC(root='file')
+        super().__init__(*args, **kwargs)
+        self.parser = ParserGABC(root='file')
+        # self.fileParser = ParserGABC(root='file')
         self.visitor = GABCVisitor()
 
     def parseData(self, strData, number=None):
-        parse = self.fileParser.parse(strData)
+        parse = self.parser.parse(strData)
         chant = visitParseTree(parse, self.visitor)
         self.stream = chant
 

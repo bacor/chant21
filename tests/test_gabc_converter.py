@@ -293,6 +293,17 @@ class TestBarClefs(unittest.TestCase):
         test_fn = lambda: visitParseTree(parse, GABCVisitor())
         self.assertRaises(MissingClef, test_fn)
 
+    # def test_barlinePosition(self):
+    #     gabc = "(f3) AL(ef~)le(fg/hggf)lú(ef~)ia.(f.) <sp>V/</sp>.(::) Ve(e!fwg/hggf/e_f)ni(f.) (,) "
+    #     # gabc = "(f3) AL(ef~)le(fg/hggf)lú(ef~)ia.(f.) <sp>V/</sp>.(::) <alt>Hic genuflectitur.</alt>Ve(e!fwg/hggf/e_f)ni(f.) (,) San(f)cte(g!hwi) Spí(iv./hig/hfg)ri(gef)tus,(f.)"
+    #     gabc = "(f3) A(fg/gh) *(:) B(f)C(g) (:) D(h) (::)"
+    #     parser = ParserGABC(root='body')
+    #     parse = parser.parse(gabc)
+
+    #     ch = visitParseTree(parse, GABCVisitor())
+
+    #     print(ch)
+
 class TestSyllables(unittest.TestCase):
     def test_syllable(self):
         parser = ParserGABC(root='syllable')
@@ -370,8 +381,8 @@ class TestNotes(unittest.TestCase):
         note = visitParseTree(parse, GABCVisitor())
         ed = note.editorial
         self.assertEqual(ed.gabcPosition, 'f')
-        self.assertEqual(ed.gabcShape, 's<')
-        self.assertEqual(ed.gabcRhythmicSign, '.')
+        self.assertTrue({'neumeShape': 's<'} in ed.gabcSuffixes)
+        self.assertTrue({'rhythmicSign': '.'} in ed.gabcSuffixes)
     
     def test_notePrefix(self):
         parser = ParserGABC(root='note')
@@ -392,9 +403,20 @@ class TestNotes(unittest.TestCase):
     def test_emptyNotes(self):
         parser = ParserGABC(root='note')
         parse = parser.parse('gr')
-        note = visitParseTree(parse, GABCVisitor())
-        self.assertFalse(note.noteheadFill, False)
-        self.assertEqual(note.editorial.gabcEmptyNote, 'r')
+        n = visitParseTree(parse, GABCVisitor())
+        self.assertFalse(n.noteheadFill, False)
+        self.assertTrue({'emptyNote': 'r'} in n.editorial.gabcSuffixes)
+
+    def test_multipleSuffixes(self):
+        parser = ParserGABC(root='note')
+        parse = parser.parse('go1')
+        n = visitParseTree(parse, GABCVisitor())
+        suffixes = n.editorial.gabcSuffixes
+        self.assertTrue({'neumeShape': 'o'} in suffixes)
+        self.assertTrue({'neumeShape': '1'} in suffixes)
+        self.assertEqual(n.editorial.gabcPosition, 'g')
+
+        print(n)
 
 class TestIgnoredFeatures(unittest.TestCase):
     def test_macros(self):
