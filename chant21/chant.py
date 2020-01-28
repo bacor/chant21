@@ -5,7 +5,43 @@ from music21 import spanner
 from copy import deepcopy
 
 class Chant(music21.stream.Part):
-  pass
+    
+    def simplify(self, inplace=False):
+        if inplace:
+            ch = self
+        else:
+            ch = deepcopy(self)
+        
+        # for measure in ch.getElementsByClass('Measure'):
+        #     words = measure.getElementsByClass('Word')
+        #     for word in words: 
+        #         measure.remove(word)
+
+        #     for word in words:
+        #         syllables = word.getElementsByClass('Syllable')
+        #         for syll in syllables: 
+        #             word.remove(syllable)
+                
+        #         for syll in syllables:
+        #             neumes = syll.getElementsByClass('Neume')
+        #             for neume in neumes: 
+        #                 syll.remove(neume)
+                    
+        #             for neume in neumes:
+        #                 syll.append(neume.elements)
+        #             word.append(syll.elements)
+        #         measure.append(word.elements)
+
+
+        # # for neume in ch.recurse(classFilter='Neume'):
+        # #     slur = spanner.Slur(neume.elements)
+        # #     ch.insert(0, slur)
+        
+        # for measure in ch.getElementsByClass('Measure'):
+        #     elements = deepcopy(measure.flat.elements)
+        #     measure.clear()
+        #     measure.append(elements)
+        return ch
 
 class ChantElement(music21.base.Music21Object):
 
