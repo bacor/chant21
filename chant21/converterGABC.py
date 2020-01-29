@@ -199,7 +199,6 @@ class GABCVisitor(PTNodeVisitor):
         if len(curMeasure.flat) > 0:
             ch.append(curMeasure)
 
-        ch.addNeumeSlurs()
         return ch
         
     def visit_word(self, node, children):
