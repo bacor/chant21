@@ -164,7 +164,6 @@ class Word(ChantElement, stream.Stream):
 
                 # Only merge with next syllable if it has no sung text
                 if nextSyll.lyric is None:
-                    # TODO we do lose non-sung text here
                     prevSyll.append(nextSyll.elements)
                     self.remove(nextSyll)
                     numSylls -= 1

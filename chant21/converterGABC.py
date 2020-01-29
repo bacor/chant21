@@ -70,7 +70,6 @@ def flatten(alist):
 
 ###
 
-#TODO rename visitor to VisitorGABC
 class VisitorGABC(PTNodeVisitor):
     """Visiter class for converting a GABC parse tree to Music21"""
     
