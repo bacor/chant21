@@ -18,7 +18,6 @@ from .chant import Word
 from .chant import Alteration
 from .chant import Pausa
 from .chant import Clef
-from .chant import NoMusic
 from .chant import PausaMinima
 from .chant import PausaMinor
 from .chant import PausaMajor

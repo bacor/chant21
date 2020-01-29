@@ -165,7 +165,7 @@ class TestWord(unittest.TestCase):
         self.assertEqual(parse[0].rule_name, 'syllable')
         self.assertEqual(parse[0].value, 'A  | ( | f | )')
 
-class TestNotMusic(unittest.TestCase):
+class TestClefsAndPausas(unittest.TestCase):
     def test_clefTypes(self):
         parser = ParserGABC(root='clef')
         clefs = 'c1 c2 c3 c4 f1 f2 f3 f4 cb3'.split()
@@ -591,7 +591,3 @@ class TestText(unittest.TestCase):
             parse = parser.parse(example)
             self.assertEqual(parse[0].rule_name, rule_name)
             self.assertEqual(parse[0].value, example)
-
-        # parse = parser.parse(' <sp>A/</sp>.')
-        # self.assertEqual(parse[1].rule_name, 'A')
-        # self.assertEqual(parse[1].value, '<sp>A/</sp>.')

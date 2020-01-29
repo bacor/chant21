@@ -6,7 +6,6 @@ from .chant import Word
 from .chant import Syllable
 from .chant import Neume
 from .chant import Note
-from .chant import NoMusic
 from .chant import Pausa
 from .chant import PausaMinima
 from .chant import PausaMinor

@@ -21,7 +21,6 @@ from chant21 import Neume
 from chant21 import Syllable
 from chant21 import Alteration
 from chant21 import Clef
-from chant21 import NoMusic
 from chant21 import ParserGABC
 from chant21 import Pausa
 from chant21 import PausaMinima
