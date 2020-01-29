@@ -1,8 +1,10 @@
 from copy import deepcopy
 import json
 
-import music21
+from music21 import base
 from music21 import articulations
+from music21 import bar
+from music21 import clef
 from music21 import note
 from music21 import stream
 from music21 import articulations
@@ -10,7 +12,7 @@ from music21 import spanner
 from music21 import expressions
 
 
-class Chant(music21.stream.Part):
+class Chant(stream.Part):
     
     @property
     def flatter(self):
@@ -78,7 +80,7 @@ class Section(stream.Measure):
             'elements': [el.plain for el in self.elements]
         }
 
-class ChantElement(music21.base.Music21Object):
+class ChantElement(base.Music21Object):
 
     @property
     def annotation(self):
@@ -104,32 +106,32 @@ class Pausa(ChantElement):
         super().__init__(**kwargs)
         self.priority = -1
 
-class PausaMinima(Pausa, music21.articulations.BreathMark):
+class PausaMinima(Pausa, articulations.BreathMark):
     pass
 
-class PausaMinor(Pausa, music21.articulations.BreathMark):
+class PausaMinor(Pausa, articulations.BreathMark):
     pass
 
-class PausaMajor(Pausa, music21.bar.Barline):
+class PausaMajor(Pausa, bar.Barline):
     pass
 
-class PausaFinalis(Pausa, music21.bar.Barline):
+class PausaFinalis(Pausa, bar.Barline):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.type = 'light-light'
 
-class Clef(ChantElement, music21.clef.TrebleClef):
+class Clef(ChantElement, clef.TrebleClef):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.priority = -2
 
-class Alteration(ChantElement, music21.base.Music21Object):
+class Alteration(ChantElement, base.Music21Object):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         # Ensure that alterations always occur before their notes
         self.priority = -1
 
-class Word(ChantElement, music21.stream.Stream):
+class Word(ChantElement, stream.Stream):
     
     @property
     def flatLyrics(self):
@@ -185,7 +187,7 @@ class Word(ChantElement, music21.stream.Stream):
         # TODO long melisma's on a single-syllable word,
         # are those dealt with properly?
 
-class Syllable(ChantElement, music21.stream.Stream):
+class Syllable(ChantElement, stream.Stream):
     @property
     def lyric(self):
         notes = self.flat.notes
@@ -217,7 +219,7 @@ class Syllable(ChantElement, music21.stream.Stream):
         obj['lyric'] = self.lyric
         return obj
 
-class Neume(ChantElement, music21.stream.Stream):
+class Neume(ChantElement, stream.Stream):
     
     def addSlur(self):
         """Adds a slur to the neumes notes"""
