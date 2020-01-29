@@ -106,7 +106,6 @@ class TestConvertExamples(unittest.TestCase):
         parser = ParserGABC()
         parse = parser.parseFile(filename)
         ch = visitParseTree(parse, GABCVisitor())
-        ch.toCHSON('test.json')
         ch.flatter.show()
         self.assertTrue(True)
 

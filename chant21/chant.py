@@ -11,7 +11,6 @@ from music21 import articulations
 from music21 import spanner
 from music21 import expressions
 
-
 class Chant(stream.Part):
     
     @property

@@ -71,7 +71,7 @@ def flatten(alist):
 ###
 
 #TODO rename visitor to VisitorGABC
-class GABCVisitor(PTNodeVisitor):
+class VisitorGABC(PTNodeVisitor):
     """Visiter class for converting a GABC parse tree to Music21"""
     
     def visit_file(self, node, children):
@@ -448,7 +448,7 @@ class ConverterGABC(converter.subConverters.SubConverter):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.parser = ParserGABC(root='file')
-        self.visitor = GABCVisitor()
+        self.visitor = VisitorGABC()
 
     def parseData(self, strData, number=None):
         parse = self.parser.parse(strData)
