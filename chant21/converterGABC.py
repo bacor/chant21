@@ -69,6 +69,7 @@ def flatten(alist):
 
 ###
 
+#TODO rename visitor to VisitorGABC
 class GABCVisitor(PTNodeVisitor):
     """Visiter class for converting a GABC parse tree to Music21"""
     
@@ -195,6 +196,8 @@ class GABCVisitor(PTNodeVisitor):
         
         if len(curMeasure.flat) > 0:
             ch.append(curMeasure)
+
+        ch.addNeumeSlurs()
         return ch
         
     def visit_word(self, node, children):
@@ -221,12 +224,17 @@ class GABCVisitor(PTNodeVisitor):
             if isinstance(element, note.Note):
                 curNeume.append(element)
 
+                # End neumes on dots
+                if 'gabcSuffixes' in element.editorial:
+                    for suffix in element.editorial.gabcSuffixes:
+                        if 'rhythmicSign' in suffix and suffix['rhythmicSign'] in ['.', '..']:
+                            elements.append(curNeume)
+                            curNeume = Neume()
+
             # Special symbols that are inserted outside Neumes
             elif (isinstance(element, Pausa) 
                 or isinstance(element, Alteration)
                 or isinstance(element, Clef)):
-                # if len(curNeume) > 0 and isinstance(element, articulations.BreathMark):
-                #     curNeume[-1].articulations.append(element)
                 if len(curNeume) > 0:
                     elements.append(curNeume)
                     curNeume = Neume()
@@ -396,12 +404,11 @@ class ConverterGABC(converter.subConverters.SubConverter):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.parser = ParserGABC(root='file')
-        # self.fileParser = ParserGABC(root='file')
         self.visitor = GABCVisitor()
 
     def parseData(self, strData, number=None):
         parse = self.parser.parse(strData)
-        chant = visitParseTree(parse, self.visitor)
-        self.stream = chant
+        ch = visitParseTree(parse, self.visitor)
+        self.stream = ch
 
 converter.registerSubconverter(ConverterGABC)

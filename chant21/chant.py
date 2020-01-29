@@ -1,47 +1,45 @@
 import music21
 from music21 import articulations
 from music21 import note
+from music21 import articulations
 from music21 import spanner
 from copy import deepcopy
 
 class Chant(music21.stream.Part):
     
-    def simplify(self, inplace=False):
-        if inplace:
-            ch = self
-        else:
-            ch = deepcopy(self)
-        
-        # for measure in ch.getElementsByClass('Measure'):
-        #     words = measure.getElementsByClass('Word')
-        #     for word in words: 
-        #         measure.remove(word)
-
-        #     for word in words:
-        #         syllables = word.getElementsByClass('Syllable')
-        #         for syll in syllables: 
-        #             word.remove(syllable)
-                
-        #         for syll in syllables:
-        #             neumes = syll.getElementsByClass('Neume')
-        #             for neume in neumes: 
-        #                 syll.remove(neume)
-                    
-        #             for neume in neumes:
-        #                 syll.append(neume.elements)
-        #             word.append(syll.elements)
-        #         measure.append(word.elements)
-
-
-        # # for neume in ch.recurse(classFilter='Neume'):
-        # #     slur = spanner.Slur(neume.elements)
-        # #     ch.insert(0, slur)
-        
-        # for measure in ch.getElementsByClass('Measure'):
-        #     elements = deepcopy(measure.flat.elements)
-        #     measure.clear()
-        #     measure.append(elements)
+    @property
+    def flatter(self):
+        """A copy of the chant where words, syllables and neumes have been flattened.
+        It is not completely flat, since measures are preserved. This method is
+        useful for visualizing chants: `ch.flatter.show()` will also show measures
+        and barlines, where as `ch.flat.show()` will not."""
+        ch = deepcopy(self)
+        for measure in ch.getElementsByClass('Measure'):
+            for word in measure.getElementsByClass(Word):
+                elements = word.flat
+                wordOffset = word.offset
+                measure.remove(word)
+                for el in elements:
+                    offset = wordOffset + el.offset
+                    if isinstance(el, spanner.Slur): offset = 0.0
+                    measure.insert(offset, el)
         return ch
+
+    def addNeumeSlurs(self):
+        neumes = self.recurse(classFilter=Neume)
+        for neume in neumes:
+            neume.addSlur()
+
+    # def breathmarksToBarlines(self, inplace=True):
+    #     if inplace:
+    #         ch = self
+    #     else:
+    #         ch = deepcopy(self)
+
+    #     for el in self.getElementsByClass(articulations.BreathMark):
+    #         print(el)
+
+        # return ch
 
 class ChantElement(music21.base.Music21Object):
 
@@ -78,7 +76,7 @@ class PausaMajor(Pausa, music21.bar.Barline):
 class PausaFinalis(Pausa, music21.bar.Barline):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.type = 'final'
+        self.type = 'light-light'
 
 class Clef(ChantElement, music21.clef.TrebleClef):
     def __init__(self, **kwargs):
@@ -180,6 +178,17 @@ class Syllable(music21.stream.Stream):
     def neumes(self):
         return self.getElementsByClass(Neume)
 
+    # @property
+    # def flatter(self):
+    #     syllable = deepcopy(self)
+    #     for neume in syllable.neumes:
+    #         elements = neume.elements
+    #         syllable.remove(neume)
+    #         for element in elements:
+    #             offset = neume.offset + element.offset
+    #             syllable.insert(offset, element)
+    #     return syllable
+
     @property
     def plain(self):
         """A plain Python object representing the syllable"""
@@ -198,6 +207,14 @@ class Neume(music21.stream.Stream):
             'type': 'neume',
             'notes': [note.plain for note in self.elements],
         }
+    
+    def addSlur(self):
+        """Adds a slur to the neumes notes"""
+        notes = self.notes.elements
+        if len(notes) > 1:
+            slur = spanner.Slur(notes)
+            slur.priority = -1
+            self.insert(0, slur)
     
 class Note(note.Note):
     def __init__(self, *args, **kwargs):

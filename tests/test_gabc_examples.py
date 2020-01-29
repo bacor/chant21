@@ -2,7 +2,8 @@ import unittest
 import glob
 from music21 import converter
 from chant21 import ParserGABC
-
+from chant21.converterGABC import GABCVisitor
+from arpeggio import visit_parse_tree as visitParseTree
 class TestParseExamples(unittest.TestCase):
 
     def run_test(self, example):
@@ -95,7 +96,26 @@ class TestConvertExamples(unittest.TestCase):
         GABC_FN = '/Users/Bas/repos/projects/GregoBaseCorpus/gabc/{idx:0>5}.gabc'
         filename = GABC_FN.format(idx=1)
         ch = converter.parse(filename)
+        ch.flatter.show()
         self.assertTrue(True)
+
+    def test_GBCConversion2(self):
+        GABC_FN = '/Users/Bas/repos/projects/GregoBaseCorpus/gabc/{idx:0>5}.gabc'
+        filename = GABC_FN.format(idx=1)
+        parser = ParserGABC()
+        parse = parser.parseFile(filename)
+        ch = visitParseTree(parse, GABCVisitor())
+        ch.flatter.show()
+        self.assertTrue(True)
+
+    def test_exampleConversion(self):
+        gabc = "(c4) AL(dc~) *(;) <i>ij.</i>(hghvGFg_fgvFDffdev.dec.,e/ggh'GFgvFEffdevDCd!ewfd.)"
+        parser = ParserGABC()
+        parse = parser.parse(gabc)
+        ch = visitParseTree(parse, GABCVisitor())
+        ch.flatter.show()
+        self.assertTrue(True)
+        
 
 if __name__ == '__main__':
     unittest.main()
