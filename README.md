@@ -87,3 +87,14 @@ Dependencies
 ------------
 
 - [Arpeggio 1.9.2](http://textx.github.io/Arpeggio)
+
+
+Grep
+----
+
+Some useful grep commands to check which features should be supported
+
+```bash
+# Code
+grep -E '<v>[^<]+</v>' *.gabc -o -h | sort | uniq -c
+```

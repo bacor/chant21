@@ -243,11 +243,6 @@ class TestSyllable(unittest.TestCase):
         self.assertEqual(comma.value, ',')
         self.assertEqual(sp2.rule_name, 'spacer')
 
-    def test_tags(self):
-        parse = self.parser.parse('<i>test</i>(f)')
-        self.assertEqual(parse[0].rule_name, 'text')
-        self.assertEqual(parse[0].value, '<i>test</i>')
-
 class TestAdvanced(unittest.TestCase):
     
     def test_accidental(self):
@@ -305,9 +300,7 @@ class TestAdvanced(unittest.TestCase):
         clef, _, macro1, _, macro2, _, word, _ = parse
         self.assertEqual(macro1.rule_name, 'macro')
         self.assertEqual(macro2.rule_name, 'macro')
-        # self.assertEqual(clef.rule_name, 'not_music')
-        # self.assertEqual(word.rule_name, 'word')
-
+        
 class TestNote(unittest.TestCase):
 
     def __init__(self, *args, **kwargs):
@@ -464,5 +457,141 @@ class TestAlterations(unittest.TestCase):
         self.assertEqual(polyphony.rule_name, 'polyphony')
         self.assertEqual(polyphony[1].rule_name, 'alteration')
 
-if __name__  ==  '__main__':
-    unittest.main()
+class TestText(unittest.TestCase):
+    def test_text(self):
+        parser = ParserGABC(root='text')
+        parse = parser.parse('hello')
+        self.assertTrue(parse.value, 'hello')
+    
+    def test_textWithSpaces(self):
+        parser = ParserGABC(root='text')
+        parse = parser.parse('hello world')
+        self.assertTrue(parse.value, 'hello world')
+    
+    def test_textCannotStartWithSpace(self):
+        parser = ParserGABC(root='text')
+        test_fn = lambda: parser.parse(' hello')
+        self.assertRaises(NoMatch, test_fn)
+
+    def test_nonLyricTags(self):
+        parser = ParserGABC(root='text')
+        parse = parser.parse('<sp>V/</sp>.')
+        self.assertEqual(parse[0].rule_name, 'annotation')
+        self.assertEqual(parse[0].value, '<sp>V/</sp>.')
+
+    def test_lyricTags(self):
+        parser = ParserGABC(root='text')
+        h, e, llo = parser.parse('H<i>e</i>llo')
+        self.assertEqual(h.value, 'H')
+        self.assertEqual(e.rule_name, 'tag')
+        self.assertEqual(e.value, '<i> | e | </i>')
+        self.assertEqual(llo.value, 'llo')
+    
+    def test_stars(self):
+        parser = ParserGABC(root='star')
+        examples = [
+            ('*', '*'),
+            ('**', '**'),
+            (' * ', '*'),
+            ('<c>*</c>', '*'),
+            ('<c>*</c>', '*'),
+            ('<c>**</c>', '**')
+        ]
+        for example, value in examples:
+            star = parser.parse(example)
+            self.assertEqual(star.rule_name, 'star')
+            if len(star) > 1:
+                self.assertEqual(star[1].value, value)
+            else:
+                self.assertEqual(star[0].value, value)
+        
+    def test_repeats(self):
+        parser = ParserGABC(root='annotation')
+        examples = [
+            '<i>i</i>',
+            '<i>ii.</i>',
+            '<i>iij.</i>',
+            '<i>ij.</i>',
+            '<i>Repeat :</i>',
+            '<i>Repeat: </i>',
+            '<i>Repeat:</i>',
+            '<i>Repet.</i>',
+            '<i>Repet</i>',
+            '<i>Repetitur:</i>',
+            '<i>Repetitur</i>',
+            '<i>repeats :</i>',
+        ]
+        for example in examples:
+            parse = parser.parse(example)
+            (_, rep, _), = parse
+            self.assertEqual(parse[0].rule_name, 'repeat')
+            self.assertEqual(rep.value, example[3:-4])
+    
+    def test_psalm(self):
+        parser = ParserGABC(root='annotation')
+        examples = [
+            '<i>Ps.</i>',
+            '<i>Ps. 117.</i>',
+            '<i>Ps. 117</i>',
+            '<i>Ps. 50.</i>',
+            '<i>Ps. 50</i>',
+            '<i>Ps.~50.</i>'
+        ]
+        for example in examples:
+            parse = parser.parse(example)
+            (_, el, _), = parse
+            self.assertEqual(parse[0].rule_name, 'psalm')
+            self.assertEqual(el.value, example[3:-4])
+
+    def test_TP(self):
+        parser = ParserGABC(root='annotation')
+        examples = [
+            '<i>T. P. </i>',
+            '<i>T. P.</i>',
+            '<i>T.P.</i>',
+            '<i>T.P</i>',
+            '<i> T.P. </i>',
+            '<i> T.P.</i>'
+        ]
+        for example in examples:
+            parse = parser.parse(example)
+            (_, el, _), = parse
+            self.assertEqual(parse[0].rule_name, 'TP')
+            self.assertEqual(el.value, example[3:-4])
+
+    def test_latex(self):
+        parser = ParserGABC(root='annotation')
+        examples = [
+            '<v>$\\star$</v>',
+            '<v>\\\'y</v>',
+            '<v>\\ae</v>',
+            '<v>\\greheightstar</v>',
+            '<v>\\gresixstar</v>'
+        ]
+        for example in examples:
+            parse = parser.parse(example)
+            (_, el, _), = parse
+            self.assertEqual(parse[0].rule_name, 'latex')
+            self.assertEqual(el.value, example[3:-4])
+
+    def test_others(self):
+        parser = ParserGABC(root='annotation')
+        examples = [
+            ('V', '<sp>V/</sp>',),
+            ('V', '<sp>V/</sp>.'),
+            ('V', '<sp>V/</sp>.'),
+            ('R', '<sp>R/</sp>'),
+            ('R', '<sp>R/</sp>.'),
+            ('R', '<sp>R/</sp>.'),
+            ('A', '<sp>A/</sp>'),
+            ('A', '<sp>A/</sp>.'),
+            ('A', '<sp>A/</sp>.'),
+        ]
+        for rule_name, example in examples:
+            parse = parser.parse(example)
+            self.assertEqual(parse[0].rule_name, rule_name)
+            self.assertEqual(parse[0].value, example)
+
+        # parse = parser.parse(' <sp>A/</sp>.')
+        # self.assertEqual(parse[1].rule_name, 'A')
+        # self.assertEqual(parse[1].value, '<sp>A/</sp>.')

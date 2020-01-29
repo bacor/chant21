@@ -3,6 +3,7 @@ from music21 import articulations
 from music21 import note
 from music21 import articulations
 from music21 import spanner
+from music21 import expressions
 from copy import deepcopy
 
 class Chant(music21.stream.Part):
@@ -44,12 +45,20 @@ class Chant(music21.stream.Part):
 class ChantElement(music21.base.Music21Object):
 
     @property
-    def text(self):
-        return self.editorial.get('text', None)
+    def annotation(self):
+        return self.editorial.get('annotation')
+    
+    @annotation.setter
+    def annotation(self, value):
+        self.editorial.annotation = value
 
-    @text.setter
-    def text(self, text):
-        self.editorial.text = text
+    # @property
+    # def text(self):
+    #     return self.editorial.get('text', None)
+
+    # @text.setter
+    # def text(self, text):
+    #     self.editorial.text = text
 
     @property
     def plain(self):
@@ -92,9 +101,9 @@ class Alteration(music21.base.Music21Object):
 class Word(music21.stream.Stream):
     
     @property
-    def text(self):
+    def flatLyrics(self):
         try:
-            return ''.join(syll.text for syll in self.syllables)
+            return ''.join(syll.lyric for syll in self.syllables)
         except:
             return None
  
@@ -124,7 +133,7 @@ class Word(music21.stream.Stream):
                 numSylls -= 1
 
                 # Only merge with next syllable if it has no sung text
-                if not nextSyll.hasSungText:
+                if nextSyll.lyric is None:
                     # TODO we do lose non-sung text here
                     prevSyll.append(nextSyll.elements)
                     self.remove(nextSyll)
@@ -147,32 +156,26 @@ class Word(music21.stream.Stream):
         # TODO long melisma's on a single-syllable word,
         # are those dealt with properly?
 
-class Syllable(music21.stream.Stream):
-
+class Syllable(ChantElement, music21.stream.Stream):
     @property
-    def text(self):
+    def lyric(self):
         notes = self.flat.notes
         if len(notes) > 0:
             return notes[0].lyric
         else:
-            return self.editorial.get('text')
+            return self.editorial.get('lyric')
     
-    @text.setter
-    def text(self, value):
+    @lyric.setter
+    def lyric(self, value):
         notes = self.flat.notes
         if len(notes) > 0:
             if type(value) is str:
-                lyrics = note.Lyric(text=value, applyRaw=True)
-                notes[0].lyrics = [lyrics]
+                l = note.Lyric(text=value, applyRaw=True)
+                notes[0].lyrics = [l]
             elif isinstance(value, note.Lyric):
                 notes[0].lyrics = [value]
         else:
-            self.editorial.text = value
-
-    @property
-    def hasSungText(self):
-        #TODO also return false for *, i, ii, etc
-        return self.text != None
+            self.editorial.lyric = value
 
     @property
     def neumes(self):
@@ -220,3 +223,11 @@ class Note(note.Note):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, *kwargs)
         self.stemDirection = 'noStem'
+
+class Annotation(expressions.TextExpression):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.style.alignHorizontal = 'center'
+        self.style.fontStyle = 'italic'
+        # TODO this has no effect
+        self.placement = 'above' 
