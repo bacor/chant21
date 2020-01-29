@@ -32,8 +32,6 @@ body = ((macro / word) (whitespace / EOF))*
 word = syllable+
 syllable = text? "(" music ")"
 whitespace = r'[ \n\r\t\f\v]+'
-// text either contains a tag (e.g. "bla<i>foo</i>bla") 
-// or is a string without brackets, not starting with a space
 music = (
     custos
     / clef 
@@ -49,14 +47,14 @@ music = (
     / end_of_line)*
 
 // TEXT
-text = (r'[^\(<\*]*' (annotation / tag) r'[^\(]*') / r'[^ \n\r\t\f\v\(][^\(\n]*'
+text = (r'[^\(<\* ]*' (annotation / tag) r'[^\(]*') / r'[^ \n\r\t\f\v\(][^\(\n]*'
 
 // TODO include whitespace in annotation
 annotation = repeat / psalm / TP / V / R / A / star / '+' / latex
     V = r'<sp>V/</sp>\.?'
     R = r'<sp>R/</sp>\.?'
     A = r'<sp>A/</sp>\.?'
-    star = r'(<c>)?[ ]*' r'\*+' r'[ ]*(</c>)?'
+    star = '<c>'? r'\*+' '</c>'?
     repeat = '<i>' (r'i+j?\.?' / r'((R|r)epea?t[a-z]*)[\.? :]*') '</i>'
     psalm = '<i>' r'Ps[ \.~0-9]*' '</i>'
     TP = '<i>' r'[ ]?T[\. ]+P[\. ]*' '</i>'

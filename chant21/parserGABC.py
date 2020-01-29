@@ -30,7 +30,7 @@ class ParserGABC():
         with open(grammarPath, 'r') as handle:
             grammar = handle.read()
             
-        self.parser = ParserPEG(grammar, root, skipws=False, **kwargs)
+        self.parser = ParserPEG(grammar, root, skipws=False, memoization=True, **kwargs)
 
     def parse(self, gabc: str, debug=False):
         """Parse a gabc string

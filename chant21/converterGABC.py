@@ -392,6 +392,15 @@ class GABCVisitor(PTNodeVisitor):
             return syll
         return modifier
 
+    def visit_V(self, node, children):
+        return 'V'
+
+    def visit_R(self, node, children):
+        return 'R'
+
+    def visit_A(self, *args):
+        return 'A'
+
     # Ignored properties
     
     def visit_empty_note_or_accent(self, node, children):

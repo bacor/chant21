@@ -267,6 +267,14 @@ class TestText(unittest.TestCase):
         self.assertEqual(syll1.annotation, 'i.')
         self.assertIsNone(syll1.lyric)
 
+    def test_annotationsSpaces(self):
+        parser = ParserGABC(root='body')    
+        parse = parser.parse('(c2) A(f) * (f)')
+        ch = visitParseTree(parse, GABCVisitor())
+        clef, w1, w2 = ch[0]
+        self.assertEqual(w2[0].annotation, '*')
+
+
     def test_annotationsAndLyrics(self):
         parser = ParserGABC(root='word')    
         parse = parser.parse('A<i>i.</i> B(f)')
@@ -325,17 +333,6 @@ class TestBarClefs(unittest.TestCase):
         parse = parser.parse('a(fgf)')
         test_fn = lambda: visitParseTree(parse, GABCVisitor())
         self.assertRaises(MissingClef, test_fn)
-
-    # def test_barlinePosition(self):
-    #     gabc = "(f3) AL(ef~)le(fg/hggf)lú(ef~)ia.(f.) <sp>V/</sp>.(::) Ve(e!fwg/hggf/e_f)ni(f.) (,) "
-    #     # gabc = "(f3) AL(ef~)le(fg/hggf)lú(ef~)ia.(f.) <sp>V/</sp>.(::) <alt>Hic genuflectitur.</alt>Ve(e!fwg/hggf/e_f)ni(f.) (,) San(f)cte(g!hwi) Spí(iv./hig/hfg)ri(gef)tus,(f.)"
-    #     gabc = "(f3) A(fg/gh) *(:) B(f)C(g) (:) D(h) (::)"
-    #     parser = ParserGABC(root='body')
-    #     parse = parser.parse(gabc)
-
-    #     ch = visitParseTree(parse, GABCVisitor())
-
-    #     print(ch)
 
 class TestSyllables(unittest.TestCase):
     def test_syllable(self):

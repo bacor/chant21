@@ -473,6 +473,15 @@ class TestText(unittest.TestCase):
         test_fn = lambda: parser.parse(' hello')
         self.assertRaises(NoMatch, test_fn)
 
+    def test_nonLyricsSpaces(self):
+        parser = ParserGABC(root='body')
+        for gabc in ["A(f) *(::)", "A(f) *(::)", "A(f) * (::)"]:
+            parse = parser.parse(gabc)
+            word1, _, bar, _ = parse
+            text, _, pausa, _ = bar[0]
+            self.assertEqual(text[0].rule_name, 'annotation')
+            self.assertEqual(text[0].value, '*')
+
     def test_nonLyricTags(self):
         parser = ParserGABC(root='text')
         parse = parser.parse('<sp>V/</sp>.')
@@ -492,7 +501,6 @@ class TestText(unittest.TestCase):
         examples = [
             ('*', '*'),
             ('**', '**'),
-            (' * ', '*'),
             ('<c>*</c>', '*'),
             ('<c>*</c>', '*'),
             ('<c>**</c>', '**')

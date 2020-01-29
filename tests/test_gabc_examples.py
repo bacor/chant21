@@ -95,14 +95,14 @@ class TestConvertExamples(unittest.TestCase):
     def test_GBCConversion(self):
         # GABC_FN = '/Users/Bas/repos/projects/GregoBaseCorpus/gabc/{idx:0>5}.gabc'
         GABC_FN = '/Users/Bas/Dropbox/Desktop/gabc/{idx:0>5}.gabc'
-        filename = GABC_FN.format(idx=2)
+        filename = GABC_FN.format(idx=1)
         ch = converter.parse(filename)
         ch.flatter.show()
         self.assertTrue(True)
 
     def test_GBCConversion2(self):
         GABC_FN = '/Users/Bas/repos/projects/GregoBaseCorpus/gabc/{idx:0>5}.gabc'
-        filename = GABC_FN.format(idx=1)
+        filename = GABC_FN.format(idx=4)
         parser = ParserGABC()
         parse = parser.parseFile(filename)
         ch = visitParseTree(parse, GABCVisitor())
@@ -110,7 +110,9 @@ class TestConvertExamples(unittest.TestCase):
         self.assertTrue(True)
 
     def test_exampleConversion(self):
-        gabc = "(c4) AL(dc~) *(;) <i>ij.</i>(hghvGFg_fgvFDffdev.dec.,e/ggh'GFgvFEffdevDCd!ewfd.)"
+        # gabc = "(c4) AL(dc~) *(;) <i>ij.</i>(hghvGFg_fgvFDffdev.dec.,e/ggh'GFgvFEffdevDCd!ewfd.)"
+        # gabc = "(c4) AL(dc~)le(c/e'gF'EC'd)lú(dc/fg!hvGF'g)ia.(g.) *(;) <i>ij.</i>(hghvGFg_fgvFDffdev.dec.,e/ggh'GFgvFEffdevDCd!ewfd.) "
+        gabc = "(c4) AL(dc~)le(c/e'gF'EC'd)lú(dc/fg!hvGF'g)ia.(g.) <sp>V/</sp>.(::) Lau(h)dem(ghG'E) Dó(fe)mi(fg)ni(gvF'EC'dw!evDCd.) (;) lo(d)qué(d/ffe/ggh)tur(fvED) os(cd) me(d!ewfd)um,(d.) (:) et(de) be(gh)ne(gh)dí(h!iwj/ki'jvH'G/h!iwjh)cat(h.) (,) o(h_ghvGF)mnis(fvED) ca(c.d!ewfd)ro(d.) (;) no(de)men(gh) san(ghgh)ctum(h.) *(,) e(h!iwj/ki'jvH'G/h!iwjh)jus.(h,hghvGFg_fgvFDffdev.dec.,e/ggh'GFgvFEffd/evDCd!ewfd.) (::)"
         parser = ParserGABC()
         parse = parser.parse(gabc)
         ch = visitParseTree(parse, GABCVisitor())
