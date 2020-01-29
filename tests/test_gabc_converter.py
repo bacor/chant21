@@ -17,6 +17,7 @@ from music21 import note as note21
 from music21 import clef as clef21
 
 from chant21 import Note
+from chant21 import Section
 from chant21 import Neume
 from chant21 import Syllable
 from chant21 import Alteration

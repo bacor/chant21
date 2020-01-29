@@ -1,4 +1,5 @@
 from .chant import Chant
+from .chant import Section
 from .chant import ChantElement
 from .chant import Clef
 from .chant import Alteration

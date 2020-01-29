@@ -11,6 +11,7 @@ from arpeggio import PTNodeVisitor
 from arpeggio import visit_parse_tree as visitParseTree
 
 from .chant import Chant
+from .chant import Section
 from .chant import Note
 from .chant import Neume
 from .chant import Syllable
@@ -103,7 +104,7 @@ class GABCVisitor(PTNodeVisitor):
 
     def visit_body(self, node, children):
         ch = Chant()
-        curMeasure = stream.Measure()
+        curSection = Section()
         curClef = Clef()
         curGABCClef = None
 
@@ -111,7 +112,7 @@ class GABCVisitor(PTNodeVisitor):
         for word in children:
             if not isinstance(word, Word): raise Exception('Quoi?')
             element = word
-            curMeasure.append(word)
+            curSection.append(word)
 
             # Scope of accidentals ends with word boundaries
             curClefHasFlat = curGABCClef in ['cb1', 'cb2', 'cb3', 'cb4']
@@ -177,11 +178,11 @@ class GABCVisitor(PTNodeVisitor):
                         # First remove the barline and then add it as a
                         # barline to the measue (which adds it to the measure stream)
                         word.remove(el, recurse=True)
-                        curMeasure.rightBarline = el
-                        ch.append(curMeasure)
-                        curMeasure = stream.Measure()
+                        curSection.rightBarline = el
+                        ch.append(curSection)
+                        curSection = Section()
                     elif isinstance(el, articulations.BreathMark):
-                        if len(curMeasure.flat) == 1:
+                        if len(curSection.flat) == 1:
                             lastNote = ch.flat.notes[-1]
                         else:
                             lastNote = el.previous(note.Note)
@@ -196,8 +197,8 @@ class GABCVisitor(PTNodeVisitor):
                 else:
                     raise Exception('Unknown element')
         
-        if len(curMeasure.flat) > 0:
-            ch.append(curMeasure)
+        if len(curSection.flat) > 0:
+            ch.append(curSection)
 
         return ch
         

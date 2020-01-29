@@ -1,3 +1,6 @@
+from copy import deepcopy
+import json
+
 import music21
 from music21 import articulations
 from music21 import note
@@ -5,7 +8,7 @@ from music21 import stream
 from music21 import articulations
 from music21 import spanner
 from music21 import expressions
-from copy import deepcopy
+
 
 class Chant(music21.stream.Part):
     
@@ -30,9 +33,9 @@ class Chant(music21.stream.Part):
     @property
     def phrases(self):
         """A stream of phrases: the music between two pausas.
-        Every pausa is thus turned into a measure boundary"""
+        Every pausa is thus turned into a section boundary"""
         phrases = stream.Part()
-        curPhrase = stream.Measure()
+        curPhrase = Section()
         for el in self.flat:
             if not isinstance(el, Pausa):
                 curPhrase.append(el)
@@ -40,15 +43,41 @@ class Chant(music21.stream.Part):
                 if isinstance(el, articulations.BreathMark):
                     curPhrase.rightBarline = 'dotted'
                 phrases.append(curPhrase)
-                curPhrase = stream.Measure()
+                curPhrase = Section()
         return phrases
 
+    @property
+    def sections(self):
+        return self.getElementsByClass(Section)
+
+    @property
+    def plain(self):
+        obj = {
+            'type': 'Chant',
+            'header': None,
+            'elements': [section.plain for section in self.sections]
+        }
+        return obj
+
+    def toCHSON(self, fp, **kwargs):
+        with open(fp, 'w') as handle:
+            json.dump(self.plain, handle, **kwargs)
+    
     def addNeumeSlurs(self):
         """Add slurs to all notes in a single neume"""
         neumes = self.recurse(classFilter=Neume)
         for neume in neumes:
             neume.addSlur()
-   
+
+class Section(stream.Measure):
+    @property
+    def plain(self):
+        return {
+            'type': 'Section',
+            'editorial': dict(self.editorial),
+            'elements': [el.plain for el in self.elements]
+        }
+
 class ChantElement(music21.base.Music21Object):
 
     @property
@@ -61,7 +90,14 @@ class ChantElement(music21.base.Music21Object):
 
     @property
     def plain(self):
-        raise NotImplementedError()
+        obj = {
+            'type': type(self).__name__,
+        }
+        if self.annotation:
+            obj['annotation'] = self.annotation
+        if self.editorial:
+            obj['editorial'] = dict(self.editorial)
+        return obj
 
 class Pausa(ChantElement):
     def __init__(self, **kwargs):
@@ -87,13 +123,13 @@ class Clef(ChantElement, music21.clef.TrebleClef):
         super().__init__(**kwargs)
         self.priority = -2
 
-class Alteration(music21.base.Music21Object):
+class Alteration(ChantElement, music21.base.Music21Object):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         # Ensure that alterations always occur before their notes
         self.priority = -1
 
-class Word(music21.stream.Stream):
+class Word(ChantElement, music21.stream.Stream):
     
     @property
     def flatLyrics(self):
@@ -108,12 +144,10 @@ class Word(music21.stream.Stream):
 
     @property
     def plain(self):
-        """A plain Python object representing the word"""
-        return {
-            'type': 'word',
-            'syllables': [syll.plain for syll in self.syllables]
-        }
-
+        obj = super().plain
+        obj['elements'] = [el.plain for el in self.elements]
+        return obj
+    
     def mergeMelismasWithPausas(self):
         """Merge syllables if they are separated by a syllable containing only a pausa.
         This is often the case on long melismas."""
@@ -176,35 +210,14 @@ class Syllable(ChantElement, music21.stream.Stream):
     def neumes(self):
         return self.getElementsByClass(Neume)
 
-    # @property
-    # def flatter(self):
-    #     syllable = deepcopy(self)
-    #     for neume in syllable.neumes:
-    #         elements = neume.elements
-    #         syllable.remove(neume)
-    #         for element in elements:
-    #             offset = neume.offset + element.offset
-    #             syllable.insert(offset, element)
-    #     return syllable
-
     @property
     def plain(self):
-        """A plain Python object representing the syllable"""
-        return {
-            'type': 'syllable',
-            'text': self.text,
-            'neumes': [neume.plain for neume in self.neumes]
-        }
+        obj = super().plain
+        obj['elements'] = [el.plain for el in self.elements]
+        obj['lyric'] = self.lyric
+        return obj
 
-class Neume(music21.stream.Stream):
-   
-    @property
-    def plain(self):
-        """A plain Python object representing the neume"""
-        return {
-            'type': 'neume',
-            'notes': [note.plain for note in self.elements],
-        }
+class Neume(ChantElement, music21.stream.Stream):
     
     def addSlur(self):
         """Adds a slur to the neumes notes"""
@@ -213,13 +226,29 @@ class Neume(music21.stream.Stream):
             slur = spanner.Slur(notes)
             slur.priority = -1
             self.insert(0, slur)
+
+    @property
+    def plain(self):
+        obj = super().plain
+        obj['elements'] = [el.plain for el in self.elements]
+        return obj
     
-class Note(note.Note):
+class Note(ChantElement, note.Note):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, *kwargs)
         self.stemDirection = 'noStem'
 
+    @property
+    def plain(self):
+        obj = super().plain
+        obj['pitch'] = self.pitch.nameWithOctave,
+        if self.notehead != 'normal':
+            obj['notehead'] = self.notehead
+        return obj
+
 class Annotation(expressions.TextExpression):
+    plain = None
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.style.alignHorizontal = 'center'
