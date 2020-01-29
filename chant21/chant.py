@@ -1,6 +1,7 @@
 import music21
 from music21 import articulations
 from music21 import note
+from music21 import stream
 from music21 import articulations
 from music21 import spanner
 from music21 import expressions
@@ -26,22 +27,28 @@ class Chant(music21.stream.Part):
                     measure.insert(offset, el)
         return ch
 
+    @property
+    def phrases(self):
+        """A stream of phrases: the music between two pausas.
+        Every pausa is thus turned into a measure boundary"""
+        phrases = stream.Part()
+        curPhrase = stream.Measure()
+        for el in self.flat:
+            if not isinstance(el, Pausa):
+                curPhrase.append(el)
+            else:
+                if isinstance(el, articulations.BreathMark):
+                    curPhrase.rightBarline = 'dotted'
+                phrases.append(curPhrase)
+                curPhrase = stream.Measure()
+        return phrases
+
     def addNeumeSlurs(self):
+        """Add slurs to all notes in a single neume"""
         neumes = self.recurse(classFilter=Neume)
         for neume in neumes:
             neume.addSlur()
-
-    # def breathmarksToBarlines(self, inplace=True):
-    #     if inplace:
-    #         ch = self
-    #     else:
-    #         ch = deepcopy(self)
-
-    #     for el in self.getElementsByClass(articulations.BreathMark):
-    #         print(el)
-
-        # return ch
-
+   
 class ChantElement(music21.base.Music21Object):
 
     @property
@@ -51,14 +58,6 @@ class ChantElement(music21.base.Music21Object):
     @annotation.setter
     def annotation(self, value):
         self.editorial.annotation = value
-
-    # @property
-    # def text(self):
-    #     return self.editorial.get('text', None)
-
-    # @text.setter
-    # def text(self, text):
-    #     self.editorial.text = text
 
     @property
     def plain(self):
