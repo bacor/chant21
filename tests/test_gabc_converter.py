@@ -30,7 +30,7 @@ from chant21 import PausaMajor
 from chant21 import PausaFinalis
 
 from arpeggio import visit_parse_tree as visitParseTree
-from chant21.converterGABC import GABCVisitor
+from chant21.converterGABC import VisitorGABC
 from chant21.converterGABC import gabcPositionToStep
 from chant21.converterGABC import MissingClef
 from chant21.converterGABC import UnsupportedAlteration
@@ -40,7 +40,7 @@ class TestFile(unittest.TestCase):
         parser = ParserGABC(root='file')
         fileStr = 'title:Title!;\nattr1:value1;%%\n\n(c2) a(f)b(g) c(h)\ni(j)'
         parse = parser.parse(fileStr)
-        chant = visitParseTree(parse, GABCVisitor())
+        chant = visitParseTree(parse, VisitorGABC())
 
         self.assertEqual(chant.metadata.title, 'Title!')
 
@@ -58,7 +58,7 @@ class TestFile(unittest.TestCase):
         parser = ParserGABC(root='file')
         fileStr = '(c2) a(f)b(g) c(h)\ni(j)'
         parse = parser.parse(fileStr)
-        chant = visitParseTree(parse, GABCVisitor())
+        chant = visitParseTree(parse, VisitorGABC())
         notes = chant.flat.notes
         self.assertEqual(notes[0].name, 'C')
         self.assertEqual(notes[1].name, 'D')
@@ -68,7 +68,7 @@ class TestFile(unittest.TestCase):
     def test_header(self):
         parser = ParserGABC(root='header')
         parse = parser.parse('attr1: value1;\nattr2:value2;')
-        header = visitParseTree(parse, GABCVisitor())
+        header = visitParseTree(parse, VisitorGABC())
         target = dict(attr1='value1', attr2='value2')
         self.assertDictEqual(header, target)
 
@@ -76,7 +76,7 @@ class TestFile(unittest.TestCase):
         parser = ParserGABC()
         fileStr = 'attr1:value1;\n%%\nattr2:value2;\n%%\n(c2) A(f)'
         parse = parser.parse(fileStr)
-        chant = visitParseTree(parse, GABCVisitor())
+        chant = visitParseTree(parse, VisitorGABC())
         self.assertEqual(chant.editorial.attr1, 'value1')
         self.assertEqual(chant.editorial.attr2, 'value2')
 
@@ -100,7 +100,7 @@ class TestAlterations(unittest.TestCase):
         parser = ParserGABC(root='alteration')
         for alteration in 'xy#':
             parse = parser.parse(f'f{alteration}')
-            element = visitParseTree(parse, GABCVisitor())
+            element = visitParseTree(parse, VisitorGABC())
             ed = element.editorial
             self.assertIsInstance(element, Alteration)
             self.assertEqual(ed.gabcPosition, 'f')
@@ -109,7 +109,7 @@ class TestAlterations(unittest.TestCase):
     def test_flats(self):
         parser = ParserGABC(root='body')    
         parse = parser.parse('(c2) a(exee,e)')
-        stream = visitParseTree(parse, GABCVisitor())
+        stream = visitParseTree(parse, VisitorGABC())
         notes = stream.flat.notes
         self.assertEqual(notes[0].name, 'B-')
         self.assertEqual(notes[0].pitch.accidental.name, 'flat')
@@ -121,7 +121,7 @@ class TestAlterations(unittest.TestCase):
     def test_naturals(self): 
         parser = ParserGABC(root='body')    
         parse = parser.parse('(c2) a(eexeeyee,e)')
-        stream = visitParseTree(parse, GABCVisitor())
+        stream = visitParseTree(parse, VisitorGABC())
         notes = stream.flat.notes
         self.assertEqual(notes[0].name, 'B')
         self.assertEqual(notes[1].name, 'B-')
@@ -139,7 +139,7 @@ class TestAlterations(unittest.TestCase):
         """Test whether breath marks reset the accidentals"""
         parser = ParserGABC(root='body')    
         parse = parser.parse('(c2) (exe,fe)')
-        stream = visitParseTree(parse, GABCVisitor())
+        stream = visitParseTree(parse, VisitorGABC())
         notes = stream.flat.notes
         self.assertEqual(notes[0].name, 'B-')
         self.assertEqual(notes[1].name, 'C')
@@ -149,7 +149,7 @@ class TestAlterations(unittest.TestCase):
         """Test whether word boundaries reset accidentals"""
         parser = ParserGABC(root='body')    
         parse = parser.parse('(c2) a(exfe) c(e)')
-        stream = visitParseTree(parse, GABCVisitor())
+        stream = visitParseTree(parse, VisitorGABC())
         notes = stream.flat.notes
         self.assertEqual(notes[0].name, 'C')
         self.assertEqual(notes[1].name, 'B-')
@@ -159,7 +159,7 @@ class TestAlterations(unittest.TestCase):
         """Test whether flats are NOT reset by syllable boundaries"""
         parser = ParserGABC(root='body')    
         parse = parser.parse('(c2) a(exe)b(e)')
-        stream = visitParseTree(parse, GABCVisitor())
+        stream = visitParseTree(parse, VisitorGABC())
         notes = stream.flat.notes
         self.assertEqual(notes[0].name, 'B-')
         self.assertEqual(notes[1].name, 'B-')
@@ -168,7 +168,7 @@ class TestAlterations(unittest.TestCase):
         """Test whether flats are NOT reset by syllable boundaries"""
         parser = ParserGABC(root='body')    
         parse = parser.parse('(cb2) (e)')
-        stream = visitParseTree(parse, GABCVisitor())
+        stream = visitParseTree(parse, VisitorGABC())
         notes = stream.flat.notes
         self.assertEqual(notes[0].name, 'B-')
 
@@ -176,7 +176,7 @@ class TestAlterations(unittest.TestCase):
         """Test whether naturals work in flat clefs"""
         parser = ParserGABC(root='body')    
         parse = parser.parse('(cb2) (eeyee,e) (e)')
-        stream = visitParseTree(parse, GABCVisitor())
+        stream = visitParseTree(parse, VisitorGABC())
         notes = stream.flat.notes
         self.assertEqual(notes[0].name, 'B-')
         self.assertEqual(notes[1].name, 'B')
@@ -191,7 +191,7 @@ class TestAlterations(unittest.TestCase):
     def test_polyphonicAlterations(self):
         parser = ParserGABC(root='music')
         parse = parser.parse('f{ix}g')
-        elements = visitParseTree(parse, GABCVisitor())
+        elements = visitParseTree(parse, VisitorGABC())
         n1, alt, n2 = elements
         self.assertIsInstance(n1, Neume)
         self.assertIsInstance(alt, Alteration)
@@ -200,7 +200,7 @@ class TestAlterations(unittest.TestCase):
     def test_unsupportedAlterationsException(self):
         parser = ParserGABC(root='body')
         parse = parser.parse('(c2) A(fy)')
-        test_fn = lambda: visitParseTree(parse, GABCVisitor())
+        test_fn = lambda: visitParseTree(parse, VisitorGABC())
         self.assertRaises(UnsupportedAlteration, test_fn)
         
 class TestText(unittest.TestCase):
@@ -208,7 +208,7 @@ class TestText(unittest.TestCase):
     def test_text(self):
         parser = ParserGABC(root='body')    
         parse = parser.parse('a(c2) word(e)1(f) word2(g)')
-        chant = visitParseTree(parse, GABCVisitor())
+        chant = visitParseTree(parse, VisitorGABC())
         w1, w2, w3 = chant[0]
         self.assertEqual(w1.flatLyrics, 'a')
         self.assertEqual(w2.flatLyrics, 'word1')
@@ -223,7 +223,7 @@ class TestText(unittest.TestCase):
     def test_textAfterAccidental(self):
         parser = ParserGABC(root='body')    
         parse = parser.parse('(c2) bla(eye)')
-        chant = visitParseTree(parse, GABCVisitor())
+        chant = visitParseTree(parse, VisitorGABC())
         word1, word2 = chant[0]
         self.assertIsNone(word1.flatLyrics)
         self.assertEqual(word2.flatLyrics, 'bla')
@@ -233,14 +233,14 @@ class TestText(unittest.TestCase):
     def test_singleSyllable(self):
         parser = ParserGABC(root='word')    
         parse = parser.parse('s1(f)')
-        word = visitParseTree(parse, GABCVisitor())
+        word = visitParseTree(parse, VisitorGABC())
         n = word.flat.notes[0]
         self.assertEqual(n.lyrics[0].syllabic, 'single')
 
     def test_twoSyllables(self):
         parser = ParserGABC(root='word')    
         parse = parser.parse('s1(f)s2(f)')
-        word = visitParseTree(parse, GABCVisitor())
+        word = visitParseTree(parse, VisitorGABC())
         syll1, syll2 = word.syllables
         lyric1 = syll1.flat.notes[0].lyrics[0]
         lyric2 = syll2.flat.notes[0].lyrics[0]
@@ -250,7 +250,7 @@ class TestText(unittest.TestCase):
     def test_threeOrMoreSyllables(self):
         parser = ParserGABC(root='word')    
         parse = parser.parse('s1(f)s2(f)s3(g)s4(f)')
-        word = visitParseTree(parse, GABCVisitor())
+        word = visitParseTree(parse, VisitorGABC())
         s1, s2, s3, s4 = word.syllables
         lyric1 = s1.flat.notes[0].lyrics[0]
         lyric2 = s2.flat.notes[0].lyrics[0]
@@ -264,14 +264,14 @@ class TestText(unittest.TestCase):
     def test_annotations(self):
         parser = ParserGABC(root='word')    
         parse = parser.parse('<i>i.</i>(f)')
-        syll1, = visitParseTree(parse, GABCVisitor())
+        syll1, = visitParseTree(parse, VisitorGABC())
         self.assertEqual(syll1.annotation, 'i.')
         self.assertIsNone(syll1.lyric)
 
     def test_annotationsSpaces(self):
         parser = ParserGABC(root='body')    
         parse = parser.parse('(c2) A(f) * (f)')
-        ch = visitParseTree(parse, GABCVisitor())
+        ch = visitParseTree(parse, VisitorGABC())
         clef, w1, w2 = ch[0]
         self.assertEqual(w2[0].annotation, '*')
 
@@ -279,21 +279,21 @@ class TestText(unittest.TestCase):
     def test_annotationsAndLyrics(self):
         parser = ParserGABC(root='word')    
         parse = parser.parse('A<i>i.</i> B(f)')
-        syll1, = visitParseTree(parse, GABCVisitor())
+        syll1, = visitParseTree(parse, VisitorGABC())
         self.assertEqual(syll1.annotation, 'A<i>i.</i> B')
         self.assertIsNone(syll1.lyric)
 
     def test_lyric(self):
         parser = ParserGABC(root='word')    
         parse = parser.parse('bla(f)')
-        syll1, = visitParseTree(parse, GABCVisitor())
+        syll1, = visitParseTree(parse, VisitorGABC())
         self.assertIsNone(syll1.annotation)
         self.assertEqual(syll1.lyric, 'bla')
     
     def test_annotationsInBody(self):
         parser = ParserGABC(root='body')    
         parse = parser.parse('(c2) a(f)b(g) <i>i.</i>(:) c(f) (::)')
-        ch = visitParseTree(parse, GABCVisitor())
+        ch = visitParseTree(parse, VisitorGABC())
         print(ch)
 
 class TestBarClefs(unittest.TestCase):
@@ -308,14 +308,14 @@ class TestBarClefs(unittest.TestCase):
         for pausaClass, examples in pausaTypes:
             for gabc in examples:
                 parse = parser.parse(gabc)
-                element = visitParseTree(parse, GABCVisitor())
+                element = visitParseTree(parse, VisitorGABC())
                 self.assertIsInstance(element, pausaClass)
                 self.assertEqual(element.editorial.gabc, gabc)
         
     def test_measures(self):
         parser = ParserGABC(root='body')
         parse = parser.parse('(c2) a(f) (:) b(g)')
-        ch = visitParseTree(parse, GABCVisitor())
+        ch = visitParseTree(parse, VisitorGABC())
         self.assertEqual(len(ch), 2)
         m1, m2 = ch
         ed = m1.rightBarline.editorial
@@ -325,21 +325,21 @@ class TestBarClefs(unittest.TestCase):
         parser = ParserGABC(root='clef')
         for clef in ['c1', 'c2', 'c3', 'c4', 'f3', 'f4', 'cb3', 'cb4']:
             parse = parser.parse(clef)
-            element = visitParseTree(parse, GABCVisitor())
+            element = visitParseTree(parse, VisitorGABC())
             self.assertIsInstance(element, clef21.TrebleClef)
             self.assertEqual(element.editorial.gabc, clef)
 
     def test_missingClef(self):
         parser = ParserGABC(root='body')
         parse = parser.parse('a(fgf)')
-        test_fn = lambda: visitParseTree(parse, GABCVisitor())
+        test_fn = lambda: visitParseTree(parse, VisitorGABC())
         self.assertRaises(MissingClef, test_fn)
 
 class TestSyllables(unittest.TestCase):
     def test_syllable(self):
         parser = ParserGABC(root='syllable')
         parse = parser.parse('A(fg)')
-        syllable = visitParseTree(parse, GABCVisitor())
+        syllable = visitParseTree(parse, VisitorGABC())
         self.assertEqual(syllable.lyric, 'A')
         self.assertEqual(len(syllable.flat.notes), 2)
         self.assertEqual(len(syllable), 1)
@@ -347,7 +347,7 @@ class TestSyllables(unittest.TestCase):
     def test_multipleNeumes(self):
         parser = ParserGABC(root='syllable')
         parse = parser.parse('A(fg/fg)')
-        syllable = visitParseTree(parse, GABCVisitor())
+        syllable = visitParseTree(parse, VisitorGABC())
         self.assertEqual(syllable.lyric, 'A')
         self.assertEqual(len(syllable.flat.notes), 4)
         self.assertEqual(len(syllable), 2)
@@ -356,7 +356,7 @@ class TestSyllables(unittest.TestCase):
         parser = ParserGABC(root='word')    
         gabc = 'a(f)(,)(f)b(f)(,)(f)c(g)'
         parse = parser.parse(gabc)
-        word = visitParseTree(parse, GABCVisitor())
+        word = visitParseTree(parse, VisitorGABC())
         self.assertEqual(len(word), 3)
         syll1, syll2, syll3 = word.elements
         self.assertEqual(len(syll1.flat), 3)
@@ -369,7 +369,7 @@ class TestSyllables(unittest.TestCase):
         parser = ParserGABC(root='word')    
         gabc = 'a(fg/gh)(,)(hi/ij)'
         parse = parser.parse(gabc)
-        word = visitParseTree(parse, GABCVisitor())
+        word = visitParseTree(parse, VisitorGABC())
         self.assertEqual(len(word), 1)
         neume1, neume2, comma, neume3, neume4 = word[0].elements
         self.assertIsInstance(neume1, Neume)
@@ -384,7 +384,7 @@ class TestSyllables(unittest.TestCase):
         parser = ParserGABC(root='word')    
         gabc = 'a(fg/gh)(,)b(hi/ij)'
         parse = parser.parse(gabc)
-        word = visitParseTree(parse, GABCVisitor())
+        word = visitParseTree(parse, VisitorGABC())
         (neume1, neume2, comma), (neume3, neume4) = word
         self.assertIsInstance(neume1, Neume)
         self.assertIsInstance(neume2, Neume)
@@ -397,7 +397,7 @@ class TestNeumes(unittest.TestCase):
     def test_singleNeume(self):
         parser = ParserGABC(root='music')
         parse = parser.parse('fgf')
-        elements = visitParseTree(parse, GABCVisitor())
+        elements = visitParseTree(parse, VisitorGABC())
         self.assertEqual(len(elements), 1)
         
         neume = elements[0]
@@ -412,7 +412,7 @@ class TestNeumes(unittest.TestCase):
     def test_multipleNeumes(self):
         parser = ParserGABC(root='music')
         parse = parser.parse('eh/hi')
-        elements = visitParseTree(parse, GABCVisitor())
+        elements = visitParseTree(parse, VisitorGABC())
         self.assertEqual(len(elements), 2)
         self.assertIsInstance(elements[0], Neume)
         self.assertEqual(len(elements[0]), 2)
@@ -422,7 +422,7 @@ class TestNeumes(unittest.TestCase):
     def test_articulationBeforeComma(self):
         parser = ParserGABC(root='body')
         parse = parser.parse("(c2) A(a,d)")
-        ch = visitParseTree(parse, GABCVisitor())
+        ch = visitParseTree(parse, VisitorGABC())
         clef, n1, pausa, n2 = ch.flat
         self.assertIsInstance(clef, Clef)
         self.assertIsInstance(n1, Note)
@@ -436,7 +436,7 @@ class TestNotes(unittest.TestCase):
     def test_noteSuffixes(self):
         parser = ParserGABC(root='note')
         parse = parser.parse('fs<.')
-        note = visitParseTree(parse, GABCVisitor())
+        note = visitParseTree(parse, VisitorGABC())
         ed = note.editorial
         self.assertEqual(ed.gabcPosition, 'f')
         self.assertTrue({'neumeShape': 's<'} in ed.gabcSuffixes)
@@ -445,7 +445,7 @@ class TestNotes(unittest.TestCase):
     def test_notePrefix(self):
         parser = ParserGABC(root='note')
         parse = parser.parse('-f')
-        note = visitParseTree(parse, GABCVisitor())
+        note = visitParseTree(parse, VisitorGABC())
         ed = note.editorial
         self.assertEqual(ed.gabcPosition, 'f')
         self.assertEqual(ed.gabcPrefix, '-')
@@ -455,20 +455,20 @@ class TestNotes(unittest.TestCase):
         parser = ParserGABC(root='position')
         for position in 'abcdefghijklmABCDEFGHIJKLM':
             parse = parser.parse(position)
-            output = visitParseTree(parse, GABCVisitor())
+            output = visitParseTree(parse, VisitorGABC())
             self.assertEqual(output, position)
 
     def test_emptyNotes(self):
         parser = ParserGABC(root='note')
         parse = parser.parse('gr')
-        n = visitParseTree(parse, GABCVisitor())
+        n = visitParseTree(parse, VisitorGABC())
         self.assertFalse(n.noteheadFill, False)
         self.assertTrue({'emptyNote': 'r'} in n.editorial.gabcSuffixes)
 
     def test_multipleSuffixes(self):
         parser = ParserGABC(root='note')
         parse = parser.parse('go1')
-        n = visitParseTree(parse, GABCVisitor())
+        n = visitParseTree(parse, VisitorGABC())
         suffixes = n.editorial.gabcSuffixes
         self.assertTrue({'neumeShape': 'o'} in suffixes)
         self.assertTrue({'neumeShape': '1'} in suffixes)
@@ -481,7 +481,7 @@ class TestIgnoredFeatures(unittest.TestCase):
         """Test whether a file with macro's is converted properly despite them"""
         parser = ParserGABC(root='file')
         parse = parser.parse('%%\ndef-m1:\grealign;\ndef-m2:\grealign;\n(c2) a(f)')
-        elements = visitParseTree(parse, GABCVisitor())
+        elements = visitParseTree(parse, VisitorGABC())
         self.assertTrue(True)
 
 class TestConverter(unittest.TestCase):
