@@ -157,13 +157,22 @@ class Chant(CHSONObject, stream.Part):
                 measure.rightBarline = barlines[-1]
 
     def makeMetadata(self):
-        pass
-        # ch.insert(0, metadata.Metadata())
-        # if 'title' in header:
-        #     ch.metadata.title = header.get('title')
-        # for key, value in header.items():
-        #     ch.editorial[key] = value
-        
+        self.insert(0, metadata.Metadata())
+        if self.hasEditorialInformation and 'metadata' in self.editorial:
+            meta = self.editorial.metadata
+            if 'title' in meta:
+                self.metadata.title = meta.get('title')
+            elif 'name' in meta :
+                self.metadata.title = meta.get('name')
+            if 'transcriber' in meta:
+                c = metadata.Contributor()
+                c.name = meta['transcriber']
+                c.role = 'transcriber'
+                self.metadata.addContributor(c)
+            
+            #TODO add date
+            # md.date = metadata.DateBetween(['2009/12/31', '2010/1/28'])
+            #TODO add custom metadata fields: office part and mode
 
 class Section(CHSONObject, stream.Measure):
     pass   
