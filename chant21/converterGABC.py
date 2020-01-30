@@ -6,7 +6,6 @@ from music21 import bar
 from music21 import converter
 from music21 import articulations
 
-from arpeggio import Terminal
 from arpeggio import PTNodeVisitor
 from arpeggio import visit_parse_tree as visitParseTree
 
