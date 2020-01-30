@@ -25,6 +25,9 @@ from chant21.converterGABC import gabcPositionToStep
 from chant21.converterGABC import MissingClef
 from chant21.converterGABC import UnsupportedAlteration
 
+def parseGABC(string):
+    return converter.parse(string, format='gabc', forceSource=True, storePickle=False)
+
 class TestFile(unittest.TestCase):
     def test_file(self):
         parser = ParserGABC(root='file')
@@ -32,11 +35,9 @@ class TestFile(unittest.TestCase):
         parse = parser.parse(fileStr)
         chant = visitParseTree(parse, VisitorGABC())
 
-        self.assertEqual(chant.metadata.title, 'Title!')
-
-        ed = chant.editorial
-        self.assertEqual(ed.title, 'Title!')
-        self.assertEqual(ed.attr1, 'value1')
+        metadata = chant.editorial.metadata
+        self.assertEqual(metadata['title'], 'Title!')
+        self.assertEqual(metadata['attr1'], 'value1')
         
         notes = chant.flat.notes
         self.assertEqual(notes[0].name, 'C')
@@ -67,9 +68,9 @@ class TestFile(unittest.TestCase):
         fileStr = 'attr1:value1;\n%%\nattr2:value2;\n%%\n(c2) A(f)'
         parse = parser.parse(fileStr)
         chant = visitParseTree(parse, VisitorGABC())
-        self.assertEqual(chant.editorial.attr1, 'value1')
-        self.assertEqual(chant.editorial.attr2, 'value2')
-
+        metadata = {'attr1': 'value1', 'attr2': 'value2'}
+        self.assertDictEqual(chant.editorial.metadata, metadata)
+        
 class TestGABCPitchConversion(unittest.TestCase):
     def test_positions(self):
         self.assertEqual(gabcPositionToStep('c', 'c1'), 'B3')
@@ -468,7 +469,7 @@ class TestConverter(unittest.TestCase):
 
     def test_conversion(self):
         gabc = '(c2) a(f)b(g) c(h)\ni(j)'
-        chant = converter.parse(gabc, format='GABC')
+        chant = parseGABC(gabc)
         notes = chant.flat.notes
         self.assertEqual(notes[0].name, 'C')
         self.assertEqual(notes[1].name, 'D')
@@ -478,7 +479,7 @@ class TestConverter(unittest.TestCase):
 
     def test_conversionFileContents(self):
         fileStr = 'title:Title!;\nattr1:value1;%%\n\n(c2) a(f)b(g) c(h)\ni(j)'
-        chant = converter.parse(fileStr, format='GABC')
+        chant = parseGABC(fileStr)
         notes = chant.flat.notes
         self.assertEqual(notes[0].name, 'C')
         self.assertEqual(notes[1].name, 'D')

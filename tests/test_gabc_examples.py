@@ -1,10 +1,14 @@
 import unittest
 import glob
 from music21 import converter
+from music21 import metadata
 import chant21
 from chant21 import ParserGABC
 from chant21.converterGABC import VisitorGABC
 from arpeggio import visit_parse_tree as visitParseTree
+
+def parseGABC(string):
+    return converter.parse(string, format='gabc', forceSource=True, storePickle=False)
 
 class TestParseExamples(unittest.TestCase):
 
@@ -71,27 +75,27 @@ class TestSpecialCases(unittest.TestCase):
 class TestConvertExamples(unittest.TestCase):
     def test_kyrie(self):
         filename = 'examples/ky--kyrie_ad_lib_x_-_orbis_factor--solesmes.gabc'
-        chant = converter.parse(filename)
+        chant = parseGABC(filename)
         self.assertTrue(True)
 
     def test_salveRegina(self):
         filename = 'examples/an--salve_regina_simple_tone--solesmes.gabc'
-        chant = converter.parse(filename)
+        chant = parseGABC(filename)
         self.assertTrue(True)
         
     def test_utQueantLaxis(self):
         filename = 'examples/hy--ut_queant_laxis--solesmes.gabc'
-        chant = converter.parse(filename)
+        chant = parseGABC(filename)
         self.assertTrue(True)
 
     def test_populusSion(self):
         filename = 'examples/populus_sion.gabc'
-        chant = converter.parse(filename)
+        chant = parseGABC(filename)
         self.assertTrue(True)
 
     def test_abOrtuSolis(self):
         filename = 'examples/tr--ab_ortu_solis--solesmes.gabc'
-        chant = converter.parse(filename)
+        chant = parseGABC(filename)
         self.assertTrue(True)
 
     # def test_GBCConversion2(self):
@@ -99,7 +103,7 @@ class TestConvertExamples(unittest.TestCase):
     #     filename = GABC_FN.format(idx=4)
     #     parser = ParserGABC()
     #     parse = parser.parseFile(filename)
-    #     ch = visitParseTree(parse, GABCVisitor())
+    #     ch = visitParseTree(parse, VisitorGABC())
     #     ch.flatter.show()
     #     self.assertTrue(True)
 
@@ -115,9 +119,10 @@ class TestConvertExamples(unittest.TestCase):
         
 class TestCHSONConversionExamples(unittest.TestCase):
     def runTest(self, filename):
-        origChant = converter.parse(filename)
+        # Music21 by default caches parses as pickle files, we disable that here
+        origChant = parseGABC(filename)
         chson = origChant.toCHSON()
-        chant = converter.parse(chson, format='chson')
+        chant = converter.parse(chson, format='chson',  forceSource=True, storePickle=False)
         for orig1, copy1 in zip(origChant, chant):
             self.assertIsInstance(copy1, type(orig1))
             if hasattr(orig1, 'elements'):

@@ -116,25 +116,18 @@ class Chant(CHSONObject, stream.Part):
         return self.getElementsByClass(Section)
 
     def toObject(self):
-        #TODO export metadata correctly
-        header = {}
+        metadata = self.editorial.get('metadata', {})
         obj = {
             'type': 'Chant',
-            'header': header,
+            'metadata': metadata,
             'elements': [section.toObject() for section in self.sections]
         }
         return obj
 
     def fromObject(self, obj, **kwargs):
-        self.insert(0, metadata.Metadata())
-        header = obj.get('header', {})
-        if 'title' in header:
-            self.metadata.title = header.get('title')
-        
-        # Todo store header information differently in editorial info?
-        for key, value in header.items():
-            self.editorial[key] = value
-        super().fromObject(obj, **kwargs)        
+        super().fromObject(obj, **kwargs)
+        metadata = obj.get('metadata', {})
+        self.editorial.metadata = metadata
     
     def toCHSON(self, fp=None, **kwargs):
         if fp is None:
@@ -162,6 +155,15 @@ class Chant(CHSONObject, stream.Part):
             if len(barlines) > 0:
                 measure.remove(barlines[-1], recurse=True)
                 measure.rightBarline = barlines[-1]
+
+    def makeMetadata(self):
+        pass
+        # ch.insert(0, metadata.Metadata())
+        # if 'title' in header:
+        #     ch.metadata.title = header.get('title')
+        # for key, value in header.items():
+        #     ch.editorial[key] = value
+        
 
 class Section(CHSONObject, stream.Measure):
     pass   

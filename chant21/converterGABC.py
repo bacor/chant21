@@ -1,6 +1,5 @@
 from music21 import stream
 from music21 import pitch
-from music21 import metadata
 from music21 import note
 from music21 import bar
 from music21 import converter
@@ -78,18 +77,13 @@ class VisitorGABC(PTNodeVisitor):
         else:
             ch = Chant()
 
+        header = {}
         if 'header' in children.results:
-            header = {}
             for headerSection in children.results['header']:
                 header.update(headerSection)
-        else:
-            header = {}
-        
-        ch.insert(0, metadata.Metadata())
-        if 'title' in header:
-            ch.metadata.title = header.get('title')
-        for key, value in header.items():
-            ch.editorial[key] = value
+        if len(header) > 0:
+            ch.editorial.metadata = header
+
         return ch
 
     def visit_header(self, node, children):
