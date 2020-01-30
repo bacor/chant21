@@ -1,6 +1,5 @@
 from copy import deepcopy
 import json
-
 from music21 import base
 from music21 import articulations
 from music21 import bar
@@ -11,6 +10,8 @@ from music21 import articulations
 from music21 import spanner
 from music21 import expressions
 from music21 import metadata
+
+#TODO add __repr__ method to classes
 
 class CHSONObject(base.Music21Object):
     """Base class for objects than can be exported to CHSON"""
@@ -53,6 +54,23 @@ class CHSONObject(base.Music21Object):
                 child.fromObject(childObj, parent=self, parseChildren=parseChildren)
                 self.append(child)
     
+class ChantElement(CHSONObject, base.Music21Object):
+
+    @property
+    def annotation(self):
+        return self.editorial.get('annotation')
+    
+    @annotation.setter
+    def annotation(self, value):
+        self.editorial.annotation = value
+
+    @property
+    def hasAnnotation(self):
+        """True if the element has a non-empty annotation"""
+        return self.annotation is not None
+
+###
+
 class Chant(CHSONObject, stream.Part):
     
     @property
@@ -147,51 +165,6 @@ class Chant(CHSONObject, stream.Part):
 
 class Section(CHSONObject, stream.Measure):
     pass   
-
-class ChantElement(CHSONObject, base.Music21Object):
-
-    @property
-    def annotation(self):
-        return self.editorial.get('annotation')
-    
-    @annotation.setter
-    def annotation(self, value):
-        self.editorial.annotation = value
-
-    @property
-    def hasAnnotation(self):
-        """True if the element has a non-empty annotation"""
-        return self.annotation is not None
-
-class Pausa(ChantElement):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.priority = -1
-
-class PausaMinima(Pausa, articulations.BreathMark):
-    pass
-
-class PausaMinor(Pausa, articulations.BreathMark):
-    pass
-
-class PausaMajor(Pausa, bar.Barline):
-    pass
-
-class PausaFinalis(Pausa, bar.Barline):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.type = 'light-light'
-
-class Clef(ChantElement, clef.TrebleClef):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.priority = -2
-
-class Alteration(CHSONObject, base.Music21Object):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        # Ensure that alterations always occur before their notes
-        self.priority = -1
 
 class Word(CHSONObject, stream.Stream):
     
@@ -313,6 +286,38 @@ class Note(CHSONObject, note.Note):
         if 'notehead' in obj:
             self.notehead = obj['notehead']
 
+###
+
+class Pausa(ChantElement):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.priority = -1
+
+class PausaMinima(Pausa, articulations.BreathMark):
+    pass
+
+class PausaMinor(Pausa, articulations.BreathMark):
+    pass
+
+class PausaMajor(Pausa, bar.Barline):
+    pass
+
+class PausaFinalis(Pausa, bar.Barline):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.type = 'light-light'
+
+class Clef(ChantElement, clef.TrebleClef):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.priority = -2
+
+class Alteration(CHSONObject, base.Music21Object):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        # Ensure that alterations always occur before their notes
+        self.priority = -1
+
 class Annotation(expressions.TextExpression):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -320,6 +325,8 @@ class Annotation(expressions.TextExpression):
         self.style.fontStyle = 'italic'
         # TODO this has no effect
         self.placement = 'above' 
+
+##
 
 CLASSES = {
     'Chant': Chant,
