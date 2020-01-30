@@ -5,5 +5,5 @@ __pycache__/
 .DS_Store
 *.dot
 demo.py
-test_*.py
+test_gregobase_corpus*.py
 chson/
