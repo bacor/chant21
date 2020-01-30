@@ -1,14 +1,4 @@
-"""Unittests for the GABC to Volpiano converter
-
-Todo:
-    * Test conversion of example files
-    * Test whether music can be empty
-    * Test handling of accidentals at non-supported positions 
-      (e.g. not b-flat or e-flat)
-    * Test flat clefs
-    * Test f2 clef
-    * Test f1 clef?
-"""
+"""Unittests for the GABC to Chant21 converter"""
 import unittest
 
 from music21 import articulations
