@@ -27,14 +27,6 @@ from .chant import Flat
 
 from .parserGABC import ParserGABC
 
-OPTIONS = {
-    'neume_boundaries': ['/', '//', '/[-2]', '/[-1]', '/[0]', '/[1]', '/[2]', '/[3]', '/[4]'],
-    "commas": [",", ",_", ",0", "'", "`"],
-    "middle_barlines": [";", ";1", ";2", ";3", ";4", ";5", ";6"],
-    "double_barlines": ["::"],
-    "barlines": [":", ":?"]
-}
-
 NEUME_BOUNDARY = '_NEUME_BOUNDARY_'
 
 class MissingClef(Exception):
@@ -260,7 +252,8 @@ class VisitorGABC(PTNodeVisitor):
         return el
 
     def visit_spacer(self, node, children):
-        if node.value in OPTIONS['neume_boundaries']:
+        neumeBoundaries = ['/', '//', '/[-2]', '/[-1]', '/[0]', '/[1]', '/[2]', '/[3]', '/[4]']
+        if node.value in neumeBoundaries:
             return NEUME_BOUNDARY
         else:
             return None
