@@ -173,20 +173,9 @@ class VisitorGABC(PTNodeVisitor):
                     eIsNatural = False  
                     
                     if isinstance(el, bar.Barline):
-                        # First remove the barline and then add it as a
-                        # barline to the measue (which adds it to the measure stream)
-                        word.remove(el, recurse=True)
-                        curSection.rightBarline = el
                         ch.append(curSection)
                         curSection = Section()
-                    elif isinstance(el, articulations.BreathMark):
-                        if len(curSection.flat) == 1:
-                            lastNote = ch.flat.notes[-1]
-                        else:
-                            lastNote = el.previous(note.Note)
-                            
-                        lastNote.articulations.append(el)
-
+                        
                 elif isinstance(el, Clef):
                     curClef = el
                     curGABCClef = curClef.editorial.gabc

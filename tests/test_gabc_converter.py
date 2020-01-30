@@ -301,15 +301,6 @@ class TestBarClefs(unittest.TestCase):
                 element = visitParseTree(parse, VisitorGABC())
                 self.assertIsInstance(element, pausaClass)
                 self.assertEqual(element.editorial.gabc, gabc)
-        
-    def test_measures(self):
-        parser = ParserGABC(root='body')
-        parse = parser.parse('(c2) a(f) (:) b(g)')
-        ch = visitParseTree(parse, VisitorGABC())
-        self.assertEqual(len(ch), 2)
-        m1, m2 = ch
-        ed = m1.rightBarline.editorial
-        self.assertEqual(ed.gabc, ':')
 
     def test_clefs(self):
         parser = ParserGABC(root='clef')
@@ -413,13 +404,12 @@ class TestNeumes(unittest.TestCase):
         parser = ParserGABC(root='body')
         parse = parser.parse("(c2) A(a,d)")
         ch = visitParseTree(parse, VisitorGABC())
-        clef, n1, pausa, n2 = ch.flat
+        ch.makeBreathMarks()
+        clef, n1, n2 = ch.flat
         self.assertIsInstance(clef, Clef)
         self.assertIsInstance(n1, Note)
-        self.assertIsInstance(pausa, PausaMinima)
         self.assertIsInstance(n2, Note)
         self.assertEqual(len(n1.articulations), 1)
-        self.assertEquals(n1.articulations[0], pausa)
     
 class TestNotes(unittest.TestCase):
     

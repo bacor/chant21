@@ -1,12 +1,14 @@
 import unittest
 import glob
 from music21 import converter
+import chant21
 from chant21 import ParserGABC
-from chant21.converterGABC import GABCVisitor
+from chant21.converterGABC import VisitorGABC
 from arpeggio import visit_parse_tree as visitParseTree
+
 class TestParseExamples(unittest.TestCase):
 
-    def run_test(self, example):
+    def runTest(self, example):
         parser = ParserGABC()
         parse = parser.parseFile(example)
         self.assertFalse(parse.error)
@@ -14,29 +16,29 @@ class TestParseExamples(unittest.TestCase):
 
     def test_salveRegina(self):
         filename = 'examples/an--salve_regina_simple_tone--solesmes.gabc'
-        self.run_test(filename)
+        self.runTest(filename)
         
     def test_utQueantLaxis(self):
         filename = 'examples/hy--ut_queant_laxis--solesmes.gabc'
-        self.run_test(filename)
+        self.runTest(filename)
 
     def test_kyrie(self):
         filename = 'examples/ky--kyrie_ad_lib_x_-_orbis_factor--solesmes.gabc'
-        self.run_test(filename)
+        self.runTest(filename)
 
     def test_populusSion(self):
         filename = 'examples/populus_sion.gabc'
-        self.run_test(filename)
+        self.runTest(filename)
 
     def test_abOrtuSolis(self):
         filename = 'examples/tr--ab_ortu_solis--solesmes.gabc'
-        self.run_test(filename)
+        self.runTest(filename)
         
     def _test_allExamples(self):
         parser = ParserGABC()
         examples = glob.glob('examples/*.gabc')
         for filename in examples:
-            self.run_test(filename)
+            self.runTest(filename)
 
     def test_GBCParsing(self):
         GABC_FN = '/Users/Bas/repos/projects/GregoBaseCorpus/gabc/{idx:0>5}.gabc'
@@ -92,33 +94,64 @@ class TestConvertExamples(unittest.TestCase):
         chant = converter.parse(filename)
         self.assertTrue(True)
 
-    def test_GBCConversion(self):
-        # GABC_FN = '/Users/Bas/repos/projects/GregoBaseCorpus/gabc/{idx:0>5}.gabc'
-        GABC_FN = '/Users/Bas/Dropbox/Desktop/gabc/{idx:0>5}.gabc'
-        filename = GABC_FN.format(idx=1)
-        ch = converter.parse(filename)
-        ch.flatter.show()
-        self.assertTrue(True)
+    # def test_GBCConversion2(self):
+    #     GABC_FN = '/Users/Bas/repos/projects/GregoBaseCorpus/gabc/{idx:0>5}.gabc'
+    #     filename = GABC_FN.format(idx=4)
+    #     parser = ParserGABC()
+    #     parse = parser.parseFile(filename)
+    #     ch = visitParseTree(parse, GABCVisitor())
+    #     ch.flatter.show()
+    #     self.assertTrue(True)
 
-    def test_GBCConversion2(self):
-        GABC_FN = '/Users/Bas/repos/projects/GregoBaseCorpus/gabc/{idx:0>5}.gabc'
-        filename = GABC_FN.format(idx=4)
-        parser = ParserGABC()
-        parse = parser.parseFile(filename)
-        ch = visitParseTree(parse, GABCVisitor())
-        ch.flatter.show()
-        self.assertTrue(True)
-
-    def test_exampleConversion(self):
-        # gabc = "(c4) AL(dc~) *(;) <i>ij.</i>(hghvGFg_fgvFDffdev.dec.,e/ggh'GFgvFEffdevDCd!ewfd.)"
-        # gabc = "(c4) AL(dc~)le(c/e'gF'EC'd)lú(dc/fg!hvGF'g)ia.(g.) *(;) <i>ij.</i>(hghvGFg_fgvFDffdev.dec.,e/ggh'GFgvFEffdevDCd!ewfd.) "
-        gabc = "(c4) AL(dc~)le(c/e'gF'EC'd)lú(dc/fg!hvGF'g)ia.(g.) <sp>V/</sp>.(::) Lau(h)dem(ghG'E) Dó(fe)mi(fg)ni(gvF'EC'dw!evDCd.) (;) lo(d)qué(d/ffe/ggh)tur(fvED) os(cd) me(d!ewfd)um,(d.) (:) et(de) be(gh)ne(gh)dí(h!iwj/ki'jvH'G/h!iwjh)cat(h.) (,) o(h_ghvGF)mnis(fvED) ca(c.d!ewfd)ro(d.) (;) no(de)men(gh) san(ghgh)ctum(h.) *(,) e(h!iwj/ki'jvH'G/h!iwjh)jus.(h,hghvGFg_fgvFDffdev.dec.,e/ggh'GFgvFEffd/evDCd!ewfd.) (::)"
-        parser = ParserGABC()
-        parse = parser.parse(gabc)
-        ch = visitParseTree(parse, GABCVisitor())
-        ch.flatter.show()
-        self.assertTrue(True)
+    # def test_exampleConversion(self):
+    #     # gabc = "(c4) AL(dc~) *(;) <i>ij.</i>(hghvGFg_fgvFDffdev.dec.,e/ggh'GFgvFEffdevDCd!ewfd.)"
+    #     # gabc = "(c4) AL(dc~)le(c/e'gF'EC'd)lú(dc/fg!hvGF'g)ia.(g.) *(;) <i>ij.</i>(hghvGFg_fgvFDffdev.dec.,e/ggh'GFgvFEffdevDCd!ewfd.) "
+    #     gabc = "(c4) AL(dc~)le(c/e'gF'EC'd)lú(dc/fg!hvGF'g)ia.(g.) <sp>V/</sp>.(::) Lau(h)dem(ghG'E) Dó(fe)mi(fg)ni(gvF'EC'dw!evDCd.) (;) lo(d)qué(d/ffe/ggh)tur(fvED) os(cd) me(d!ewfd)um,(d.) (:) et(de) be(gh)ne(gh)dí(h!iwj/ki'jvH'G/h!iwjh)cat(h.) (,) o(h_ghvGF)mnis(fvED) ca(c.d!ewfd)ro(d.) (;) no(de)men(gh) san(ghgh)ctum(h.) *(,) e(h!iwj/ki'jvH'G/h!iwjh)jus.(h,hghvGFg_fgvFDffdev.dec.,e/ggh'GFgvFEffd/evDCd!ewfd.) (::)"
+    #     parser = ParserGABC()
+    #     parse = parser.parse(gabc)
+    #     ch = visitParseTree(parse, GABCVisitor())
+    #     ch.flatter.show()
+    #     self.assertTrue(True)
         
+class TestCHSONConversionExamples(unittest.TestCase):
+    def runTest(self, filename):
+        origChant = converter.parse(filename)
+        chson = origChant.toCHSON()
+        chant = converter.parse(chson, format='chson')
+        for orig1, copy1 in zip(origChant, chant):
+            self.assertIsInstance(copy1, type(orig1))
+            if hasattr(orig1, 'elements'):
+                self.assertTrue(hasattr(copy1, 'elements'))
+                for orig2, copy2 in zip(orig1, copy1):
+                    self.assertIsInstance(copy2, type(orig2))
+                    if hasattr(orig2, 'elements'):
+                        self.assertTrue(hasattr(copy2, 'elements'))
+                        for orig3, copy3 in zip(orig2, copy2):
+                            self.assertIsInstance(copy3, type(orig3))
+                            if hasattr(orig3, 'elements'):
+                                self.assertTrue(hasattr(copy3, 'elements'))
+                                for orig4, copy4 in zip(orig3, copy3):
+                                    self.assertIsInstance(copy2, type(orig2))
+    
+    def test_salveRegina(self):
+        filename = 'examples/an--salve_regina_simple_tone--solesmes.gabc'
+        self.runTest(filename)
+        
+    def test_utQueantLaxis(self):
+        filename = 'examples/hy--ut_queant_laxis--solesmes.gabc'
+        self.runTest(filename)
+
+    def test_kyrie(self):
+        filename = 'examples/ky--kyrie_ad_lib_x_-_orbis_factor--solesmes.gabc'
+        self.runTest(filename)
+
+    def test_populusSion(self):
+        filename = 'examples/populus_sion.gabc'
+        self.runTest(filename)
+
+    def test_abOrtuSolis(self):
+        filename = 'examples/tr--ab_ortu_solis--solesmes.gabc'
+        self.runTest(filename)
 
 if __name__ == '__main__':
     unittest.main()

@@ -16,4 +16,5 @@ from .chant import Annotation
 
 # Make GABC converter available to music21.converter
 from .converterGABC import ConverterGABC
+from .converterCHSON import ConverterCHSON
 from .parserGABC import ParserGABC

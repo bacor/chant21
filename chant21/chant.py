@@ -10,8 +10,50 @@ from music21 import stream
 from music21 import articulations
 from music21 import spanner
 from music21 import expressions
+from music21 import metadata
 
-class Chant(stream.Part):
+class CHSONObject(base.Music21Object):
+    """Base class for objects than can be exported to CHSON"""
+
+    def toObject(self, exportChildren=True):
+        """Export the object to a plain Python dictionary"""
+        obj = dict()
+        obj['type'] = type(self).__name__
+
+        if self.hasEditorialInformation:
+            obj['editorial'] = dict(self.editorial)
+            # Remove annotation from editorial info, since that's already 
+            # stored as the objects `annotation` property
+            if 'annotation' in obj['editorial']:
+                del obj['editorial']['annotation']
+                if len(obj['editorial']) == 0:
+                    del obj['editorial']
+
+        if hasattr(self, 'annotation') and self.hasAnnotation:
+            obj['annotation'] = self.annotation
+
+        if hasattr(self, 'elements') and exportChildren:
+            children = [el for el in self.elements if isinstance(el, CHSONObject)]
+            obj['elements'] = [child.toObject() for child in children]
+
+        return obj
+
+    def fromObject(self, obj, parent=None, parseChildren=True):
+        ownClassName = type(self).__name__
+        if not obj['type'] == ownClassName:
+            raise TypeError(f'Cannot import object of type `{obj["type"]}` into a {ownClassName}')
+        if 'editorial' in obj:
+            for key, value in obj['editorial'].items():
+                self.editorial[key] = value
+        if 'annotation' in obj:
+            self.annotation = obj['annotation']
+        if 'elements' in obj and parseChildren:
+            for childObj in obj['elements']:
+                child = CLASSES[childObj['type']]()
+                child.fromObject(childObj, parent=self, parseChildren=parseChildren)
+                self.append(child)
+    
+class Chant(CHSONObject, stream.Part):
     
     @property
     def flatter(self):
@@ -19,8 +61,8 @@ class Chant(stream.Part):
         It is not completely flat, since measures are preserved. This method is
         useful for visualizing chants: `ch.flatter.show()` will also show measures
         and barlines, where as `ch.flat.show()` will not."""
-        ch = deepcopy(self)
-        for measure in ch.getElementsByClass('Measure'):
+        chant = deepcopy(self)
+        for measure in chant.getElementsByClass('Measure'):
             for word in measure.getElementsByClass(Word):
                 elements = word.flat
                 wordOffset = word.offset
@@ -29,7 +71,11 @@ class Chant(stream.Part):
                     offset = wordOffset + el.offset
                     if isinstance(el, spanner.Slur): offset = 0.0
                     measure.insert(offset, el)
-        return ch
+        
+        # Move barlines and breathmarks to their appropriate positions
+        chant.makeBarlines()
+        chant.makeBreathMarks()
+        return chant
 
     @property
     def phrases(self):
@@ -51,18 +97,33 @@ class Chant(stream.Part):
     def sections(self):
         return self.getElementsByClass(Section)
 
-    @property
-    def plain(self):
+    def toObject(self):
+        #TODO export metadata correctly
+        header = {}
         obj = {
             'type': 'Chant',
-            'header': None,
-            'elements': [section.plain for section in self.sections]
+            'header': header,
+            'elements': [section.toObject() for section in self.sections]
         }
         return obj
 
-    def toCHSON(self, fp, **kwargs):
-        with open(fp, 'w') as handle:
-            json.dump(self.plain, handle, **kwargs)
+    def fromObject(self, obj, **kwargs):
+        self.insert(0, metadata.Metadata())
+        header = obj.get('header', {})
+        if 'title' in header:
+            self.metadata.title = header.get('title')
+        
+        # Todo store header information differently in editorial info?
+        for key, value in header.items():
+            self.editorial[key] = value
+        super().fromObject(obj, **kwargs)        
+    
+    def toCHSON(self, fp=None, **kwargs):
+        if fp is None:
+            return json.dumps(self.toObject(), **kwargs)
+        else:
+            with open(fp, 'w') as handle:
+                json.dump(self.toObject(), handle, **kwargs)
     
     def addNeumeSlurs(self):
         """Add slurs to all notes in a single neume"""
@@ -70,16 +131,24 @@ class Chant(stream.Part):
         for neume in neumes:
             neume.addSlur()
 
-class Section(stream.Measure):
-    @property
-    def plain(self):
-        return {
-            'type': 'Section',
-            'editorial': dict(self.editorial),
-            'elements': [el.plain for el in self.elements]
-        }
+    def makeBreathMarks(self):
+        breathmarks = self.recurse(classFilter=articulations.BreathMark)
+        for breathmark in breathmarks:
+            prevNote = breathmark.previous(note.Note)
+            prevNote.articulations.append(breathmark)
+            self.remove(breathmark, recurse=True)
+    
+    def makeBarlines(self):
+        for measure in self.getElementsByClass(stream.Measure):
+            barlines = measure.recurse(classFilter=bar.Barline)
+            if len(barlines) > 0:
+                measure.remove(barlines[-1], recurse=True)
+                measure.rightBarline = barlines[-1]
 
-class ChantElement(base.Music21Object):
+class Section(CHSONObject, stream.Measure):
+    pass   
+
+class ChantElement(CHSONObject, base.Music21Object):
 
     @property
     def annotation(self):
@@ -90,15 +159,9 @@ class ChantElement(base.Music21Object):
         self.editorial.annotation = value
 
     @property
-    def plain(self):
-        obj = {
-            'type': type(self).__name__,
-        }
-        if self.annotation:
-            obj['annotation'] = self.annotation
-        if self.editorial:
-            obj['editorial'] = dict(self.editorial)
-        return obj
+    def hasAnnotation(self):
+        """True if the element has a non-empty annotation"""
+        return self.annotation is not None
 
 class Pausa(ChantElement):
     def __init__(self, **kwargs):
@@ -124,13 +187,13 @@ class Clef(ChantElement, clef.TrebleClef):
         super().__init__(**kwargs)
         self.priority = -2
 
-class Alteration(ChantElement, base.Music21Object):
+class Alteration(CHSONObject, base.Music21Object):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         # Ensure that alterations always occur before their notes
         self.priority = -1
 
-class Word(ChantElement, stream.Stream):
+class Word(CHSONObject, stream.Stream):
     
     @property
     def flatLyrics(self):
@@ -143,12 +206,6 @@ class Word(ChantElement, stream.Stream):
     def syllables(self):
         return self.getElementsByClass(Syllable)
 
-    @property
-    def plain(self):
-        obj = super().plain
-        obj['elements'] = [el.plain for el in self.elements]
-        return obj
-    
     def mergeMelismasWithPausas(self):
         """Merge syllables if they are separated by a syllable containing only a pausa.
         This is often the case on long melismas."""
@@ -185,6 +242,10 @@ class Word(ChantElement, stream.Stream):
         # TODO long melisma's on a single-syllable word,
         # are those dealt with properly?
 
+    def fromObject(self, obj, **kwargs):
+        super().fromObject(obj, **kwargs)
+        self.updateSyllableLyrics()
+
 class Syllable(ChantElement, stream.Stream):
     @property
     def lyric(self):
@@ -210,14 +271,21 @@ class Syllable(ChantElement, stream.Stream):
     def neumes(self):
         return self.getElementsByClass(Neume)
 
-    @property
-    def plain(self):
-        obj = super().plain
-        obj['elements'] = [el.plain for el in self.elements]
-        obj['lyric'] = self.lyric
+    def toObject(self):
+        obj = super().toObject()
+        if self.lyric is not None:
+            obj['lyric'] = self.lyric
         return obj
+    
+    def fromObject(self, obj, **kwargs):
+        super().fromObject(obj, **kwargs)
+        if 'lyric' in obj:
+            self.lyric = obj['lyric']
+        if self.hasAnnotation:
+            annotation = Annotation(self.annotation)
+            self.insert(0, annotation)
 
-class Neume(ChantElement, stream.Stream):
+class Neume(CHSONObject, stream.Stream):
     
     def addSlur(self):
         """Adds a slur to the neumes notes"""
@@ -226,32 +294,46 @@ class Neume(ChantElement, stream.Stream):
             slur = spanner.Slur(notes)
             slur.priority = -1
             self.insert(0, slur)
-
-    @property
-    def plain(self):
-        obj = super().plain
-        obj['elements'] = [el.plain for el in self.elements]
-        return obj
     
-class Note(ChantElement, note.Note):
+class Note(CHSONObject, note.Note):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, *kwargs)
         self.stemDirection = 'noStem'
 
-    @property
-    def plain(self):
-        obj = super().plain
-        obj['pitch'] = self.pitch.nameWithOctave,
+    def toObject(self):
+        obj = super().toObject()
+        obj['pitch'], = self.pitch.nameWithOctave,
         if self.notehead != 'normal':
             obj['notehead'] = self.notehead
         return obj
 
-class Annotation(expressions.TextExpression):
-    plain = None
+    def fromObject(self, obj, **kwargs):
+        super().fromObject(obj, **kwargs)
+        self.pitch.nameWithOctave = obj['pitch']
+        if 'notehead' in obj:
+            self.notehead = obj['notehead']
 
+class Annotation(expressions.TextExpression):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.style.alignHorizontal = 'center'
         self.style.fontStyle = 'italic'
         # TODO this has no effect
         self.placement = 'above' 
+
+CLASSES = {
+    'Chant': Chant,
+    'Section': Section,
+    'Word': Word,
+    'Syllable': Syllable,
+    'Neume': Neume,
+    'Note': Note,
+    'Clef': Clef,
+    'Pausa': Pausa,
+    'PausaMinima': PausaMinima,
+    'PausaMinor': PausaMinor,
+    'PausaMajor': PausaMajor,
+    'PausaFinalis': PausaFinalis,
+    'Alteration': Alteration,
+    'Annotation': Annotation
+}
