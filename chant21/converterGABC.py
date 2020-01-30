@@ -22,6 +22,8 @@ from .chant import PausaMinor
 from .chant import PausaMajor
 from .chant import PausaFinalis
 from .chant import Annotation
+from .chant import Natural
+from .chant import Flat
 
 from .parserGABC import ParserGABC
 
@@ -39,7 +41,7 @@ class MissingClef(Exception):
     """Missing Clef Exception, raised when a clef is missing in the gabc"""
     pass
 
-class UnsupportedAlteration(Exception):
+class AlterationWarning(Warning):
     """Exception raised when encountering an alteration at a step other than 
     B and E, which are not supported"""
     pass
@@ -136,7 +138,6 @@ class VisitorGABC(PTNodeVisitor):
                     if curGABCClef is None: 
                         raise MissingClef('Cannot process notes without a clef.')
                     position = el.editorial.gabcPosition
-                    alteration = el.editorial.gabcAlteration
                     step = gabcPositionToStep(position, curGABCClef)[0]
                     
                     # Reset alterations
@@ -146,19 +147,15 @@ class VisitorGABC(PTNodeVisitor):
                     eIsNatural = False
 
                     # Update
-                    if alteration == 'x' and step == 'E':
+                    if isinstance(el, Flat) and step == 'E':
                         eIsFlat = True
-                    elif alteration == 'x' and step == 'B':
+                    elif isinstance(el, Flat) and step == 'B':
                         bIsFlat = True
-                    elif alteration == 'y' and step == 'B':
+                    elif isinstance(el, Natural) and step == 'B':
                         bIsNatural = True
-                    elif alteration == 'y' and step == 'E':
+                    elif isinstance(el, Natural) and step == 'E':
                         eIsNatural = True
-                    else:
-                        alts = {'x': 'flat', 'y': 'natural', '#': 'sharp'}
-                        altType = alts[el.editorial.gabcAlteration]
-                        raise UnsupportedAlteration(f'Encountered a {altType} sign at step {step}')
-            
+                    
                 # Scope of accidentals ends at breathmarks
                 elif isinstance(el, Pausa):
                     bIsFlat = False or curClefHasFlat
@@ -293,6 +290,10 @@ class VisitorGABC(PTNodeVisitor):
         modifiers = suffixes + prefixes
         for modify in modifiers:
             n = modify(n)
+
+        if len(n.editorial.gabcSuffixes) == 0:
+            del n.editorial['gabcSuffixes']
+
         return n
 
     def visit_position(self, node, children):
@@ -338,7 +339,12 @@ class VisitorGABC(PTNodeVisitor):
     def visit_alteration(self, node, children):
         position = children.results.get('position')[0]
         alteration = node[1].value
-        element = Alteration()
+        if alteration == 'x':
+            element = Flat()
+        elif alteration == 'y':
+            element = Natural()
+        else:
+            raise AlterationWarning('Encountered a sharp. are not supported and ignored.')
         element.editorial.gabcPosition = position
         element.editorial.gabcAlteration = alteration
         return element

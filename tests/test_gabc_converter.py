@@ -11,6 +11,8 @@ from chant21 import Section
 from chant21 import Neume
 from chant21 import Syllable
 from chant21 import Alteration
+from chant21 import Flat
+from chant21 import Natural
 from chant21 import Clef
 from chant21 import ParserGABC
 from chant21 import Pausa
@@ -23,7 +25,7 @@ from arpeggio import visit_parse_tree as visitParseTree
 from chant21.converterGABC import VisitorGABC
 from chant21.converterGABC import gabcPositionToStep
 from chant21.converterGABC import MissingClef
-from chant21.converterGABC import UnsupportedAlteration
+from chant21.converterGABC import AlterationWarning
 
 def parseGABC(string):
     return converter.parse(string, format='gabc', forceSource=True, storePickle=False)
@@ -89,7 +91,7 @@ class TestGABCPitchConversion(unittest.TestCase):
 class TestAlterations(unittest.TestCase):
     def test_alterations(self):
         parser = ParserGABC(root='alteration')
-        for alteration in 'xy#':
+        for alteration in 'xy':
             parse = parser.parse(f'f{alteration}')
             element = visitParseTree(parse, VisitorGABC())
             ed = element.editorial
@@ -185,15 +187,9 @@ class TestAlterations(unittest.TestCase):
         elements = visitParseTree(parse, VisitorGABC())
         n1, alt, n2 = elements
         self.assertIsInstance(n1, Neume)
-        self.assertIsInstance(alt, Alteration)
+        self.assertIsInstance(alt, Flat)
         self.assertIsInstance(n2, Neume)
-
-    def test_unsupportedAlterationsException(self):
-        parser = ParserGABC(root='body')
-        parse = parser.parse('(c2) A(fy)')
-        test_fn = lambda: visitParseTree(parse, VisitorGABC())
-        self.assertRaises(UnsupportedAlteration, test_fn)
-        
+      
 class TestText(unittest.TestCase):
 
     def test_text(self):

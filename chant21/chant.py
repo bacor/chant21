@@ -16,12 +16,12 @@ from music21 import metadata
 class CHSONObject(base.Music21Object):
     """Base class for objects than can be exported to CHSON"""
 
-    def toObject(self, exportChildren=True):
+    def toObject(self, includeChildren=True, includeEditorial=True):
         """Export the object to a plain Python dictionary"""
         obj = dict()
-        obj['type'] = type(self).__name__
+        obj['type'] = type(self).__name__.lower()
 
-        if self.hasEditorialInformation:
+        if self.hasEditorialInformation and includeEditorial:
             obj['editorial'] = dict(self.editorial)
             # Remove annotation from editorial info, since that's already 
             # stored as the objects `annotation` property
@@ -33,14 +33,15 @@ class CHSONObject(base.Music21Object):
         if hasattr(self, 'annotation') and self.hasAnnotation:
             obj['annotation'] = self.annotation
 
-        if hasattr(self, 'elements') and exportChildren:
+        if hasattr(self, 'elements') and includeChildren:
             children = [el for el in self.elements if isinstance(el, CHSONObject)]
-            obj['elements'] = [child.toObject() for child in children]
+            kwargs = dict(includeEditorial=includeEditorial)
+            obj['elements'] = [child.toObject(**kwargs) for child in children]
 
         return obj
 
     def fromObject(self, obj, parent=None, parseChildren=True):
-        ownClassName = type(self).__name__
+        ownClassName = type(self).__name__.lower()
         if not obj['type'] == ownClassName:
             raise TypeError(f'Cannot import object of type `{obj["type"]}` into a {ownClassName}')
         if 'editorial' in obj:
@@ -115,12 +116,12 @@ class Chant(CHSONObject, stream.Part):
     def sections(self):
         return self.getElementsByClass(Section)
 
-    def toObject(self):
+    def toObject(self, **kwargs):
         metadata = self.editorial.get('metadata', {})
         obj = {
-            'type': 'Chant',
+            'type': 'chant',
             'metadata': metadata,
-            'elements': [section.toObject() for section in self.sections]
+            'elements': [section.toObject(**kwargs) for section in self.sections]
         }
         return obj
 
@@ -129,12 +130,13 @@ class Chant(CHSONObject, stream.Part):
         metadata = obj.get('metadata', {})
         self.editorial.metadata = metadata
     
-    def toCHSON(self, fp=None, **kwargs):
+    def toCHSON(self, fp=None, includeEditorial=True, **jsonKwargs):
+        toObjectKwargs = dict(includeEditorial=includeEditorial)
         if fp is None:
-            return json.dumps(self.toObject(), **kwargs)
+            return json.dumps(self.toObject(**toObjectKwargs), **jsonKwargs)
         else:
             with open(fp, 'w') as handle:
-                json.dump(self.toObject(), handle, **kwargs)
+                json.dump(self.toObject(**toObjectKwargs), handle, **jsonKwargs)
     
     def addNeumeSlurs(self):
         """Add slurs to all notes in a single neume"""
@@ -255,8 +257,8 @@ class Syllable(ChantElement, stream.Stream):
     def neumes(self):
         return self.getElementsByClass(Neume)
 
-    def toObject(self):
-        obj = super().toObject()
+    def toObject(self, **kwargs):
+        obj = super().toObject(**kwargs)
         if self.lyric is not None:
             obj['lyric'] = self.lyric
         return obj
@@ -284,8 +286,8 @@ class Note(CHSONObject, note.Note):
         super().__init__(*args, *kwargs)
         self.stemDirection = 'noStem'
 
-    def toObject(self):
-        obj = super().toObject()
+    def toObject(self, **kwargs):
+        obj = super().toObject(**kwargs)
         obj['pitch'], = self.pitch.nameWithOctave,
         if self.notehead != 'normal':
             obj['notehead'] = self.notehead
@@ -328,6 +330,24 @@ class Alteration(CHSONObject, base.Music21Object):
         super().__init__(**kwargs)
         # Ensure that alterations always occur before their notes
         self.priority = -1
+        # if kind not in ['flat', 'natural']:
+        #     raise ValueError(f'Unsupported alteration kind: {kind}')
+        # self.kind = kind
+    
+    # @property
+    # def kind(self):
+    #     gabc = self.editorial.get('gabc')
+
+    # def toObject(self, **kwargs):
+    #     obj = super().toObject(**kwargs)
+    #     obj['kind'] = self.kind
+    #     return obj
+
+class Flat(Alteration):
+    pass
+
+class Natural(Alteration):
+    pass
 
 class Annotation(expressions.TextExpression):
     def __init__(self, *args, **kwargs):
@@ -336,22 +356,25 @@ class Annotation(expressions.TextExpression):
         self.style.fontStyle = 'italic'
         # TODO this has no effect
         self.placement = 'above' 
+        
 
 ##
 
 CLASSES = {
-    'Chant': Chant,
-    'Section': Section,
-    'Word': Word,
-    'Syllable': Syllable,
-    'Neume': Neume,
-    'Note': Note,
-    'Clef': Clef,
-    'Pausa': Pausa,
-    'PausaMinima': PausaMinima,
-    'PausaMinor': PausaMinor,
-    'PausaMajor': PausaMajor,
-    'PausaFinalis': PausaFinalis,
-    'Alteration': Alteration,
-    'Annotation': Annotation
+    'chant': Chant,
+    'section': Section,
+    'word': Word,
+    'syllable': Syllable,
+    'neume': Neume,
+    'note': Note,
+    'clef': Clef,
+    'pausa': Pausa,
+    'pausaminima': PausaMinima,
+    'pausaminor': PausaMinor,
+    'pausamajor': PausaMajor,
+    'pausafinalis': PausaFinalis,
+    'annotation': Annotation,
+    'alteration': Alteration,
+    'flat': Flat,
+    'natural': Natural
 }
