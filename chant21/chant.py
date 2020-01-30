@@ -327,21 +327,9 @@ class Clef(ChantElement, clef.TrebleClef):
 
 class Alteration(CHSONObject, base.Music21Object):
     def __init__(self, **kwargs):
-        super().__init__(**kwargs)
         # Ensure that alterations always occur before their notes
+        super().__init__(**kwargs)
         self.priority = -1
-        # if kind not in ['flat', 'natural']:
-        #     raise ValueError(f'Unsupported alteration kind: {kind}')
-        # self.kind = kind
-    
-    # @property
-    # def kind(self):
-    #     gabc = self.editorial.get('gabc')
-
-    # def toObject(self, **kwargs):
-    #     obj = super().toObject(**kwargs)
-    #     obj['kind'] = self.kind
-    #     return obj
 
 class Flat(Alteration):
     pass
