@@ -174,6 +174,5 @@ class TestFromObject(unittest.TestCase):
         self.assertEqual(n.notehead, 'x')
         self.assertEqual(n.editorial.foo, 'bar')
 
-
 if __name__  ==  '__main__':
     unittest.main()
