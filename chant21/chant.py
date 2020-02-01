@@ -11,17 +11,43 @@ from music21 import spanner
 from music21 import expressions
 from music21 import metadata
 
+from .html import toFile
+from .html import toWidget
+
 #TODO add __repr__ method to classes
+
+def pitchToVolpiano(pitch, liquescence=False):
+    volpianoLiquescents = '()ABCDEFGHJKLMNOPQRS'
+    volpianoNotes = '89abcdefghjklmnopqrs'
+    # Adapted from music21.volpiano.volpiano
+    # Currently only support TrebleClef; could change this later:
+    # clef = self.getContextByClass('Clef')
+    # clefLowestLine = clef.lowestLine
+    clefLowestLine = 31
+    distanceFromLowestLine = pitch.diatonicNoteNum - clefLowestLine
+    # The lowest volpiano note is 6 steps away from the lowest line
+    index = distanceFromLowestLine + 6
+
+    if index >= len(volpianoNotes):
+        raise Exception(f'Cannot convert pitch {pitch.nameWithOctave} to volpiano: too high')
+    elif index < 0:
+        raise Exception(f'Cannot convert pitch {pitch.nameWithOctave} to volpiano: too low')
+    
+    if liquescence: 
+        return volpianoLiquescents[index]
+    else:
+        return volpianoNotes[index]
 
 class CHSONObject(base.Music21Object):
     """Base class for objects than can be exported to CHSON"""
 
-    def toObject(self, includeChildren=True, includeEditorial=True):
+    def toObject(self, includeChildren=True, includeEditorial=True, 
+        includeVolpiano=False):
         """Export the object to a plain Python dictionary"""
         obj = dict()
         obj['type'] = type(self).__name__.lower()
 
-        if self.hasEditorialInformation and includeEditorial:
+        if includeEditorial and self.hasEditorialInformation:
             obj['editorial'] = dict(self.editorial)
             # Remove annotation from editorial info, since that's already 
             # stored as the objects `annotation` property
@@ -29,13 +55,17 @@ class CHSONObject(base.Music21Object):
                 del obj['editorial']['annotation']
                 if len(obj['editorial']) == 0:
                     del obj['editorial']
+            
+        if includeVolpiano and hasattr(self, 'volpiano'):
+            obj['volpiano'] = self.volpiano
 
         if hasattr(self, 'annotation') and self.hasAnnotation:
             obj['annotation'] = self.annotation
 
-        if hasattr(self, 'elements') and includeChildren:
+        if includeChildren and hasattr(self, 'elements'):
             children = [el for el in self.elements if isinstance(el, CHSONObject)]
-            kwargs = dict(includeEditorial=includeEditorial)
+            kwargs = dict(includeEditorial=includeEditorial, 
+                          includeVolpiano=includeVolpiano)
             obj['elements'] = [child.toObject(**kwargs) for child in children]
 
         return obj
@@ -137,6 +167,23 @@ class Chant(CHSONObject, stream.Part):
         else:
             with open(fp, 'w') as handle:
                 json.dump(self.toObject(**toObjectKwargs), handle, **jsonKwargs)
+    
+    def toHTML(self, filepath=None, completeFile=False, 
+        showDisplayOptions=False, **kwargs):
+        """"""
+        if filepath is not None or completeFile:
+            return toFile(self, filepath=filepath, **kwargs)
+        else:
+            return toWidget(self, **kwargs)
+    
+    def show(self, how, *args, **kwargs):
+        """"""
+        if how == 'html':
+            from IPython.core.display import display, HTML
+            html = self.toHTML(**kwargs)
+            return display(HTML(html))
+        else:
+            super().show(how, *args, **kwargs)
     
     def addNeumeSlurs(self):
         """Add slurs to all notes in a single neume"""
@@ -299,6 +346,12 @@ class Note(CHSONObject, note.Note):
         if 'notehead' in obj:
             self.notehead = obj['notehead']
 
+    @property
+    def volpiano(self):
+        """A volpiano representation of the note"""
+        return pitchToVolpiano(self.pitch, 
+            liquescence=self.editorial.get('liquescence', False))
+
 ###
 
 class Pausa(ChantElement):
@@ -307,20 +360,22 @@ class Pausa(ChantElement):
         self.priority = -1
 
 class PausaMinima(Pausa, articulations.BreathMark):
-    pass
+    volpiano = '7'
 
 class PausaMinor(Pausa, articulations.BreathMark):
-    pass
+    volpiano = '6'
 
 class PausaMajor(Pausa, bar.Barline):
-    pass
+    volpiano = '3'
 
 class PausaFinalis(Pausa, bar.Barline):
+    volpiano = '4'
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.type = 'light-light'
 
 class Clef(ChantElement, clef.TrebleClef):
+    volpiano = '1'
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.priority = -2
@@ -366,3 +421,4 @@ CLASSES = {
     'flat': Flat,
     'natural': Natural
 }
+

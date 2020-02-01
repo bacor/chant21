@@ -1,0 +1,68 @@
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>{{ chant.metadata.name }}</title>
+  <style type="text/css">
+    body {
+        font-family: sans-serif;
+    }
+    main {
+        margin: auto;
+        width: 100%;
+        max-width: 700px;
+        padding-bottom: 3em;
+    }
+    header {
+        line-height: 1.5em;
+        margin-bottom: 2em;
+        padding-top: 3em;
+        color: #333;
+    }
+    .properties {
+        list-style: none;
+        padding: 0;
+    }
+    .properties span {
+        display: inline-block;
+        width: 7em;
+        font-weight: bold;
+        margin-right: 1em;
+    }
+    .displayOptions {
+        margin-top: 1em;
+        margin-bottom: 2em;
+    }
+    .credits {
+        font-size: 10px;
+        color: #999;
+        margin-top: 4em;
+    }
+    a, a:visited {
+        color:inherit;
+    }
+  </style>
+</head>
+<body>
+    <main>
+        <header>
+            <h1>{{ chant.metadata.name }}</h1>
+            <ul class="properties">
+                {% for key, value in chant.metadata.items() %}
+                <li><span>{{ key }}</span> {{ value }}</li>
+                {% endfor %}
+            </ul>
+        </header>
+        
+        {% set chantId = '1' %}
+        <div id="chantContainer-{{chantId}}">
+        {% include 'displayOptions.html' %}
+        {% include 'chant.html' %}
+        </div>
+
+        <p class="credits">
+            Generated with <a href="https://github.com/bacor/chant21/" target="_blank">Chant21</a>, 
+            a Python library for Gregorian chant.
+        </p>
+    </main>
+</body>
+</html>

@@ -1,0 +1,19 @@
+{%- set showDisplayOptions = showDisplayOptions|default(False, True) %}
+{%- set showWords = showWords|default(False, True) %}
+{%- set showSyllables = showSyllables|default(False, True) %}
+{%- set showNeumes = showNeumes|default(False, True) %}
+
+{# A unique widget id #}
+{% set chantId %}
+{%- for _ in range(5) -%}
+{{ '1234567890abcdefghijklmnopqrstuvwABCDEFGHIJKLMNOPQRSTUVWXYZ'|random }}
+{%- endfor %}
+{%- endset %}
+{% set chantId = 1 %}
+
+<div id="chantContainer-{{chantId}}">
+    {% if showDisplayOptions %}
+        {% include 'displayOptions.html' %}
+    {% endif %}
+    {% include 'chant.html' %}   
+</div>

@@ -16,6 +16,7 @@ from chant21 import PausaMinor
 from chant21 import PausaMajor
 from chant21 import PausaFinalis
 from chant21 import Annotation
+from chant21.chant import pitchToVolpiano
 
 from chant21 import ParserGABC
 from chant21.converterGABC import VisitorGABC
@@ -174,5 +175,33 @@ class TestFromObject(unittest.TestCase):
         self.assertEqual(n.notehead, 'x')
         self.assertEqual(n.editorial.foo, 'bar')
 
+class TestToVolpiano(unittest.TestCase):
+
+    def test_pitchConversion(self):
+        lowest = Note('F3')
+        highest = Note('D6')
+        volpianoNotes = '89abcdefghjklmnopqrs'
+        i = 0
+        for octave in [3,4,5,6]:
+            for noteName in 'CDEFGAB':
+                n = Note(f'{noteName}{octave}')
+                if lowest <= n and n <= highest:
+                    volpiano = pitchToVolpiano(n.pitch)
+                    self.assertEqual(volpiano, volpianoNotes[i])
+                    self.assertEqual(n.volpiano, volpianoNotes[i])
+                    i += 1
+    
+    def test_exceptions(self):
+        too_low = Note('E3')
+        self.assertRaises(Exception, lambda: pitchToVolpiano(too_low.pitch))
+
+        too_high = Note('E6')
+        self.assertRaises(Exception, lambda: pitchToVolpiano(too_high.pitch))
+
+    def test_liquescence(self):
+        n = Note('C4')
+        n.editorial.liquescence = True
+        self.assertEqual(n.volpiano, 'C')
+       
 if __name__  ==  '__main__':
     unittest.main()

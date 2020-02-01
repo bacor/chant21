@@ -1,0 +1,146 @@
+{%- set includeStyles = includeStyles|default(True, True) or completeFile %}
+{%- set showWords = showWords|default(False, True) %}
+{%- set showSyllables = showSyllables|default(False, True) %}
+{%- set showNeumes = showNeumes|default(False, True) %}
+
+{%- if includeStyles %}
+<style type="text/css">
+    .chant {
+        line-height: 1;
+        position: relative;
+        font-family: serif;
+    }
+
+    .section {
+        display: inline;
+    }
+
+    .word, .syllable, .neume {
+        display: inline-block;
+    }
+
+    .word {
+        height: 5em;
+        padding-top: .4em;
+    }
+
+    .volpiano {
+        font-family: volpiano;
+        font-size: 2em;
+    }
+        
+    .text {
+        position: absolute;
+        margin-top: 1em;
+    }
+
+    .lyric {
+        background: #fff;
+    }
+
+    .annotation {
+        font-style: italic;
+        color: #c00;
+    }
+
+    .showWords .word { 
+        margin: .2em;
+        padding-right: .5em;
+        padding-left: .5em;
+        border: 1px solid #ccc;
+        background-color: #f5f5f5;
+    }
+
+    .showWords .lyric{ 
+        background-color: #f5f5f5;
+    }
+
+    .showNeumes .neume {
+        margin-left: .1em;
+        margin-right: .05em;
+        border-right: 1px solid#ccc;
+        border-left: 1px solid#ccc;
+    }
+
+    .showNeumes .volpiano > *:not(.neume) {
+        color: #ccc;
+    }
+
+    .showSyllables .syllable {
+        border-right: 1px solid #c00;
+        margin-right: .3em;
+        padding-right: .4em;
+    }
+
+    .showSyllables.showWords .syllable:last-of-type {
+        border: 0;
+        padding: 0;
+        margin: 0;
+    }
+
+    .section.boundary {
+        display: inline-block;
+        border: 0;
+        border-bottom: 1px dashed black;
+        margin-bottom: 1em;
+    }
+</style>
+{% endif -%}
+
+<div class="chant
+    {%- if showWords %} showWords{% endif %}
+    {%- if showSyllables %} showSyllables{% endif %}
+    {%- if showNeumes %} showNeumes{% endif %}">
+{%- for section in chant.elements -%}
+{%- set numSections = chant.elements|length -%}
+{%- set sectionLoop = loop -%}
+    <div class="section">
+    {%- for word in section.elements -%}
+    {%- set wordLoop = loop -%}
+    {%- set numWords = section.elements|length -%}
+        <div class="word">
+        {%- set numSyllables = word.elements|length -%}
+        {%- for syllable in word.elements -%}
+            <div class="syllable">
+                <div class="volpiano">
+                    {%- set numNeumes = syllable.elements|length -%}
+                    {%- for element in syllable.elements -%}
+                        {%- if element.type == 'neume' -%}
+                            <span class="neume">
+                            {%- for note in element.elements -%}{{ note.volpiano }}{% endfor -%}
+                            </span>
+                            {%- if numNeumes > 1 and loop.index < numNeumes -%}
+                            <span class="neumeBoundary boundary">-</span>
+                            {%- endif -%}
+                        {%- else -%}
+                            <span class="{{ element.type }}">{{ element.volpiano }}</span>
+                        {%- endif -%}
+                    {%- endfor -%}
+
+                    {%- if numSyllables > 1 and loop.index < numSyllables -%}
+                    <span class="syllableBoundary boundary">--</span>
+                    {%- elif loop.index == numSyllables and wordLoop.index < numWords -%}
+                    <span class="wordBoundary boundary">---</span>
+                    {%- elif loop.index == numSyllables and sectionLoop.index < numSections -%}
+                    <span class="wordBoundary boundary">---</span>
+                    {%- endif -%}
+                </div>
+                <div class="text">
+                    {%- if syllable.annotation -%}
+                        <span class="annotation">{{syllable.annotation}}</span>
+                    {%- elif syllable.lyric -%}
+                        <span class="lyric">{{syllable.lyric}}</span>
+                        {%- if numSyllables > 1 and loop.index < numSyllables -%}
+                        <span class="hyphen">-</span>
+                        {%- endif -%}
+                    {%- else -%}
+                    &nbsp;
+                    {%- endif -%}
+                </div>
+            </div>
+        {%- endfor -%}
+        </div>
+    {%- endfor -%}
+    </div>
+{%- endfor -%}
+</div>

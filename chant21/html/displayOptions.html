@@ -1,0 +1,58 @@
+{%- set showWords = showWords|default(False, True) %}
+{%- set showSyllables = showSyllables|default(False, True) %}
+{%- set showNeumes = showNeumes|default(False, True) %}
+
+{# A unique widget id #}
+{% if chantId is none %}
+{% set chantId %}
+{%- for _ in range(5) -%}
+{{ '1234567890abcdefghijklmnopqrstuvwABCDEFGHIJKLMNOPQRSTUVWXYZ'|random }}
+{%- endfor %}
+{%- endset %}
+{% endif %}
+
+<style type="text/css">
+    .displayOptions {
+        font-size: .8em;
+        margin-bottom: 1em;
+        color: #666;
+        font-family: sans-serif;
+    }
+    .displayOptions label {
+        margin-right: .5em;
+    }
+    .displayOptions label input {
+        margin-right: .5em;
+    }
+    .displayOptionsHeader {
+        font-weight: bold;
+        margin-right: 1em;
+    }
+</style>
+
+<script type="text/javascript">
+    function toggleChantClass{{chantId}}(className) { 
+        var chant = document.body.querySelector('#chantContainer-{{chantId}} .chant');
+        if(chant.classList.contains(className)) {
+            chant.classList.remove(className)
+        } else {
+            chant.classList.add(className)
+        }
+    }
+</script>
+
+<div class="displayOptions">
+    <span class="displayOptionsHeader">Show:</span>
+    <label><input type="checkbox" name="words" autocomplete="off"
+        onclick="toggleChantClass{{chantId}}('showWords')" 
+        {% if showWords %}checked{% endif -%}
+        >words</label>
+    <label><input type="checkbox" name="syllables" autocomplete="off"
+        onclick="toggleChantClass{{chantId}}('showSyllables')" 
+        {% if showSyllables %}checked{% endif -%}
+        >syllables</label>
+    <label><input type="checkbox" name="neumes" autocomplete="off"
+        onclick="toggleChantClass{{chantId}}('showNeumes')" 
+        {% if showNeumes %}checked{% endif -%}
+        >neumes</label>
+</div>
