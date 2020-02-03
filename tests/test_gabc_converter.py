@@ -335,6 +335,7 @@ class TestSyllables(unittest.TestCase):
         gabc = 'a(f)(,)(f)b(f)(,)(f)c(g)'
         parse = parser.parse(gabc)
         word = visitParseTree(parse, VisitorGABC())
+        word.joinSyllablesAcrossPausas()
         self.assertEqual(len(word), 3)
         syll1, syll2, syll3 = word.elements
         self.assertEqual(len(syll1.flat), 3)
@@ -348,6 +349,7 @@ class TestSyllables(unittest.TestCase):
         gabc = 'a(fg/gh)(,)(hi/ij)'
         parse = parser.parse(gabc)
         word = visitParseTree(parse, VisitorGABC())
+        word.joinSyllablesAcrossPausas()
         self.assertEqual(len(word), 1)
         neume1, neume2, comma, neume3, neume4 = word[0].elements
         self.assertIsInstance(neume1, Neume)
@@ -363,12 +365,35 @@ class TestSyllables(unittest.TestCase):
         gabc = 'a(fg/gh)(,)b(hi/ij)'
         parse = parser.parse(gabc)
         word = visitParseTree(parse, VisitorGABC())
+        word.joinSyllablesAcrossPausas()
         (neume1, neume2, comma), (neume3, neume4) = word
         self.assertIsInstance(neume1, Neume)
         self.assertIsInstance(neume2, Neume)
         self.assertIsInstance(comma, Pausa)
         self.assertIsInstance(neume3, Neume)
         self.assertIsInstance(neume4, Neume)
+
+    def test_multipleSyllablesWithCommas(self):
+        parser = ParserGABC(root='word')    
+        gabc = 'a(f)(,)(f)(,)(f)b(f)'
+        parse = parser.parse(gabc)
+        word = visitParseTree(parse, VisitorGABC())
+        word.joinSyllablesAcrossPausas()
+        self.assertEqual(len(word), 2)
+        syll1, syll2 = word.elements
+        self.assertEqual(len(syll1.flat), 5)
+        self.assertIsInstance(syll1.flat[1], Pausa)
+        self.assertEqual(len(syll2.flat), 1)
+    
+    def test_multipleSyllablesWithCommas2(self):
+        """Test whether syllables separated by commas are correctly
+        merged; including the last one"""
+        parser = ParserGABC(root='word')    
+        gabc = 'a(f)(,)(f)(,)(f)'
+        parse = parser.parse(gabc)
+        word = visitParseTree(parse, VisitorGABC())
+        word.joinSyllablesAcrossPausas()
+        self.assertEqual(len(word), 1)
 
 class TestNeumes(unittest.TestCase):
 

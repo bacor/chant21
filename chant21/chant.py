@@ -111,19 +111,23 @@ class Chant(CHSONObject, stream.Part):
         useful for visualizing chants: `ch.flatter.show()` will also show measures
         and barlines, where as `ch.flat.show()` will not."""
         chant = deepcopy(self)
-        for measure in chant.getElementsByClass('Measure'):
-            for word in measure.getElementsByClass(Word):
-                elements = word.flat
-                wordOffset = word.offset
-                measure.remove(word)
-                for el in elements:
-                    offset = wordOffset + el.offset
-                    if isinstance(el, spanner.Slur): offset = 0.0
-                    measure.insert(offset, el)
-        
-        # Move barlines and breathmarks to their appropriate positions
-        chant.makeBarlines()
-        chant.makeBreathMarks()
+        elements = chant.flat
+        chant.clear()
+        curMeasure = stream.Measure()
+        for element in elements:
+            if isinstance(element, Pausa):
+                if isinstance(element, bar.Barline):
+                    curMeasure.rightBarline = element
+                elif isinstance(element, articulations.BreathMark):
+                    prevNote = element.previous(note.Note)
+                    prevNote.articulations.append(element)
+                    curMeasure.rightBarline = 'dotted'
+                chant.append(curMeasure)
+                curMeasure = stream.Measure()
+            else:
+                curMeasure.append(element)
+        if len(curMeasure) > 0:
+            chant.append(curMeasure)
         return chant
 
     @property
@@ -131,15 +135,13 @@ class Chant(CHSONObject, stream.Part):
         """A stream of phrases: the music between two pausas.
         Every pausa is thus turned into a section boundary"""
         phrases = stream.Part()
-        curPhrase = Section()
+        curPhrase = stream.Stream()
         for el in self.flat:
             if not isinstance(el, Pausa):
                 curPhrase.append(el)
             else:
-                if isinstance(el, articulations.BreathMark):
-                    curPhrase.rightBarline = 'dotted'
                 phrases.append(curPhrase)
-                curPhrase = Section()
+                curPhrase = stream.Stream()
         return phrases
 
     @property
@@ -224,14 +226,73 @@ class Chant(CHSONObject, stream.Part):
             # md.date = metadata.DateBetween(['2009/12/31', '2010/1/28'])
             #TODO add custom metadata fields: office part and mode
 
-    #TODO write function that merges words sung on the same syllable
-    #TODO write sections properly
+    def joinTextAcrossPausas(self):
+        for section in self.sections:
+            section.joinWordsAcrossPausas()
 
-class Section(CHSONObject, stream.Measure):
-    pass   
+class Section(CHSONObject, stream.Stream):
+    _name = None
+
+    @property
+    def name(self):
+        if self._name is not None:
+            return self._name
+        elif len(self.words) > 0 and self.words[0].hasAnnotation:
+            annotation = self.words[0][0].annotation
+            if annotation == 'V':
+                return 'verse'
+            elif annotation == 'R':
+                return 'respond'
+            elif annotation == 'A':
+                return 'antiphon'
+        return None
+    
+    @name.setter
+    def name(self, name):
+        self._name = name
+            
+    @property
+    def words(self):
+        return self.getElementsByClass(Word)
+    
+    def joinWordsAcrossPausas(self, joinSyllablesAcrossPausas=True):
+        """Merge words containing pausas"""
+        if len(self.words) == 1: return
+        joinWords = False
+        i = 1
+        while i < len(self.words):
+            prevWord, curWord = self.words[i-1:i+1]
+            curWordIsBreathMark = isinstance(curWord.flat[0], articulations.BreathMark)
+            curWordIsBarline = isinstance(curWord.flat[0], bar.Barline)
+            
+            if prevWord.hasLyrics and curWordIsBreathMark and not curWord.hasLyrics:
+                joinWords = True
+            if curWord.hasLyrics or curWordIsBarline:
+                joinWords = False 
+
+            if joinWords:
+                prevWord.append(curWord.elements)
+                self.remove(curWord)
+            else:
+                i += 1
+        
+        # Update syllables
+        if joinSyllablesAcrossPausas:
+            for word in self.words:
+                word.joinSyllablesAcrossPausas()
+                word.updateSyllableLyrics()
+
+    def toObject(self, **kwargs):
+        obj = super().toObject(**kwargs)
+        if self.name is not None:
+            obj['name'] = self.name
+        return obj
 
 class Word(CHSONObject, stream.Stream):
-    
+    @property
+    def syllables(self):
+        return self.getElementsByClass(Syllable)
+   
     @property
     def flatLyrics(self):
         try:
@@ -240,28 +301,39 @@ class Word(CHSONObject, stream.Stream):
             return None
  
     @property
-    def syllables(self):
-        return self.getElementsByClass(Syllable)
+    def hasLyrics(self):
+        if len(self.syllables) > 0:
+            return self.syllables[0].hasLyrics
+        else:
+            return False
 
-    def mergeMelismasWithPausas(self):
+    @property
+    def hasAnnotation(self):
+        if len(self.syllables) > 0:
+            return self.syllables[0].hasAnnotation
+        else:
+            return False
+
+    def joinSyllablesAcrossPausas(self):
         """Merge syllables if they are separated by a syllable containing only a pausa.
         This is often the case on long melismas."""
         if len(self.syllables) == 1: return
         numSylls = len(self.syllables)
+        joinSyllables = False
         i = 1
-        while i < numSylls - 1:
-            prevSyll, curSyll, nextSyll = self.syllables[i-1:i+2]
-            if len(curSyll.flat) == 1 and isinstance(curSyll[0], articulations.BreathMark):
+        while i < len(self.syllables):
+            prevSyll, curSyll = self.syllables[i-1:i+1]
+            curSyllIsBreathMark = isinstance(curSyll.flat[0], articulations.BreathMark)
+            if prevSyll.hasLyrics and not curSyll.hasLyrics and curSyllIsBreathMark:
+                joinSyllables = True
+            if curSyll.hasLyrics:
+                joinSyllables = False
+
+            if joinSyllables:
                 prevSyll.append(curSyll.elements)
                 self.remove(curSyll)
-                numSylls -= 1
-
-                # Only merge with next syllable if it has no sung text
-                if nextSyll.lyric is None:
-                    prevSyll.append(nextSyll.elements)
-                    self.remove(nextSyll)
-                    numSylls -= 1
-            i += 1
+            else:
+                i += 1
 
     def updateSyllableLyrics(self):
         lyrics = self.flat.lyrics().get(1, False)
@@ -303,6 +375,10 @@ class Syllable(ChantElement, stream.Stream):
                 notes[0].lyrics = [value]
         else:
             self.editorial.lyric = value
+
+    @property
+    def hasLyrics(self):
+        return self.lyric is not None
 
     @property
     def neumes(self):
@@ -357,6 +433,7 @@ class Note(CHSONObject, note.Note):
             liquescence=self.editorial.get('liquescence', False))
 
 ###
+#TODO fix spacing around in-word pausas
 
 class Pausa(ChantElement):
     def __init__(self, **kwargs):

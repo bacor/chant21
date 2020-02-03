@@ -98,3 +98,11 @@ Some useful grep commands to check which features should be supported
 # Code
 grep -E '<v>[^<]+</v>' *.gabc -o -h | sort | uniq -c
 ```
+
+
+Notes for documentation
+-----------------------
+
+If a chant consists of multiple sections (or parts), like a respond and a verse, a double barlines (pausa finalis) between two parts always *starts* the next part, rather than ending the previous part. 
+After all, the annotation under those barlines usually corresponds to the next part. 
+The chants last double barline is always part of the last section, however.

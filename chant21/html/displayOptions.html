@@ -1,3 +1,4 @@
+{%- set showSections = showSections|default(False, True) %}
 {%- set showWords = showWords|default(False, True) %}
 {%- set showSyllables = showSyllables|default(False, True) %}
 {%- set showNeumes = showNeumes|default(False, True) %}
@@ -43,6 +44,10 @@
 
 <div class="displayOptions">
     <span class="displayOptionsHeader">Show:</span>
+    <label><input type="checkbox" name="words" autocomplete="off"
+        onclick="toggleChantClass{{chantId}}('showSections')" 
+        {% if showSections %}checked{% endif -%}
+        >sections</label>
     <label><input type="checkbox" name="words" autocomplete="off"
         onclick="toggleChantClass{{chantId}}('showWords')" 
         {% if showWords %}checked{% endif -%}

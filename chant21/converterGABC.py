@@ -44,8 +44,8 @@ def gabcPositionToStep(notePosition, clef, adjustClefOctave=0):
     cPosition = dict(c1='d', c2='f', c3='h', c4='j',
                       cb1='d', cb2='f', cb3='h', cb4='j', 
                       f1='a', f2='d', f3='e', f4='g')
-    clefOctaves = dict(c1=4, c2=4, c3=5, c4=5,
-                        cb1=4, cb2=4, cb3=5, cb4=5,
+    clefOctaves = dict(c1=4, c2=5, c3=5, c4=5,
+                        cb1=4, cb2=5, cb3=5, cb4=5,
                         f1=4, f2=4, f3=4, f4=4)
 
     noteIndex = positions.index(notePosition.lower())
@@ -97,7 +97,6 @@ class VisitorGABC(PTNodeVisitor):
         # First pass: add measurs
         for word in children:
             if not isinstance(word, Word): raise Exception('Quoi?')
-            element = word
             curSection.append(word)
 
             # Scope of accidentals ends with word boundaries
@@ -155,9 +154,18 @@ class VisitorGABC(PTNodeVisitor):
                     eIsFlat = False
                     eIsNatural = False  
                     
-                    if isinstance(el, bar.Barline):
-                        ch.append(curSection)
-                        curSection = Section()
+                    # Intermediate sections start (!) at pausa finalis (double barlines)
+                    # because annotations below them always refer to the next sections.
+                    # The very last pausa finalis is part of the last section though
+                    if isinstance(el, PausaFinalis):
+                        if not word == children[-1]:
+                            curSection.remove(word)
+                            ch.append(curSection)
+                            curSection = Section()
+                            curSection.append(word)
+                        else:
+                            ch.append(curSection)
+                            curSection = Section()
                         
                 elif isinstance(el, Clef):
                     curClef = el
@@ -170,12 +178,12 @@ class VisitorGABC(PTNodeVisitor):
         if len(curSection.flat) > 0:
             ch.append(curSection)
 
+        # ch.joinTextAcrossPausas()
         return ch
         
     def visit_word(self, node, children):
         word = Word()
         word.append(children)
-        word.mergeMelismasWithPausas()
         word.updateSyllableLyrics()
         return word
 

@@ -7,23 +7,26 @@ TEMPLATE_ENV = jinja2.Environment(loader=TEMPLATE_LOADER)
 WIDGET = TEMPLATE_ENV.get_template('widget.html')
 FILE = TEMPLATE_ENV.get_template('file.html')
 
-def toWidget(chant, showDisplayOptions=True, showWords=False,
-    showSyllables=False, showNeumes=False):
+def toWidget(chant, showDisplayOptions=True, showSections=False, 
+    showWords=False, showSyllables=False, showNeumes=False):
     """"""
     obj = chant.toObject(includeVolpiano=True)
     html = WIDGET.render(chant=obj, 
-                         showDisplayOptions=showDisplayOptions, 
+                         showDisplayOptions=showDisplayOptions,
+                         showSections=showSections, 
                          showWords=showWords,
                          showSyllables=showSyllables, 
                          showNeumes=showNeumes)
     return html
 
-def toFile(chant, filepath=None, showDisplayOptions=True, showWords=False,
-    showSyllables=False, showNeumes=False):
+def toFile(chant, filepath=None, showDisplayOptions=True,
+    showSections=False, showWords=False, showSyllables=False, 
+    showNeumes=False):
     """"""
     obj = chant.toObject(includeVolpiano=True)
     html = FILE.render(chant=obj, 
                          showDisplayOptions=showDisplayOptions, 
+                         showSections=showSections, 
                          showWords=showWords,
                          showSyllables=showSyllables, 
                          showNeumes=showNeumes)

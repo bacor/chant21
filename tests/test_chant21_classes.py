@@ -24,11 +24,12 @@ from arpeggio import visit_parse_tree as visitParseTree
 
 class TestChant(unittest.TestCase):
     def test_flatter(self):
-        gabc = "(c4) A(fgf/h,gh) (:) B(g) (::)"
+        gabc = "(c4) A(fgf/h,gh) (::) B(g) (::)"
         ch = converter.parse(gabc, format='gabc', forceSource=True, storePickle=False)
-        measure1, measure2 = ch.flatter
-        clef, n1, n2, n3, n4, n5, n6, bar1 = measure1
-        n7, bar2 = measure2
+        m1, m2, m3 = ch.flatter
+        clef, n1, n2, n3, n4, bar = m1
+        n5, n6, bar2 = m2
+        n7, bar3 = m3
         for n in [n1, n2, n3, n4, n5, n6, n7]:
             self.assertIsInstance(n, Note)
 
@@ -39,19 +40,51 @@ class TestChant(unittest.TestCase):
         ch.makeMetadata()
         self.assertIsInstance(ch[0], metadata.Metadata)
 
+    def test_mergeText(self):
+        gabc = "(c4) A(fg) (;) (f) (::)"
+        parser = ParserGABC(root='body')
+        parse = parser.parse(gabc)
+        ch = visitParseTree(parse, VisitorGABC())
+        ch.joinTextAcrossPausas()
+        word1, word2, word3 = ch.elements[0]
+        self.assertEqual(len(word1), 1)
+        self.assertEqual(len(word2), 1)
+        self.assertEqual(len(word3), 1)
+
+        neume1, pausa, neume2 = word2[0]
+        self.assertIsInstance(neume1, Neume)
+        self.assertIsInstance(pausa, PausaMinor)
+        self.assertIsInstance(neume2, Neume)
+
+    def test_mergeWords2(self):
+        gabc = "(c4) Ia(d) *(;) (f) (,) (c) (b)"
+        parser = ParserGABC()
+        parse = parser.parse(gabc)
+        ch = visitParseTree(parse, VisitorGABC())
+        ch.joinTextAcrossPausas()
+        self.assertEqual(len(ch[0].elements), 2)
+
+    def test_mergeWords3(self):
+        gabc = "(c4) A(f) (,) (c) B(g)"
+        parser = ParserGABC()
+        parse = parser.parse(gabc)
+        ch = visitParseTree(parse, VisitorGABC())
+        ch.joinTextAcrossPausas()
+        self.assertEqual(len(ch[0].elements), 3)
+
 class TestToObject(unittest.TestCase):
 
     def test_body(self):
         parser = ParserGABC(root='body')
-        parse = parser.parse('(c2) A(f)B(g) (:) C(h) (::)')
+        parse = parser.parse('(c2) A(f)B(g) (::) C(h) (::)')
         body = visitParseTree(parse, VisitorGABC())
         obj = body.toObject()
 
         sect1, sect2 = obj['elements']
-        self.assertEqual(len(sect1['elements']), 3)
+        self.assertEqual(len(sect1['elements']), 2)
         del sect1['elements']
         self.assertDictEqual(sect1, {'type':'section'})
-        self.assertEqual(len(sect2['elements']), 2)
+        self.assertEqual(len(sect2['elements']), 3)
         del sect2['elements']
         self.assertDictEqual(sect2, {'type':'section'})
 
