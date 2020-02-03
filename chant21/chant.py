@@ -176,14 +176,15 @@ class Chant(CHSONObject, stream.Part):
         else:
             return toWidget(self, **kwargs)
     
-    def show(self, how, *args, **kwargs):
-        """"""
-        if how == 'html':
+    def show(self, *args, makeFlatter=True, **kwargs):
+        if len(args) > 0 and args[0] == 'html':
             from IPython.core.display import display, HTML
             html = self.toHTML(**kwargs)
             return display(HTML(html))
+        elif len(args) == 0 and makeFlatter:
+            return self.flatter.show(makeFlatter=False, **kwargs)
         else:
-            super().show(how, *args, **kwargs)
+            return super().show(*args, **kwargs)
     
     def addNeumeSlurs(self):
         """Add slurs to all notes in a single neume"""
@@ -222,6 +223,9 @@ class Chant(CHSONObject, stream.Part):
             #TODO add date
             # md.date = metadata.DateBetween(['2009/12/31', '2010/1/28'])
             #TODO add custom metadata fields: office part and mode
+
+    #TODO write function that merges words sung on the same syllable
+    #TODO write sections properly
 
 class Section(CHSONObject, stream.Measure):
     pass   
