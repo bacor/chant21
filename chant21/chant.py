@@ -25,6 +25,8 @@ from music21 import metadata
 from .html import toFile
 from .html import toWidget
 
+from . import __version__
+
 #TODO add __repr__ method to classes
 
 def pitchToVolpiano(pitch, liquescence=False):
@@ -165,6 +167,7 @@ class Chant(CHSONObject, stream.Part):
         obj = {
             'type': 'chant',
             'metadata': metadata,
+            'chant21version': __version__,
             'elements': [section.toObject(**kwargs) for section in self.sections]
         }
         return obj

@@ -33,6 +33,7 @@ Or in a Jupyter notebook:
 """
 import jinja2
 import os.path as path
+from .. import __version__
 
 # Paths of the Jinja templates
 CUR_DIR = path.dirname(__file__)
@@ -64,7 +65,7 @@ def toWidget(chant, showDisplayOptions=True, showSections=False,
         str: a HTML string
     """
     obj = chant.toObject(includeVolpiano=True)
-    html = WIDGET.render(chant=obj, 
+    html = WIDGET.render(chant=obj,
                          showDisplayOptions=showDisplayOptions,
                          showSections=showSections, 
                          showWords=showWords,

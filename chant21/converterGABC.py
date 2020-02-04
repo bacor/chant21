@@ -27,6 +27,8 @@ from .chant import Flat
 
 from .parserGABC import ParserGABC
 
+from . import __version__
+
 NEUME_BOUNDARY = '_NEUME_BOUNDARY_'
 
 class MissingClef(Exception):
@@ -71,7 +73,14 @@ class VisitorGABC(PTNodeVisitor):
         else:
             ch = Chant()
 
-        header = {}
+        header = {
+            'conversion': {
+                'originalFormat': 'gabc',
+                'converter': 'chant21',
+                'version': __version__
+            }
+        }
+
         if 'header' in children.results:
             for headerSection in children.results['header']:
                 header.update(headerSection)

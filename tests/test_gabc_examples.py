@@ -98,14 +98,15 @@ class TestConvertExamples(unittest.TestCase):
         chant = parseGABC(filename)
         self.assertTrue(True)
 
-    # def test_GBCConversion2(self):
-    #     GABC_FN = '/Users/Bas/repos/projects/GregoBaseCorpus/gabc/{idx:0>5}.gabc'
-    #     filename = GABC_FN.format(idx=4)
-    #     parser = ParserGABC()
-    #     parse = parser.parseFile(filename)
-    #     ch = visitParseTree(parse, VisitorGABC())
-    #     ch.flatter.show()
-    #     self.assertTrue(True)
+    def test_GBCConversion2(self):
+        GABC_FN = '/Users/Bas/repos/projects/GregoBaseCorpus/gabc/{idx:0>5}.gabc'
+        filename = GABC_FN.format(idx=4)
+        parser = ParserGABC()
+        parse = parser.parseFile(filename)
+        ch = visitParseTree(parse, VisitorGABC())
+        # ch.show()
+        ch.toHTML('tmp/test.html')
+        self.assertTrue(True)
 
     # def test_exampleConversion(self):
     #     # gabc = "(c4) AL(dc~) *(;) <i>ij.</i>(hghvGFg_fgvFDffdev.dec.,e/ggh'GFgvFEffdevDCd!ewfd.)"
