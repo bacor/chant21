@@ -1,9 +1,13 @@
-tmp/
+# General
 .vscode/
 __pycache__/
 .ipynb_checkpoints/
 .DS_Store
 *.dot
-demo.py
+
+# Documentation
+docs/_build
+
+# Local stuff
+tmp/
 test_gregobase_corpus*.py
-chson/

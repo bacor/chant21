@@ -17,6 +17,7 @@ from .html import toWidget
 #TODO add __repr__ method to classes
 
 def pitchToVolpiano(pitch, liquescence=False):
+    """Convert a music21.pitch object to a volpiano character"""
     volpianoLiquescents = '()ABCDEFGHJKLMNOPQRS'
     volpianoNotes = '89abcdefghjklmnopqrs'
     # Adapted from music21.volpiano.volpiano

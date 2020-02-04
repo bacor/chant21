@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from .chant import Chant
 from .chant import Section
 from .chant import ChantElement
