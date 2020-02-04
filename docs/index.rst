@@ -9,6 +9,7 @@ Chant21 Documentation
    :caption: Contents:
 
    content/classes.rst
+   content/html.rst
 
 Indices and tables
 ==================
