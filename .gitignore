@@ -11,3 +11,8 @@ docs/_build
 # Local stuff
 tmp/
 test_gregobase_corpus*.py
+
+# Development
+*.egg-info
+dist
+build
