@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+__version__ = '0.1.0'
+
+# Main classes
 from .chant import Chant
 from .chant import Section
 from .chant import ChantElement
@@ -21,3 +24,4 @@ from .chant import Flat
 from .converterGABC import ConverterGABC
 from .converterCHSON import ConverterCHSON
 from .parserGABC import ParserGABC
+

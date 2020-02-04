@@ -21,8 +21,11 @@ copyright = '2020, Bas Cornelissen'
 author = 'Bas Cornelissen'
 
 # The full version, including alpha/beta/rc tags
-release = '0.1'
-
+try:
+    from chant21 import __version__ as chant21Version
+    version = chant21Version
+except ImportError:
+    pass
 
 # -- General configuration ---------------------------------------------------
 
