@@ -430,7 +430,7 @@ class Note(CHSONObject, note.Note):
 
     def toObject(self, **kwargs):
         obj = super().toObject(**kwargs)
-        obj['pitch'], = self.pitch.nameWithOctave,
+        obj['pitch'] = self.pitch.nameWithOctave
         if self.notehead != 'normal':
             obj['notehead'] = self.notehead
         return obj
@@ -477,16 +477,70 @@ class Clef(ChantElement, clef.TrebleClef):
         self.priority = -2
 
 class Alteration(CHSONObject, base.Music21Object):
+    """Placeholder of the exact position of alterations in the chant.
+
+    Alterations record the exact position of the alterations in the score,
+    which is used when converting to other formats such as volpiano.
+    Importantly, Alterations are only shown on their actual location in the
+    HTML rendition (using ``chant.show('html')``). For music21, Alterations
+    are just placeholder objects. All notes have a fixed pitch, computed when 
+    the chant is parsed, and music21 places accidentals according to its
+    own logic --- not necessarily where we find the Accidental object.
+    """ 
+    
+    pitch = None
+    """music21.pitch.Pitch: the pitch at which the accidental is found in the
+    score."""
+
+    _volpianoNoteToAlteration = {}
+    """dict: A dictionary mapping volpiano notes (e.g. ``b``) to the alteration
+    at the same line (e.g. ``y``)."""
+
     def __init__(self, **kwargs):
         # Ensure that alterations always occur before their notes
         super().__init__(**kwargs)
         self.priority = -1
 
+    def toObject(self, **kwargs):
+        obj = super().toObject(**kwargs)
+        obj['pitch'] = self.pitch.nameWithOctave
+        return obj
+
+    def fromObject(self, obj, **kwargs):
+        super().fromObject(obj, **kwargs)
+        self.pitch = pitch.Pitch(obj['pitch'])
+        
+    @property
+    def volpiano(self):
+        """str: a volpiano string representing the alteration."""
+        volpiano = pitchToVolpiano(self.pitch)
+        if not volpiano in self.volpianoNoteToAlteration:
+            raise Exception('Accidental not supported')
+        else:
+            alteration = self._volpianoNoteToAlteration[volpiano]
+            return alteration
+
 class Flat(Alteration):
-    pass
+    """A placeholder class for flat signs. See :class:`Alteration` 
+    for details."""
+    _volpianoNoteToAlteration = {
+        'b': 'y', # Low b-flat
+        'j': 'i', # Middle b-flat
+        'q': 'z', # High b-flat
+        'e': 'w', # Low e-flat
+        'm': 'x', # High e-flat
+    }
 
 class Natural(Alteration):
-    pass
+    """A placeholder class for natural signs. See :class:`Alteration` 
+    for details."""
+    _volpianoNoteToAlteration = {
+        'b': 'Y', # Low b natural
+        'j': 'I', # Middle b natural
+        'q': 'Z', # High b natural
+        'e': 'W', # Low e natural
+        'm': 'X', # High e natural
+    }
 
 class Annotation(expressions.TextExpression):
     def __init__(self, *args, **kwargs):

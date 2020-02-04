@@ -100,7 +100,7 @@ class TestConvertExamples(unittest.TestCase):
 
     def test_GBCConversion2(self):
         GABC_FN = '/Users/Bas/repos/projects/GregoBaseCorpus/gabc/{idx:0>5}.gabc'
-        filename = GABC_FN.format(idx=4)
+        filename = GABC_FN.format(idx=7231)
         parser = ParserGABC()
         parse = parser.parseFile(filename)
         ch = visitParseTree(parse, VisitorGABC())

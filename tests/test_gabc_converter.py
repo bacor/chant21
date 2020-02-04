@@ -103,6 +103,10 @@ class TestAlterations(unittest.TestCase):
         parser = ParserGABC(root='body')    
         parse = parser.parse('(c2) a(exee,e)')
         stream = visitParseTree(parse, VisitorGABC())
+        flat = stream.flat[1]
+        self.assertIsInstance(flat, Alteration)
+        self.assertEqual(flat.pitch.step, 'B')
+
         notes = stream.flat.notes
         self.assertEqual(notes[0].name, 'B-')
         self.assertEqual(notes[0].pitch.accidental.name, 'flat')

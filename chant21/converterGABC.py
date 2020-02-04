@@ -138,8 +138,9 @@ class VisitorGABC(PTNodeVisitor):
                     if curGABCClef is None: 
                         raise MissingClef('Cannot process notes without a clef.')
                     position = el.editorial.gabcPosition
-                    step = gabcPositionToStep(position, curGABCClef)[0]
-                    
+                    step = gabcPositionToStep(position, curGABCClef)
+                    el.pitch = pitch.Pitch(step)
+
                     # Reset alterations
                     bIsFlat = False or curClefHasFlat
                     bIsNatural = False
@@ -147,13 +148,13 @@ class VisitorGABC(PTNodeVisitor):
                     eIsNatural = False
 
                     # Update
-                    if isinstance(el, Flat) and step == 'E':
+                    if isinstance(el, Flat) and el.pitch.step == 'E':
                         eIsFlat = True
-                    elif isinstance(el, Flat) and step == 'B':
+                    elif isinstance(el, Flat) and el.pitch.step == 'B':
                         bIsFlat = True
-                    elif isinstance(el, Natural) and step == 'B':
+                    elif isinstance(el, Natural) and el.pitch.step == 'B':
                         bIsNatural = True
-                    elif isinstance(el, Natural) and step == 'E':
+                    elif isinstance(el, Natural) and el.pitch.step == 'E':
                         eIsNatural = True
                     
                 # Scope of accidentals ends at breathmarks

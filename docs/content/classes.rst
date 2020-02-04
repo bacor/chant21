@@ -38,3 +38,21 @@ Neume
     :members:
     :undoc-members:
     :show-inheritance:
+
+Alterations
+-----------
+
+.. autoclass:: Alteration
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+.. autoclass:: Flat
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+.. autoclass:: Natural
+    :members:
+    :undoc-members:
+    :show-inheritance:

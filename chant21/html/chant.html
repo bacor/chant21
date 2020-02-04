@@ -137,6 +137,8 @@
                             {%- if numNeumes > 1 and loop.index < numNeumes -%}
                             <span class="neumeBoundary boundary">-</span>
                             {%- endif -%}
+                        {%- elif element.type in ['flat'] -%}
+                            {{ element.volpiano }}
                         {%- elif element.type in ['pausaminor', 'pausaminima'] -%}
                             <span class="{{ element.type }}">
                                 {%- if loop.index > 1 %}--{% endif -%}
