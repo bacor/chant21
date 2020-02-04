@@ -24,7 +24,6 @@ from music21 import metadata
 
 from .html import toFile
 from .html import toWidget
-
 from . import __version__
 
 #TODO add __repr__ method to classes
@@ -51,6 +50,8 @@ def pitchToVolpiano(pitch, liquescence=False):
         return volpianoLiquescents[index]
     else:
         return volpianoNotes[index]
+
+# TODO rename this, perhaps to e.g. Serializable?
 
 class CHSONObject(base.Music21Object):
     """Base class for objects than can be exported to CHSON"""
@@ -448,7 +449,6 @@ class Note(CHSONObject, note.Note):
             liquescence=self.editorial.get('liquescence', False))
 
 ###
-#TODO fix spacing around in-word pausas
 
 class Pausa(ChantElement):
     def __init__(self, **kwargs):
@@ -481,11 +481,12 @@ class Alteration(CHSONObject, base.Music21Object):
 
     Alterations record the exact position of the alterations in the score,
     which is used when converting to other formats such as volpiano.
-    Importantly, Alterations are only shown on their actual location in the
-    HTML rendition (using ``chant.show('html')``). For music21, Alterations
-    are just placeholder objects. All notes have a fixed pitch, computed when 
-    the chant is parsed, and music21 places accidentals according to its
-    own logic --- not necessarily where we find the Accidental object.
+    Importantly, alterations are meaningless placeholder objects for music21.
+    That means that alterations need not be *shown* in the exact same place 
+    where we find them in the chant (i.e., the location of the Alteration 
+    object). Music21 places accidentals according to a different logic, based
+    on the pitches of the notes. However, the exact location of alterations 
+    *is* preserved in the the HTLM rendition (using ``chant.show('html')``). 
     """ 
     
     pitch = None
