@@ -1,5 +1,13 @@
 import setuptools
 
+# Copied from music21: do not import chant21 directly.
+# Instead, read the _version.py file and exec its contents.
+path = os.path.join(os.path.dirname(__file__), 'chant21', '_version.py')
+with open(path, 'r') as f:
+    lines = f.read()
+    exec(lines)
+chant21version = __version__
+
 classifiers = [
     'Environment :: Console',
     'Environment :: Web Environment',
@@ -20,7 +28,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="chant21",
-    version="0.1.0",
+    version=chant21version,
     python_requires='>=3.6',
     author="Bas Cornelissen",
     author_email="mail@bascornelissen.nl",

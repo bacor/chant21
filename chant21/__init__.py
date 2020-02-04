@@ -8,7 +8,9 @@
 # Copyright:    Copyright © 2020-present Bas Cornelissen
 # License:      see LICENSE
 # ------------------------------------------------------------------------------
-__version__ = '0.1.0'
+
+# Get version from _version.py; this approach is copied from music21
+from ._version import __version__
 
 # Main classes
 from .chant import Chant
@@ -33,4 +35,3 @@ from .chant import Flat
 from .converterGABC import ConverterGABC
 from .converterCHSON import ConverterCHSON
 from .parserGABC import ParserGABC
-
