@@ -1,4 +1,13 @@
 # -*- coding: utf-8 -*-
+# ------------------------------------------------------------------------------
+# Name:         __init__.py
+# Purpose:      the main file of chant21
+#
+# Authors:      Bas Cornelissen
+#
+# Copyright:    Copyright © 2020-present Bas Cornelissen
+# License:      see LICENSE
+# ------------------------------------------------------------------------------
 __version__ = '0.1.0'
 
 # Main classes

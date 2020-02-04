@@ -1,5 +1,16 @@
+# -*- coding: utf-8 -*-
+# ------------------------------------------------------------------------------
+# Name:         chant.py
+# Purpose:      the main chant classes
+#
+# Authors:      Bas Cornelissen
+#
+# Copyright:    Copyright © 2020-present Bas Cornelissen
+# License:      see LICENSE
+# ------------------------------------------------------------------------------
 from copy import deepcopy
 import json
+
 from music21 import base
 from music21 import articulations
 from music21 import bar
