@@ -21,6 +21,7 @@ from music21 import articulations
 from music21 import spanner
 from music21 import expressions
 from music21 import metadata
+from music21 import pitch
 
 from .html import toFile
 from .html import toWidget
@@ -165,10 +166,10 @@ class Chant(CHSONObject, stream.Part):
 
     def toObject(self, **kwargs):
         metadata = self.editorial.get('metadata', {})
+        metadata['chant21version'] = __version__
         obj = {
             'type': 'chant',
             'metadata': metadata,
-            'chant21version': __version__,
             'elements': [section.toObject(**kwargs) for section in self.sections]
         }
         return obj

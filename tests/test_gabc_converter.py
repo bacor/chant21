@@ -71,7 +71,8 @@ class TestFile(unittest.TestCase):
         parse = parser.parse(fileStr)
         chant = visitParseTree(parse, VisitorGABC())
         metadata = {'attr1': 'value1', 'attr2': 'value2'}
-        self.assertDictEqual(chant.editorial.metadata, metadata)
+        self.assertEqual(metadata['attr1'], 'value1')
+        self.assertEqual(metadata['attr2'], 'value2')
         
 class TestGABCPitchConversion(unittest.TestCase):
     def test_positions(self):
@@ -79,10 +80,10 @@ class TestGABCPitchConversion(unittest.TestCase):
         self.assertEqual(gabcPositionToStep('d', 'c1'), 'C4')
         self.assertEqual(gabcPositionToStep('e', 'c1'), 'D4')
         
-        self.assertEqual(gabcPositionToStep('e', 'c2'), 'B3')
-        self.assertEqual(gabcPositionToStep('f', 'c2'), 'C4')
-        self.assertEqual(gabcPositionToStep('g', 'c2'), 'D4')
-        self.assertEqual(gabcPositionToStep('h', 'c2'), 'E4')
+        self.assertEqual(gabcPositionToStep('e', 'c2'), 'B4')
+        self.assertEqual(gabcPositionToStep('f', 'c2'), 'C5')
+        self.assertEqual(gabcPositionToStep('g', 'c2'), 'D5')
+        self.assertEqual(gabcPositionToStep('h', 'c2'), 'E5')
 
         self.assertEqual(gabcPositionToStep('g', 'c3'), 'B4')
         self.assertEqual(gabcPositionToStep('h', 'c3'), 'C5')

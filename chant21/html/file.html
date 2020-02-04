@@ -51,24 +51,23 @@
             <h1>{{ chant.metadata.name }}</h1>
             <ul class="properties">
                 {% for key, value in chant.metadata.items() %}
-                {%- if key != 'conversion' %}
-                <li><span>{{ key }}</span> {{ value }}</li>
-                {%- endif %}
+                    {%- if key not in ['conversion', 'chant21version'] %}
+                    <li><span>{{ key }}</span> {{ value }}</li>
+                    {%- endif %}
                 {% endfor %}
                 {% if 'conversion' in chant.metadata %}
-                {% set conv = chant.metadata['conversion'] %}
-                <li class="conversion"><span>conversion</span>
-                    {% if 'originalFormat' in conv %}
-                        original format {{ conv['originalFormat'] }};
-                    {% endif %}
-                    {% if 'converter' in conv %}
-                        converted by {{ conv['converter'] }}
-                        {%- if 'version' in conv %}
-                        v{{ conv['version'] }}
+                    {% set conv = chant.metadata['conversion'] %}
+                    <li class="conversion"><span>conversion</span>
+                        {% if 'originalFormat' in conv %}
+                            original format {{ conv['originalFormat'] }};
                         {% endif %}
-                    {% endif %}
-                    </li>
-                {%- else %}
+                        {% if 'converter' in conv %}
+                            converted by {{ conv['converter'] }}
+                            {%- if 'version' in conv %}
+                            v{{ conv['version'] }}
+                            {% endif %}
+                        {% endif %}
+                        </li>
                 {% endif %}
             </ul>
         </header>
@@ -81,7 +80,7 @@
 
         <p class="credits">
             Generated with <a href="https://github.com/bacor/chant21/" target="_blank">
-                Chant21 v{{ chant.chant21version }}</a>, a Python library for Gregorian chant.
+                Chant21 v{{ chant.metadata['chant21version'] }}</a>, a Python library for Gregorian chant.
         </p>
     </main>
 </body>
