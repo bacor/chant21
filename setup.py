@@ -39,5 +39,7 @@ setuptools.setup(
     packages=setuptools.find_packages(),
     classifiers=classifiers,
     install_requires=['music21', 'arpeggio', 'jinja2'],
+
+    # Important: ensure HTML templates in chant21/html are included
     include_package_data=True,
 )
