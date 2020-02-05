@@ -27,7 +27,7 @@ class TestParserGABC(unittest.TestCase):
 
     def test_parseFile(self):
         parser = ParserGABC()
-        parse = parser.parseFile('examples/minimal.gabc')
+        parse = parser.parseFile('chant21/examples/minimal.gabc')
         self.assertEqual(parse[0].value, 'attribute | : | value | ;\n')
         self.assertEqual(parse[1].value, '%%\n')
         self.assertEqual(parse[2].value, 'A | ( | f | ) | B | ( | g | ) |   | C | ( | h | ) | ')
