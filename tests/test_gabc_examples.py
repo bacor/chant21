@@ -66,12 +66,6 @@ class TestSpecialCases(unittest.TestCase):
         parse = parser.parse(gabc)
         self.assertFalse(parse.error)
 
-    def test_ex(self):
-        gabc = 'f(g) (::h+)'
-        parser = ParserGABC(root='body')
-        parse = parser.parse(gabc, debug=True)
-        print(parse)
-
 class TestConvertExamples(unittest.TestCase):
     def test_kyrie(self):
         filename = 'examples/ky--kyrie_ad_lib_x_-_orbis_factor--solesmes.gabc'

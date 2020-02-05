@@ -197,9 +197,12 @@ class Chant(CHSONObject, stream.Part):
     
     def show(self, *args, makeFlatter=True, **kwargs):
         if len(args) > 0 and args[0] == 'html':
-            from IPython.core.display import display, HTML
             html = self.toHTML(**kwargs)
-            return display(HTML(html))
+            try:
+                from IPython.core.display import display, HTML
+                return display(HTML(html))
+            except:
+                return html
         elif len(args) == 0 and makeFlatter:
             return self.flatter.show(makeFlatter=False, **kwargs)
         else:

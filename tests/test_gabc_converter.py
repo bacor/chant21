@@ -282,11 +282,11 @@ class TestText(unittest.TestCase):
         self.assertIsNone(syll1.annotation)
         self.assertEqual(syll1.lyric, 'bla')
     
-    def test_annotationsInBody(self):
-        parser = ParserGABC(root='body')    
-        parse = parser.parse('(c2) a(f)b(g) <i>i.</i>(:) c(f) (::)')
-        ch = visitParseTree(parse, VisitorGABC())
-        print(ch)
+    # def test_annotationsInBody(self):
+    #     parser = ParserGABC(root='body')    
+    #     parse = parser.parse('(c2) a(f)b(g) <i>i.</i>(:) c(f) (::)')
+    #     ch = visitParseTree(parse, VisitorGABC())
+        
 
 class TestBarClefs(unittest.TestCase):
     def test_pausa(self):
@@ -480,8 +480,6 @@ class TestNotes(unittest.TestCase):
         self.assertTrue({'neumeShape': 'o'} in suffixes)
         self.assertTrue({'neumeShape': '1'} in suffixes)
         self.assertEqual(n.editorial.gabcPosition, 'g')
-
-        print(n)
 
 class TestIgnoredFeatures(unittest.TestCase):
     def test_macros(self):

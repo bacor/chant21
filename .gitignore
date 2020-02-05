@@ -16,3 +16,4 @@ test_gregobase_corpus*.py
 *.egg-info
 dist
 build
+env
