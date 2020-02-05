@@ -4,6 +4,7 @@ __pycache__/
 .ipynb_checkpoints/
 .DS_Store
 *.dot
+.python-version
 
 # Documentation
 docs/_build
@@ -17,3 +18,4 @@ test_gregobase_corpus*.py
 dist
 build
 env
+*-env

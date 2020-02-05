@@ -1,4 +1,5 @@
 import setuptools
+import os 
 
 # Copied from music21: do not import chant21 directly.
 # Instead, read the _version.py file and exec its contents.
@@ -29,7 +30,7 @@ with open("README.md", "r") as fh:
 setuptools.setup(
     name="chant21",
     version=chant21version,
-    python_requires='>=3.6',
+    python_requires='>=3.7',
     author="Bas Cornelissen",
     author_email="mail@bascornelissen.nl",
     description="A toolkit for Gregorian chant in music21",
@@ -37,5 +38,6 @@ setuptools.setup(
     url="https://github.com/bacor/chant21",
     packages=setuptools.find_packages(),
     classifiers=classifiers,
-    install_requires=['music21', 'arpeggio', 'jinja2']
+    install_requires=['music21', 'arpeggio', 'jinja2'],
+    include_package_data=True,
 )
