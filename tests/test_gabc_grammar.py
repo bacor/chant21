@@ -209,12 +209,9 @@ class TestClefsAndPausas(unittest.TestCase):
 
 class TestSyllable(unittest.TestCase):
 
-    def __init__(self, *args, **kwargs):
-        super(TestSyllable, self).__init__(*args, **kwargs)
-        self.parser = ParserGABC(root='syllable')
-
     def test_textMusic(self):
-        parse = self.parser.parse('a_string(fgf)')
+        parser = ParserGABC(root='syllable')
+        parse = parser.parse('a_string(fgf)')
 
         self.assertEqual(parse.rule_name, 'syllable')
         self.assertEqual(parse[0].rule_name, 'text')
@@ -232,7 +229,8 @@ class TestSyllable(unittest.TestCase):
 
     def test_spaces(self):
         """Test whether a syllable starting with a space does not match"""
-        self.assertRaises(NoMatch, lambda: self.parser.parse(' a(f)'))
+        parser = ParserGABC(root='syllable')
+        self.assertRaises(NoMatch, lambda: parser.parse(' a(f)'))
 
     def test_spacesInMusic(self):
         parser = ParserGABC(root='music')
@@ -302,20 +300,18 @@ class TestAdvanced(unittest.TestCase):
         self.assertEqual(macro2.rule_name, 'macro')
         
 class TestNote(unittest.TestCase):
-
-    def __init__(self, *args, **kwargs):
-        super(TestNote, self).__init__(*args, **kwargs)
-        self.parser = ParserGABC(root='note')
         
     def test_positions(self):
+        parser = ParserGABC(root='note')
         for position in 'abcdefghijklm':
-            parse = self.parser.parse(position)
+            parse = parser.parse(position)
             self.assertEqual(parse.rule_name, 'note')
             self.assertEqual(parse[0].rule_name, 'position')
             self.assertEqual(parse[0].value, position)
 
     def test_accents(self):
-        parse = self.parser.parse('gr1')
+        parser = ParserGABC(root='note')
+        parse = parser.parse('gr1')
 
         self.assertEqual(parse[0].rule_name, 'position')
         self.assertEqual(parse[0].value, 'g')
@@ -323,24 +319,24 @@ class TestNote(unittest.TestCase):
         self.assertEqual(parse[1].value, 'r1')
         self.assertEqual(parse[1][0].rule_name, 'empty_note_or_accent')
 
-        parse = self.parser.parse("gr2")
+        parse = parser.parse("gr2")
         self.assertEqual(parse[1].value, "r2")
         self.assertEqual(parse[1][0].rule_name, 'empty_note_or_accent')
 
-        parse = self.parser.parse("gr3")
+        parse = parser.parse("gr3")
         self.assertEqual(parse[1].value, "r3")
         self.assertEqual(parse[1][0].rule_name, 'empty_note_or_accent')
 
-        parse = self.parser.parse("gr4")
+        parse = parser.parse("gr4")
         self.assertEqual(parse[1].value, "r4")
         self.assertEqual(parse[1][0].rule_name, 'empty_note_or_accent')
 
-        parse = self.parser.parse("gr5")
+        parse = parser.parse("gr5")
         self.assertEqual(parse[1].value, "r5")
         self.assertEqual(parse[1][0].rule_name, 'empty_note_or_accent')
 
         # Multiple 
-        parse = self.parser.parse("gr0r3")
+        parse = parser.parse("gr0r3")
         self.assertEqual(parse[1].rule_name, 'suffix')
         self.assertEqual(parse[1][0].rule_name, 'empty_note_or_accent')
         self.assertEqual(parse[1][0].value, "r0")
@@ -349,46 +345,48 @@ class TestNote(unittest.TestCase):
         self.assertEqual(parse[1][1].rule_name, 'empty_note_or_accent')
 
     def test_emptyNotes(self):
-        parse = self.parser.parse('gr')
+        parser = ParserGABC(root='note')
+        parse = parser.parse('gr')
         self.assertEqual(parse[0].rule_name, 'position')
         self.assertEqual(parse[0].value, 'g')
         self.assertEqual(parse[1].rule_name, 'suffix')
         self.assertEqual(parse[1].value, 'r')
         self.assertEqual(parse[1][0].rule_name, 'empty_note_or_accent')
 
-        parse = self.parser.parse("gR")
+        parse = parser.parse("gR")
         self.assertEqual(parse[1].value, "R")
         self.assertEqual(parse[1][0].rule_name, 'empty_note_or_accent')
 
-        parse = self.parser.parse("gr0")
+        parse = parser.parse("gr0")
         self.assertEqual(parse[1].value, "r0")
         self.assertEqual(parse[1][0].rule_name, 'empty_note_or_accent')
 
     def test_rhythmicSigns(self):
-        parse = self.parser.parse('g_')
+        parser = ParserGABC(root='note')
+        parse = parser.parse('g_')
         self.assertEqual(parse[0].rule_name, 'position')
         self.assertEqual(parse[0].value, 'g')
         self.assertEqual(parse[1].rule_name, 'suffix')
         self.assertEqual(parse[1].value, '_')
         self.assertEqual(parse[1][0].rule_name, 'rhythmic_sign')
 
-        parse = self.parser.parse('g..')
+        parse = parser.parse('g..')
         self.assertEqual(parse[1].value, '..')
         self.assertEqual(parse[1][0].rule_name, 'rhythmic_sign')
 
-        parse = self.parser.parse('g..')
+        parse = parser.parse('g..')
         self.assertEqual(parse[1].value, '..')
         self.assertEqual(parse[1][0].rule_name, 'rhythmic_sign')
 
-        parse = self.parser.parse("g'")
+        parse = parser.parse("g'")
         self.assertEqual(parse[1].value, "'")
         self.assertEqual(parse[1][0].rule_name, 'rhythmic_sign')
 
-        parse = self.parser.parse("g'1")
+        parse = parser.parse("g'1")
         self.assertEqual(parse[1].value, "'1")
         self.assertEqual(parse[1][0].rule_name, 'rhythmic_sign')
 
-        parse = self.parser.parse('H_502')
+        parse = parser.parse('H_502')
         self.assertEqual(parse[0].rule_name, 'position')
         self.assertEqual(parse[0].value, 'H')
         self.assertEqual(parse[1].rule_name, 'suffix')
@@ -396,7 +394,8 @@ class TestNote(unittest.TestCase):
 
     def test_oneNoteNeumes(self):
         # Test single suffix
-        parse = self.parser.parse('G~')
+        parser = ParserGABC(root='note')
+        parse = parser.parse('G~')
         self.assertEqual(parse[0].rule_name, 'position')
         self.assertEqual(parse[0].value, 'G')
         self.assertEqual(parse[1].rule_name, 'suffix')
@@ -404,7 +403,7 @@ class TestNote(unittest.TestCase):
         self.assertEqual(parse[1][0].rule_name, 'neume_shape')
 
         # Test two-character suffix
-        parse = self.parser.parse('Go~')
+        parse = parser.parse('Go~')
         self.assertEqual(parse[0].rule_name, 'position')
         self.assertEqual(parse[0].value, 'G')
         self.assertEqual(parse[1].rule_name, 'suffix')
@@ -419,7 +418,7 @@ class TestNote(unittest.TestCase):
                  ('gv', 'g', 'v'), ('gV', 'g', 'V'), ('gs', 'g', 's'),
                  ('gs<', 'g', 's<')]
         for string, position, suffix in tests:
-            parse = self.parser.parse(string)
+            parse = parser.parse(string)
             self.assertEqual(parse[0].rule_name, 'position')
             self.assertEqual(parse[0].value, position)
             self.assertEqual(parse[1].value, suffix)
