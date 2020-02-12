@@ -28,8 +28,16 @@
         font-weight: bold;
         margin-right: 1em;
     }
-    .conversion {
+    .advanced .properties span {
+        width: 15em;
+    }
+    .advanced {
         color: #ccc;
+        font-size: 10px;
+        margin-top: 5em;
+    }
+    .advanced p {
+        font-weight: bold;
     }
     .displayOptions {
         margin-top: 1em;
@@ -37,7 +45,7 @@
     }
     .credits {
         font-size: 10px;
-        color: #999;
+        color: #ccc;
         margin-top: 4em;
     }
     a, a:visited {
@@ -50,24 +58,38 @@
         <header>
             <h1>{{ chant.metadata.name }}</h1>
             <ul class="properties">
+                {% set fields = [
+                    'office-part',
+                    'occasion',
+                    'meter',
+                    'commentary',
+                    'arranger',
+                    'author',
+                    'date',
+                    'manuscript',
+                    'manuscript-reference',
+                    'manuscript-storage-place',
+                    'book',
+                    'language',
+                    'transcriber',
+                    'transcription-date',
+                    'mode',
+                    'user-notes',
+                    'annotation'
+                    ]
+                %}
                 {% for key, value in chant.metadata.items() %}
-                    {%- if key not in ['conversion', 'chant21version'] %}
-                    <li><span>{{ key }}</span> {{ value }}</li>
+                    {%- if key in fields %}
+                    <li><span>{{ key }}</span> {{ value|e }}</li>
                     {%- endif %}
                 {% endfor %}
-                {% if 'conversion' in chant.metadata %}
-                    {% set conv = chant.metadata['conversion'] %}
-                    <li class="conversion"><span>conversion</span>
-                        {% if 'originalFormat' in conv %}
-                            original format {{ conv['originalFormat'] }};
-                        {% endif %}
-                        {% if 'converter' in conv %}
-                            converted by {{ conv['converter'] }}
-                            {%- if 'version' in conv %}
-                            v{{ conv['version'] }}
-                            {% endif %}
-                        {% endif %}
-                        </li>
+                {% if '_gregobase_id' in chant.metadata %}
+                    <li>
+                        <span>GregoBase ID</span>
+                        <a href="{{chant.metadata._gregobase_url}}" target="_blank">
+                            {{chant.metadata._gregobase_id}}
+                        </a>
+                    </li> 
                 {% endif %}
             </ul>
         </header>
@@ -76,6 +98,15 @@
         <div id="chantContainer-{{chantId}}">
         {% include 'displayOptions.html' %}
         {% include 'chant.html' %}
+        </div>
+
+        <div class="advanced">
+            <p>All metadata</p>
+            <ul class="properties">
+                {% for key, value in chant.metadata.items() %}
+                    <li><span>{{ key }}</span> {{ value|e }}</li>
+                {% endfor %}
+            </ul>
         </div>
 
         <p class="credits">

@@ -2,7 +2,7 @@
 Copied from music21._version.py
 """
 
-__version_info__ = (0, 1, 2)
+__version_info__ = (0, 1, 3)
 
 v = '.'.join(str(x) for x in __version_info__[0:3])
 if len(__version_info__) > 3 and __version_info__[3]:
