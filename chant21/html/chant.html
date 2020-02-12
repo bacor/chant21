@@ -1,4 +1,5 @@
 {%- set includeStyles = includeStyles|default(True, True) or completeFile %}
+{%- set showMetadata = showMetadata|default(False, True) %}
 {%- set showSections = showSections|default(False, True) %}
 {%- set showWords = showWords|default(False, True) %}
 {%- set showSyllables = showSyllables|default(False, True) %}
@@ -104,11 +105,35 @@
         border-bottom: 1px dashed black;
         margin-bottom: 1em;
     }
+    .metadata {
+        display: none;
+    }
+
+    .showMetadata .metadata { 
+        display: inline-block;
+        margin-top: 2em;
+        font-family: sans-serif;
+        line-height: 1.5em;
+        border-collapse: collapse;
+        font-size: .8em;
+        width: 100%;
+        color: #999;
+    }
+    
+    .metadata td {
+        border-bottom: 1px solid #eee;
+    }
+
+    .metadata .field {
+        font-weight: bold;
+        padding-right: 1em;;
+    }
 </style>
 {% endif -%}
 
 <div class="chant
-    {%- if showSections %} showSections{% endif %}    
+    {%- if showMetadata %} showMetadata{% endif %}    
+    {%- if showSections %} showSections{% endif %}
     {%- if showWords %} showWords{% endif %}
     {%- if showSyllables %} showSyllables{% endif %}
     {%- if showNeumes %} showNeumes{% endif %}">
@@ -176,4 +201,12 @@
     {%- endfor -%}
     </div>
 {%- endfor -%}
+    <table class="metadata">
+        {% for key, value in chant.metadata.items() %}
+        <tr>
+            <td class="field">{{ key }}</td>
+            <td>{{ value|e }}</td>
+        </tr>
+        {% endfor %}
+    </table>
 </div>

@@ -28,24 +28,13 @@
         font-weight: bold;
         margin-right: 1em;
     }
-    .advanced .properties span {
-        width: 15em;
-    }
-    .advanced {
-        color: #ccc;
-        font-size: 10px;
-        margin-top: 5em;
-    }
-    .advanced p {
-        font-weight: bold;
-    }
     .displayOptions {
         margin-top: 1em;
         margin-bottom: 2em;
     }
     .credits {
         font-size: 10px;
-        color: #ccc;
+        color: #999;
         margin-top: 4em;
     }
     a, a:visited {
@@ -98,15 +87,6 @@
         <div id="chantContainer-{{chantId}}">
         {% include 'displayOptions.html' %}
         {% include 'chant.html' %}
-        </div>
-
-        <div class="advanced">
-            <p>All metadata</p>
-            <ul class="properties">
-                {% for key, value in chant.metadata.items() %}
-                    <li><span>{{ key }}</span> {{ value|e }}</li>
-                {% endfor %}
-            </ul>
         </div>
 
         <p class="credits">

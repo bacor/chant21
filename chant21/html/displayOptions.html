@@ -1,3 +1,4 @@
+{%- set showMetadata = showMetadata|default(False, True) %}
 {%- set showSections = showSections|default(False, True) %}
 {%- set showWords = showWords|default(False, True) %}
 {%- set showSyllables = showSyllables|default(False, True) %}
@@ -44,6 +45,10 @@
 
 <div class="displayOptions">
     <span class="displayOptionsHeader">Show:</span>
+    <label><input type="checkbox" name="metadata" autocomplete="off"
+        onclick="toggleChantClass{{chantId}}('showMetadata')" 
+        {% if showMetadata %}checked{% endif -%}
+        >metadata</label>
     <label><input type="checkbox" name="words" autocomplete="off"
         onclick="toggleChantClass{{chantId}}('showSections')" 
         {% if showSections %}checked{% endif -%}
@@ -59,5 +64,5 @@
     <label><input type="checkbox" name="neumes" autocomplete="off"
         onclick="toggleChantClass{{chantId}}('showNeumes')" 
         {% if showNeumes %}checked{% endif -%}
-        >neumes</label>
+        >neumes</label>    
 </div>
