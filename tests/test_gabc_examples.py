@@ -46,13 +46,6 @@ class TestParseExamples(unittest.TestCase):
         for filename in examples:
             self.runTest(filename)
 
-    def test_GBCParsing(self):
-        GABC_FN = '/Users/Bas/repos/projects/GregoBaseCorpus/gabc/{idx:0>5}.gabc'
-        filename = GABC_FN.format(idx=1)
-        parser = ParserGABC()
-        parse = parser.parseFile(filename)
-        self.assertFalse(parse.error)
-
 class TestSpecialCases(unittest.TestCase):
     """Tests of examples where parsing failed initially"""
     

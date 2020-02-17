@@ -52,9 +52,7 @@ def pitchToVolpiano(pitch, liquescence=False):
     else:
         return volpianoNotes[index]
 
-# TODO rename this, perhaps to e.g. Serializable?
-
-class CHSONObject(base.Music21Object):
+class CHSONSerializable(base.Music21Object):
     """Base class for objects than can be exported to CHSON"""
 
     def toObject(self, includeChildren=True, includeEditorial=True, 
@@ -79,7 +77,7 @@ class CHSONObject(base.Music21Object):
             obj['annotation'] = self.annotation
 
         if includeChildren and hasattr(self, 'elements'):
-            children = [el for el in self.elements if isinstance(el, CHSONObject)]
+            children = [el for el in self.elements if isinstance(el, CHSONSerializable)]
             kwargs = dict(includeEditorial=includeEditorial, 
                           includeVolpiano=includeVolpiano)
             obj['elements'] = [child.toObject(**kwargs) for child in children]
@@ -101,7 +99,7 @@ class CHSONObject(base.Music21Object):
                 child.fromObject(childObj, parent=self, parseChildren=parseChildren)
                 self.append(child)
     
-class ChantElement(CHSONObject, base.Music21Object):
+class ChantElement(CHSONSerializable, base.Music21Object):
 
     @property
     def annotation(self):
@@ -118,7 +116,7 @@ class ChantElement(CHSONObject, base.Music21Object):
 
 ###
 
-class Chant(CHSONObject, stream.Part):
+class Chant(CHSONSerializable, stream.Part):
     
     @property
     def flatter(self):
@@ -250,7 +248,7 @@ class Chant(CHSONObject, stream.Part):
         for section in self.sections:
             section.joinWordsAcrossPausas()
 
-class Section(CHSONObject, stream.Stream):
+class Section(CHSONSerializable, stream.Stream):
     _name = None
 
     @property
@@ -308,7 +306,7 @@ class Section(CHSONObject, stream.Stream):
             obj['name'] = self.name
         return obj
 
-class Word(CHSONObject, stream.Stream):
+class Word(CHSONSerializable, stream.Stream):
     @property
     def syllables(self):
         return self.getElementsByClass(Syllable)
@@ -418,7 +416,7 @@ class Syllable(ChantElement, stream.Stream):
             annotation = Annotation(self.annotation)
             self.insert(0, annotation)
 
-class Neume(CHSONObject, stream.Stream):
+class Neume(CHSONSerializable, stream.Stream):
     
     def addSlur(self):
         """Adds a slur to the neumes notes"""
@@ -428,7 +426,7 @@ class Neume(CHSONObject, stream.Stream):
             slur.priority = -1
             self.insert(0, slur)
     
-class Note(CHSONObject, note.Note):
+class Note(CHSONSerializable, note.Note):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, *kwargs)
         self.stemDirection = 'noStem'
@@ -480,7 +478,7 @@ class Clef(ChantElement, clef.TrebleClef):
         super().__init__(**kwargs)
         self.priority = -2
 
-class Alteration(CHSONObject, base.Music21Object):
+class Alteration(CHSONSerializable, base.Music21Object):
     """Placeholder of the exact position of alterations in the chant.
 
     Alterations record the exact position of the alterations in the score,
