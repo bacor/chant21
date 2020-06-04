@@ -1,10 +1,9 @@
 from arpeggio.cleanpeg import ParserPEG
 import os.path
 
-grammar_fn = 'volpiano.peg'
-grammar_dir = os.path.dirname(__file__)
-GRAMMAR_PATH = os.path.join(grammar_dir, grammar_fn)
-GRAMMAR_ROOT = 'volpiano_file'
+cur_dir = os.path.dirname(__file__)
+GRAMMAR_PATH = os.path.join(cur_dir, 'grammars', 'volpiano.peg')
+GRAMMAR_ROOT = 'volpiano'
 
 class VolpianoParser():
     """
@@ -26,7 +25,7 @@ class VolpianoParser():
                 (default is 'gabc_file')
         """
         if not os.path.exists(grammar_path):
-            raise Exception(f'Grammar file ({ grammar_fn }) does not exist')
+            raise Exception(f'Grammar file ({ grammar_path }) does not exist')
 
         with open(grammar_path, 'r') as handle:
             grammar = handle.read()

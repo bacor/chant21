@@ -1,9 +1,9 @@
 from arpeggio.cleanpeg import ParserPEG
 import os.path
 
-grammarFn = 'gabc.peg'
-grammarDir = os.path.dirname(__file__)
-GRAMMAR_PATH = os.path.join(grammarDir, grammarFn)
+cur_dir = os.path.dirname(__file__)
+GRAMMAR_PATH = os.path.join(cur_dir, 'grammars', 'gabc.peg')
+GRAMMAR_ROOT = 'file'
 
 class ParserGABC():
     """
@@ -15,7 +15,7 @@ class ParserGABC():
 
     def __init__(self, 
         grammarPath: str = GRAMMAR_PATH,
-        root: str = 'file',
+        root: str = GRAMMAR_ROOT,
         **kwargs) -> None:
         """
         Args:
@@ -25,7 +25,7 @@ class ParserGABC():
                 (default is 'gabc_file')
         """
         if not os.path.exists(grammarPath):
-            raise Exception(f'Grammar file ({ grammarFn }) does not exist')
+            raise Exception(f'Grammar file ({ grammarPath }) does not exist')
 
         with open(grammarPath, 'r') as handle:
             grammar = handle.read()
@@ -75,7 +75,6 @@ class ParserGABC():
 
 class IncompleteParseError(Exception):
     pass
-
 
 class EmptyParseError(Exception):
     pass

@@ -47,7 +47,7 @@ class TestParseExamples(unittest.TestCase):
             self.runTest(filename)
 
     def test_GBCParsing(self):
-        GABC_FN = '/Users/Bas/repos/projects/GregoBaseCorpus/gabc/{idx:0>5}.gabc'
+        GABC_FN = '/Users/Bas/repos/projects/GregoBaseCorpus/dist/gregobasecorpus-v0.3/gregobasecorpus-v0.3/gabc/{idx:0>5}.gabc'
         filename = GABC_FN.format(idx=1)
         parser = ParserGABC()
         parse = parser.parseFile(filename)
