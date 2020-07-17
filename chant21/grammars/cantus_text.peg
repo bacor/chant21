@@ -1,0 +1,20 @@
+text = section (barline section?)* EOF
+barline = r'\ *\|\ *'
+section = (
+    ipsum
+    / incipit
+    / psalm_incipit
+    / words)
+    
+words = (
+    (word / missing_pitches / pitchless_text) 
+    (space? (word / missing_pitches / pitchless_text))*
+    )
+space = r'[\ \n]+'
+word = r'[a-zA-Z\.\,\'\-]+'
+missing_pitches = ('{' r'[^\}]+' '}') / '#'
+pitchless_text = '~' word (space word)*
+
+incipit = word (space word)* '*'
+psalm_incipit = '~' word (space word)*
+ipsum = r'\~Ipsum [^\|]+'

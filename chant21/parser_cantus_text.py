@@ -1,11 +1,12 @@
 from arpeggio.cleanpeg import ParserPEG
 import os.path
+import re
 
 cur_dir = os.path.dirname(__file__)
-GRAMMAR_PATH = os.path.join(cur_dir, 'grammars', 'volpiano.peg')
-GRAMMAR_ROOT = 'volpiano'
+GRAMMAR_PATH = os.path.join(cur_dir, 'grammars', 'cantus_text.peg')
+GRAMMAR_ROOT = 'text'
 
-class VolpianoParser():
+class ParserCantusText():
     """
     Class for parsing Volpiano
 
@@ -16,6 +17,7 @@ class VolpianoParser():
     def __init__(self, 
         grammar_path: str = GRAMMAR_PATH,
         root: str = GRAMMAR_ROOT,
+        strict: bool = True,
         **kwargs) -> None:
         """
         Args:
@@ -29,16 +31,10 @@ class VolpianoParser():
 
         with open(grammar_path, 'r') as handle:
             grammar = handle.read()
-            
+        
+        self.strict = strict
         self.parser = ParserPEG(grammar, root, skipws=False, **kwargs)
 
-    def parse(self, volpiano: str):
-        """Parse a volpiano string
-
-        Args:
-            volpiano (str): The volpiano string to parse
-
-        Returns:
-            arpeggio.NonTerminal: The parse tree
-        """
-        return self.parser.parse(volpiano)
+    def parse(self, text: str, debug: bool = True, strict = None):
+        if strict is None: strict = self.strict 
+        return self.parser.parse(text)

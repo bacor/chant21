@@ -555,6 +555,33 @@ class Annotation(expressions.TextExpression):
         # TODO this has no effect
         self.placement = 'above' 
         
+### From music21 volpiano.py
+
+class LineBreak(CHSONObject):
+    '''
+    Indicates that the line breaks at this point in the manuscript.
+    Denoted by one 7.
+    '''
+    pass
+
+
+class PageBreak(CHSONObject):
+    '''
+    Indicates that the page breaks at this point in the manuscript
+    Denoted by two 7s.
+    '''
+    pass
+
+
+class ColumnBreak(CHSONObject):
+    '''
+    Indicates that the page breaks at this point in the manuscript
+    Denoted by three 7s.
+    '''
+    pass
+
+class MissingPitches(CHSONObject):
+    pass
 
 ##
 

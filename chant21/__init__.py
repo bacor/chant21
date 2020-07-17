@@ -31,7 +31,13 @@ from .chant import Alteration
 from .chant import Natural
 from .chant import Flat
 
+from .chant import LineBreak
+from .chant import ColumnBreak
+from .chant import PageBreak
+
 # Make GABC converter available to music21.converter
 from .converterGABC import ConverterGABC
 from .converterCHSON import ConverterCHSON
 from .parserGABC import ParserGABC
+
+from .converter_cantus_volpiano import ConverterCantusVolpiano

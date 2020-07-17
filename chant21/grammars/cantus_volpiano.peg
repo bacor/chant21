@@ -1,0 +1,57 @@
+//
+// TO DO
+// * Pausa minima can occur in a syllable
+// * Chants mixing hyphenation types are not supported: 
+//   those starting with '1--' and later using '---', that is.
+
+volpiano = (chant / incipit) '-'* EOF
+incipit = clef '--' syllable (syllable_boundary syllable)* 
+chant = clef '---' (word / other) (word_boundary (word / other))*
+
+// Music
+other = section_end / chant_end / missing_pitches
+word = syllable (syllable_boundary syllable)*
+syllable = neume (neume_boundary neume)*
+neume = (barline / break)? (note / liquescent / alteration)+ (barline / break)?
+
+// Notes
+    note = r'[89abcdefghjklmnopqrs]'
+    liquescent = r'[\(\)ABCDEFGHJKLMNOPQRS]'
+    
+// Clefs
+    clef = g_clef / f_clef
+    g_clef = '1'
+    f_clef = '2'
+
+// Breaks
+    break = column_break / page_break / line_break
+    line_break = '7'
+    page_break = '77'
+    column_break = '777'
+    barline = '6' // Has to follow a neume immediately
+
+// Barlines
+    section_end = '3' 
+    chant_end = '4'
+    // bold_double_barline = '5'
+    // pausa_minor = '6'
+    
+    
+// Alterations
+    alteration = flat / natural
+    flat = r'[iwxyz]'
+    natural = r'[IWXYZ]'
+
+// Spaces 
+    word_boundary = '---'
+    syllable_boundary = '--'
+    neume_boundary = '-'
+    spacer = ',' / '.'
+
+// Parts
+    part = respond / antiphon / verse
+    respond = '['
+    antiphon = ']'
+    verse = '{'
+
+missing_pitches = break? r'6---\??---6' break?

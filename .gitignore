@@ -5,6 +5,7 @@ __pycache__/
 .DS_Store
 *.dot
 .python-version
+.ipynb_checkpoints
 
 # Documentation
 docs/_build
@@ -19,3 +20,5 @@ dist
 build
 env
 *-env
+
+analyses
