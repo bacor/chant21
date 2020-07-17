@@ -52,8 +52,6 @@ def pitchToVolpiano(pitch, liquescence=False):
     else:
         return volpianoNotes[index]
 
-# TODO rename this, perhaps to e.g. Serializable?
-
 class CHSONObject(base.Music21Object):
     """Base class for objects than can be exported to CHSON"""
 
