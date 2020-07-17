@@ -1,4 +1,4 @@
-`chant21`: Plainchant in Python
+`chant21` — Plainchant in Python
 =============================
 
 `chant21` improves the support for plainchant in 
@@ -6,7 +6,7 @@
 
 - Converters for [GABC](http://gregorio-project.github.io/gabc/index.html) 
 and Volpiano as used by the Cantus Database. 
-- Represention of the chants complete structure in music21: its division 
+- Represention of the chants complete structure in `music21`: its division 
 in sections, words, syllables and neumes. 
 - Very fast and interactive chant visualization in Jupyter notebooks.
 - Usable with two large plainchant Corpora: 
