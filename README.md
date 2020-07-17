@@ -1,3 +1,5 @@
+[![Documentation Status](https://readthedocs.org/projects/chant21/badge/?version=latest)](https://chant21.readthedocs.io/en/latest/?badge=latest)
+
 `chant21` — Plainchant in Python
 =============================
 
@@ -5,7 +7,7 @@
 [`music21`](http://web.mit.edu/music21/).
 
 - Converters for [GABC](http://gregorio-project.github.io/gabc/index.html) 
-and Volpiano as used by the Cantus Database. 
+and Volpiano as used by the [Cantus Database](cantus.uwaterloo.ca/). 
 - Represention of the chants complete structure in `music21`: its division 
 in sections, words, syllables and neumes. 
 - Very fast and interactive chant visualization in Jupyter notebooks.
