@@ -13,6 +13,7 @@
 from ._version import __version__
 
 # Main classes
+from .chant import Chant21Object
 from .chant import Chant
 from .chant import Section
 from .chant import ChantElement

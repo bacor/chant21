@@ -61,3 +61,5 @@ html_static_path = ['_static']
 
 # Allow references to music21
 intersphinx_mapping = {'music21': ('https://web.mit.edu/music21/doc', None)}
+
+autodoc_member_order = 'bysource'

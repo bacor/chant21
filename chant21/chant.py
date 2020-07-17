@@ -52,12 +52,84 @@ def pitchToVolpiano(pitch, liquescence=False):
     else:
         return volpianoNotes[index]
 
-class CHSONObject(base.Music21Object):
-    """Base class for objects than can be exported to CHSON"""
+class Chant21Object:
+    """Base class for objects in Chant21. Most importantly, all those object can
+    be exported to simple Python objects (dictionaries and lists), which in turn
+    are directly serializable to JSON. Conversely, such objects can be used to
+    recursively set the properties of a Chant21 object."""
 
-    def toObject(self, includeChildren=True, includeEditorial=True, 
-        includeVolpiano=False):
-        """Export the object to a plain Python dictionary"""
+    def __repr__(self):
+        reprHead = '<'
+        if self.__module__ != '__main__':
+            reprHead += self.__module__ + '.'
+        reprHead += self.__class__.__qualname__
+        strRepr = self._reprInternal()
+        if strRepr and not strRepr.startswith(':'):
+            reprHead += ' '
+
+        if strRepr:
+            reprHead += strRepr.strip()
+        return reprHead + '>'
+
+    def _reprInternal(self) -> str:
+        return ''
+
+    @property
+    def annotation(self):
+        return self.editorial.get('annotation')
+    
+    @annotation.setter
+    def annotation(self, value):
+        self.editorial.annotation = value
+
+    @property
+    def hasAnnotation(self):
+        """True if the element has a non-empty annotation"""
+        return self.annotation is not None
+
+    def toObject(self, includeChildren : bool = True, 
+        includeEditorial : bool = True, includeVolpiano : bool = False) -> dict:
+        """Export the object to a plain Python dictionary. The returned object
+        can have the following properties: 
+
+        - ``type``: the name of the chant21 class, such as `'note'`
+        - ``elements``: a list of dictionaries representing child elements
+        - ``annotation``: annotations for the object
+        - ``volpiano``: a volpiano string representing the object
+        - ``editorial``: a dictionary with editorial information
+
+        Specific classes will moreover add the properties necessary to fully 
+        describe the object. The class :class:`Note` for example adds a 
+        ``pitch`` property:
+
+        >>> a = Note('A')
+        >>> a.toObject()
+        {'type': 'note', 'pitch': 'A'}
+        >>> b = Note('B')
+        >>> syll = Syllable()
+        >>> syll.append(a)
+        >>> syll.append(b)
+        >>> syll.toObject()
+        {'type': 'syllable', 'elements': [{'type': 'note', 'pitch': 'A'}, {'type': 'note', 'pitch': 'B'}]}
+        
+        Parameters
+        ----------
+        includeChildren : bool, optional
+            Whether to include child objects, by default True. Children are 
+            exported as a list in ``obj['elements']``.
+        includeEditorial : bool, optional
+            Whether to include editorial information, by default True. The
+            editorial information is exported as ``obj['editorial']``.
+        includeVolpiano : bool, optional
+            Wether to include a Volpiano representation, by default False.
+            The Volpiano version is exported as ``obj['volpiano']``.
+
+        Returns
+        -------
+        dict
+            A dictionary with at least a field ``type``, but possibly also
+            ``editorial``, ``annotation``, ``volpiano`` and ``elements``.
+        """
         obj = dict()
         obj['type'] = type(self).__name__.lower()
 
@@ -77,14 +149,33 @@ class CHSONObject(base.Music21Object):
             obj['annotation'] = self.annotation
 
         if includeChildren and hasattr(self, 'elements'):
-            children = [el for el in self.elements if isinstance(el, CHSONObject)]
+            children = [el for el in self.elements if isinstance(el, Chant21Object)]
             kwargs = dict(includeEditorial=includeEditorial, 
                           includeVolpiano=includeVolpiano)
             obj['elements'] = [child.toObject(**kwargs) for child in children]
 
         return obj
 
-    def fromObject(self, obj, parent=None, parseChildren=True):
+    def fromObject(self, obj : dict, parent=None, parseChildren=True):
+        """Set the properties of the current class instance using a dictionary
+        of properties. The dictionary should be of the same form as the one 
+        returned by  :meth:`chant.Chant21Object.toObject`. 
+
+        >>> n = Note('C')
+        >>> n.fromObject({'type': 'note', 'pitch': 'A4'})
+        >>> n
+        <chant21.chant.Note A>
+
+        Parameters
+        ----------
+        obj : dict
+            The object to import
+        parent : Chant21Object, optional
+            The parent object; this is set automatically when importing the 
+            children, by default None.
+        parseChildren : bool, optional
+            Whether to also import the child objects, by default True
+        """
         ownClassName = type(self).__name__.lower()
         if not obj['type'] == ownClassName:
             raise TypeError(f'Cannot import object of type `{obj["type"]}` into a {ownClassName}')
@@ -98,32 +189,152 @@ class CHSONObject(base.Music21Object):
                 child = CLASSES[childObj['type']]()
                 child.fromObject(childObj, parent=self, parseChildren=parseChildren)
                 self.append(child)
-    
-class ChantElement(CHSONObject, base.Music21Object):
 
-    @property
-    def annotation(self):
-        return self.editorial.get('annotation')
+class ChantElement:#, base.Music21Object):
+    pass
+    # @property
+    # def annotation(self):
+    #     return self.editorial.get('annotation')
     
-    @annotation.setter
-    def annotation(self, value):
-        self.editorial.annotation = value
+    # @annotation.setter
+    # def annotation(self, value):
+    #     self.editorial.annotation = value
 
-    @property
-    def hasAnnotation(self):
-        """True if the element has a non-empty annotation"""
-        return self.annotation is not None
+    # @property
+    # def hasAnnotation(self):
+    #     """True if the element has a non-empty annotation"""
+    #     return self.annotation is not None
 
 ###
 
-class Chant(CHSONObject, stream.Part):
+class Chant(Chant21Object, stream.Part):    
     
+    def show(self, *args, makeFlatter=True, **kwargs):
+        """Display the chant, as html or using the display options of music21.
+        
+        Chant21 allows you to visualize the structure of a chant interactively 
+        in an IPython environment:
+
+        >>> from music21 import converter
+        >>> ch = converter.parse('1---fg-f--h---fg', format='cantus')
+        >>> ch.show('html', showWords=True)
+        <IPython.core.display.HTML object>
+
+        See :func:`chant21.html.toWidget` for all keyword arguments you can pass
+        to show.
+
+        Parameters
+        ----------
+        how : string, optional
+            How to display the chant? If ``'html'`` a HTML rendition of the 
+            chant displayed, which only works in an IPython context. Otherwise
+            the argument is passed to :meth:`music21.stream.Part.show`.
+        makeFlatter : bool, optional
+            Flatten the chant before showing it, by default True. This has no 
+            effect when displaying as html.
+        """
+        if len(args) > 0 and args[0] == 'html':
+            html = self.toHTML(**kwargs)
+            try:
+                from IPython.core.display import display, HTML
+                return display(HTML(html))
+            except:
+                return html
+        elif len(args) == 0 and makeFlatter:
+            return self.flatter.show(makeFlatter=False, **kwargs)
+        else:
+            return super().show(*args, **kwargs)
+    
+    def toObject(self, **kwargs):
+        """Export the object to a simple dictionary. See 
+        :meth:`chant21.chant.Chant21Object.toObject`"""
+        metadata = self.editorial.get('metadata', {})
+        metadata['chant21version'] = __version__
+        obj = {
+            'type': 'chant',
+            'metadata': metadata,
+            'elements': [section.toObject(**kwargs) for section in self.sections]
+        }
+        return obj
+
+    def fromObject(self, obj, **kwargs):
+        """Set properties from a dictionary. 
+        See :meth:`chant21.chant.Chant21Object.toObject`"""
+        super().fromObject(obj, **kwargs)
+        metadata = obj.get('metadata', {})
+        self.editorial.metadata = metadata
+    
+    def toCHSON(self, fp=None, includeEditorial=True, **jsonKwargs):
+        toObjectKwargs = dict(includeEditorial=includeEditorial)
+        if fp is None:
+            return json.dumps(self.toObject(**toObjectKwargs), **jsonKwargs)
+        else:
+            with open(fp, 'w') as handle:
+                json.dump(self.toObject(**toObjectKwargs), handle, **jsonKwargs)
+    
+    def toHTML(self, filepath=None, completeFile=False, 
+        showDisplayOptions=False, **kwargs):
+        """"""
+        if filepath is not None or completeFile:
+            return toFile(self, filepath=filepath, **kwargs)
+        else:
+            return toWidget(self, **kwargs)
+
     @property
     def flatter(self):
-        """A copy of the chant where words, syllables and neumes have been flattened.
-        It is not completely flat, since measures are preserved. This method is
-        useful for visualizing chants: `ch.flatter.show()` will also show measures
-        and barlines, where as `ch.flat.show()` will not."""
+        """A copy of the chant where words, syllables and neumes have been
+        flattened. It is not completely flat, since measures are preserved. 
+        This method is useful for visualizing chants: ``ch.flatter.show()`` 
+        will also show measures and barlines, where as ``ch.flat.show()`` will 
+        not.
+
+        >>> from music21 import converter
+        >>> ch = converter.parse("(c4) A(dc~)B(c/e) (::) c(dc/fg) (::)", format='gabc')
+        >>> ch.show('text')
+        {0.0} <chant21.chant.Section>
+            {0.0} <chant21.chant.Word>
+                {0.0} <chant21.chant.Syllable>
+                    {0.0} <music21.clef.Clef>
+            {0.0} <chant21.chant.Word>
+                {0.0} <chant21.chant.Syllable lyrics=A>
+                    {0.0} <chant21.chant.Neume>
+                        {0.0} <chant21.chant.Note D>
+                        {1.0} <chant21.chant.Note C>
+                {2.0} <chant21.chant.Syllable lyrics=B>
+                    {0.0} <chant21.chant.Neume>
+                        {0.0} <chant21.chant.Note C>
+                    {1.0} <chant21.chant.Neume>
+                        {0.0} <chant21.chant.Note E>
+        {4.0} <chant21.chant.Section>
+            {0.0} <chant21.chant.Word>
+                {0.0} <chant21.chant.Syllable>
+                    {0.0} <chant21.chant.PausaFinalis>
+            {0.0} <chant21.chant.Word>
+                {0.0} <chant21.chant.Syllable lyrics=c>
+                    {0.0} <chant21.chant.Neume>
+                        {0.0} <chant21.chant.Note D>
+                        {1.0} <chant21.chant.Note C>
+                    {2.0} <chant21.chant.Neume>
+                        {0.0} <chant21.chant.Note F>
+                        {1.0} <chant21.chant.Note G>
+            {4.0} <chant21.chant.Word>
+                {0.0} <chant21.chant.Syllable>
+                    {0.0} <chant21.chant.PausaFinalis>
+        >>> ch.flatter.show('text')
+        {0.0} <music21.stream.Measure 0 offset=0.0>
+            {0.0} <music21.clef.Clef>
+            {0.0} <chant21.chant.Note D>
+            {1.0} <chant21.chant.Note C>
+            {2.0} <chant21.chant.Note C>
+            {3.0} <chant21.chant.Note E>
+            {4.0} <chant21.chant.PausaFinalis>
+        {4.0} <music21.stream.Measure 0 offset=4.0>
+            {0.0} <chant21.chant.Note D>
+            {1.0} <chant21.chant.Note C>
+            {2.0} <chant21.chant.Note F>
+            {3.0} <chant21.chant.Note G>
+            {4.0} <chant21.chant.PausaFinalis>
+        """
         chant = deepcopy(self)
         elements = chant.flat
         chant.clear()
@@ -146,8 +357,28 @@ class Chant(CHSONObject, stream.Part):
 
     @property
     def phrases(self):
-        """A stream of phrases: the music between two pausas.
-        Every pausa is thus turned into a section boundary"""
+        """music21.stream.Part: Returns all the phrases in a chant, where 
+        phrases are all segments between two pausas. 
+        
+        Note that phrases are only reliable in GABC, and not in Cantus Volpiano.
+        In gabc all pausa minima (breathing marks) are marked (by ``,``) and 
+        reliable indicators of phrase boundaries. In Cantus Volpiano, pausa 
+        minima however have a different meaning: they mark column or page 
+        boundaries.
+        
+        >>> from music21 import converter
+        >>> ch = converter.parse("(c4) A(dc)B(c,) C(dc) (::)", format='gabc')
+        >>> ch.phrases.show('text') #doctest: +ELLIPSIS
+        {0.0} <music21.stream.Stream 0x...>
+            {0.0} <music21.clef.Clef>
+            {0.0} <chant21.chant.Note D>
+            {1.0} <chant21.chant.Note C>
+            {2.0} <chant21.chant.Note C>
+        {3.0} <music21.stream.Stream 0x...>
+            {0.0} <chant21.chant.Note D>
+            {1.0} <chant21.chant.Note C>
+
+        """
         phrases = stream.Part()
         curPhrase = stream.Stream()
         for el in self.flat:
@@ -162,52 +393,31 @@ class Chant(CHSONObject, stream.Part):
     def sections(self):
         return self.getElementsByClass(Section)
 
-    def toObject(self, **kwargs):
-        metadata = self.editorial.get('metadata', {})
-        metadata['chant21version'] = __version__
-        obj = {
-            'type': 'chant',
-            'metadata': metadata,
-            'elements': [section.toObject(**kwargs) for section in self.sections]
-        }
-        return obj
-
-    def fromObject(self, obj, **kwargs):
-        super().fromObject(obj, **kwargs)
-        metadata = obj.get('metadata', {})
-        self.editorial.metadata = metadata
-    
-    def toCHSON(self, fp=None, includeEditorial=True, **jsonKwargs):
-        toObjectKwargs = dict(includeEditorial=includeEditorial)
-        if fp is None:
-            return json.dumps(self.toObject(**toObjectKwargs), **jsonKwargs)
-        else:
-            with open(fp, 'w') as handle:
-                json.dump(self.toObject(**toObjectKwargs), handle, **jsonKwargs)
-    
-    def toHTML(self, filepath=None, completeFile=False, 
-        showDisplayOptions=False, **kwargs):
-        """"""
-        if filepath is not None or completeFile:
-            return toFile(self, filepath=filepath, **kwargs)
-        else:
-            return toWidget(self, **kwargs)
-    
-    def show(self, *args, makeFlatter=True, **kwargs):
-        if len(args) > 0 and args[0] == 'html':
-            html = self.toHTML(**kwargs)
-            try:
-                from IPython.core.display import display, HTML
-                return display(HTML(html))
-            except:
-                return html
-        elif len(args) == 0 and makeFlatter:
-            return self.flatter.show(makeFlatter=False, **kwargs)
-        else:
-            return super().show(*args, **kwargs)
-    
     def addNeumeSlurs(self):
-        """Add slurs to all notes in a single neume"""
+        """Add slurs over all notes that form a single neume.
+
+        >>> from music21 import converter
+        >>> ch = converter.parse('1---fgf-ga', format='cantus')
+        >>> ch.flatter.show('text')
+        {0.0} <music21.stream.Measure 0 offset=0.0>
+            {0.0} <music21.clef.Clef>
+            {0.0} <chant21.chant.Note F>
+            {1.0} <chant21.chant.Note G>
+            {2.0} <chant21.chant.Note F>
+            {3.0} <chant21.chant.Note G>
+            {4.0} <chant21.chant.Note A>
+        >>> ch.addNeumeSlurs()
+        >>> ch.flatter.show('text')
+        {0.0} <music21.stream.Measure 0 offset=0.0>
+            {0.0} <music21.clef.Clef>
+            {0.0} <music21.spanner.Slur <chant21.chant.Note F><chant21.chant.Note G><chant21.chant.Note F>>
+            {0.0} <chant21.chant.Note F>
+            {1.0} <chant21.chant.Note G>
+            {2.0} <chant21.chant.Note F>
+            {3.0} <music21.spanner.Slur <chant21.chant.Note G><chant21.chant.Note A>>
+            {3.0} <chant21.chant.Note G>
+            {4.0} <chant21.chant.Note A>
+        """
         neumes = self.recurse(classFilter=Neume)
         for neume in neumes:
             neume.addSlur()
@@ -248,7 +458,7 @@ class Chant(CHSONObject, stream.Part):
         for section in self.sections:
             section.joinWordsAcrossPausas()
 
-class Section(CHSONObject, stream.Stream):
+class Section(Chant21Object, stream.Stream):
     _name = None
 
     @property
@@ -306,7 +516,8 @@ class Section(CHSONObject, stream.Stream):
             obj['name'] = self.name
         return obj
 
-class Word(CHSONObject, stream.Stream):
+class Word(Chant21Object, stream.Stream):
+        
     @property
     def syllables(self):
         return self.getElementsByClass(Syllable)
@@ -373,7 +584,12 @@ class Word(CHSONObject, stream.Stream):
         super().fromObject(obj, **kwargs)
         self.updateSyllableLyrics()
 
-class Syllable(ChantElement, stream.Stream):
+class Syllable(Chant21Object, ChantElement, stream.Stream):
+    
+    def _reprInternal(self):
+        if self.hasLyrics:
+            return f'lyrics={self.lyric}'
+
     @property
     def lyric(self):
         notes = self.flat.notes
@@ -416,8 +632,7 @@ class Syllable(ChantElement, stream.Stream):
             annotation = Annotation(self.annotation)
             self.insert(0, annotation)
 
-class Neume(CHSONObject, stream.Stream):
-    
+class Neume(Chant21Object, stream.Stream):
     def addSlur(self):
         """Adds a slur to the neumes notes"""
         notes = self.notes.elements
@@ -426,11 +641,14 @@ class Neume(CHSONObject, stream.Stream):
             slur.priority = -1
             self.insert(0, slur)
     
-class Note(CHSONObject, note.Note):
+class Note(Chant21Object, note.Note):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, *kwargs)
         self.stemDirection = 'noStem'
 
+    def _reprInternal(self):
+        return self.name
+    
     def toObject(self, **kwargs):
         obj = super().toObject(**kwargs)
         obj['pitch'] = self.pitch.nameWithOctave
@@ -452,7 +670,7 @@ class Note(CHSONObject, note.Note):
 
 ###
 
-class Pausa(ChantElement):
+class Pausa(Chant21Object, ChantElement):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.priority = -1
@@ -478,7 +696,9 @@ class Clef(ChantElement, clef.TrebleClef):
         super().__init__(**kwargs)
         self.priority = -2
 
-class Alteration(CHSONObject, base.Music21Object):
+###
+
+class Alteration(Chant21Object, base.Music21Object):
     """Placeholder of the exact position of alterations in the chant.
 
     Alterations record the exact position of the alterations in the score,
@@ -555,30 +775,28 @@ class Annotation(expressions.TextExpression):
         
 ### From music21 volpiano.py
 
-class LineBreak(CHSONObject):
+class LineBreak(Chant21Object, base.Music21Object):
     '''
     Indicates that the line breaks at this point in the manuscript.
     Denoted by one 7.
     '''
     pass
 
-
-class PageBreak(CHSONObject):
+class PageBreak(Chant21Object, base.Music21Object):
     '''
     Indicates that the page breaks at this point in the manuscript
     Denoted by two 7s.
     '''
     pass
 
-
-class ColumnBreak(CHSONObject):
+class ColumnBreak(Chant21Object, base.Music21Object):
     '''
     Indicates that the page breaks at this point in the manuscript
     Denoted by three 7s.
     '''
     pass
 
-class MissingPitches(CHSONObject):
+class MissingPitches(Chant21Object, base.Music21Object):
     pass
 
 ##
@@ -602,3 +820,6 @@ CLASSES = {
     'natural': Natural
 }
 
+if __name__ == '__main__':
+    import doctest
+    doctest.testmod()

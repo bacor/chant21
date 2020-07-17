@@ -3,13 +3,19 @@ Classes
 
 .. module:: chant21
 
+Chant21Object
+-------------
+
+.. autoclass:: chant21.chant.Chant21Object
+    :members:
+    :undoc-members:
+
 Chant
 -----
 
 .. autoclass:: Chant
     :members:
     :undoc-members:
-    :show-inheritance:
 
 Section
 --------
