@@ -23,7 +23,7 @@ from chant21 import LineBreak
 from chant21 import ColumnBreak
 from chant21 import PageBreak
 
-from chant21.parser_cantus_volpiano import ParserCantusVolpiano
+from chant21 import ParserCantusVolpiano
 from chant21.converter_cantus_volpiano import VisitorCantusVolpiano
 from chant21.converter_cantus_volpiano import volpianoPositionToStep
 

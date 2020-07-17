@@ -1,5 +1,5 @@
 import unittest
-from chant21.parser_cantus_text import ParserCantusText
+from chant21 import ParserCantusText
 
 class TestGrammar(unittest.TestCase):
 

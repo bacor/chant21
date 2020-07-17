@@ -22,10 +22,10 @@ from chant21 import PausaMajor
 from chant21 import PausaFinalis
 
 from arpeggio import visit_parse_tree as visitParseTree
-from chant21.converterGABC import VisitorGABC
-from chant21.converterGABC import gabcPositionToStep
-from chant21.converterGABC import MissingClef
-from chant21.converterGABC import AlterationWarning
+from chant21.converter_gabc import VisitorGABC
+from chant21.converter_gabc import gabcPositionToStep
+from chant21.converter_gabc import MissingClef
+from chant21.converter_gabc import AlterationWarning
 
 def parseGABC(string):
     return converter.parse(string, format='gabc', forceSource=True, storePickle=False)

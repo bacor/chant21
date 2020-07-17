@@ -19,7 +19,7 @@ from chant21 import Annotation
 from chant21.chant import pitchToVolpiano
 
 from chant21 import ParserGABC
-from chant21.converterGABC import VisitorGABC
+from chant21.converter_gabc import VisitorGABC
 from arpeggio import visit_parse_tree as visitParseTree
 
 class TestChant(unittest.TestCase):

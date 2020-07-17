@@ -16,7 +16,6 @@ from ._version import __version__
 from .chant import Chant21Object
 from .chant import Chant
 from .chant import Section
-from .chant import ChantElement
 from .chant import Clef
 from .chant import Word
 from .chant import Syllable
@@ -31,14 +30,14 @@ from .chant import Annotation
 from .chant import Alteration
 from .chant import Natural
 from .chant import Flat
-
 from .chant import LineBreak
 from .chant import ColumnBreak
 from .chant import PageBreak
 
-# Make GABC converter available to music21.converter
-from .converterGABC import ConverterGABC
-from .converterCHSON import ConverterCHSON
-from .parserGABC import ParserGABC
-
+# Make parsers and converters available to music21.converter
+from .parser_gabc import ParserGABC
+from .parser_cantus_volpiano import ParserCantusVolpiano
+from .parser_cantus_text import ParserCantusText
+from .converter_gabc import ConverterGABC
+from .converter_chson import ConverterCHSON
 from .converter_cantus_volpiano import ConverterCantusVolpiano

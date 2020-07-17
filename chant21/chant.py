@@ -804,7 +804,3 @@ CLASSES = {
     'flat': Flat,
     'natural': Natural
 }
-
-if __name__ == '__main__':
-    import doctest
-    doctest.testmod()
