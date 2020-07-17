@@ -190,21 +190,6 @@ class Chant21Object:
                 child.fromObject(childObj, parent=self, parseChildren=parseChildren)
                 self.append(child)
 
-class ChantElement:#, base.Music21Object):
-    pass
-    # @property
-    # def annotation(self):
-    #     return self.editorial.get('annotation')
-    
-    # @annotation.setter
-    # def annotation(self, value):
-    #     self.editorial.annotation = value
-
-    # @property
-    # def hasAnnotation(self):
-    #     """True if the element has a non-empty annotation"""
-    #     return self.annotation is not None
-
 ###
 
 class Chant(Chant21Object, stream.Part):    
@@ -584,7 +569,7 @@ class Word(Chant21Object, stream.Stream):
         super().fromObject(obj, **kwargs)
         self.updateSyllableLyrics()
 
-class Syllable(Chant21Object, ChantElement, stream.Stream):
+class Syllable(Chant21Object, stream.Stream):
     
     def _reprInternal(self):
         if self.hasLyrics:
@@ -670,7 +655,7 @@ class Note(Chant21Object, note.Note):
 
 ###
 
-class Pausa(Chant21Object, ChantElement):
+class Pausa(Chant21Object):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.priority = -1
@@ -690,7 +675,7 @@ class PausaFinalis(Pausa, bar.Barline):
         super().__init__(**kwargs)
         self.type = 'light-light'
 
-class Clef(ChantElement, clef.TrebleClef):
+class Clef(Chant21Object, clef.TrebleClef):
     volpiano = '1'
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
