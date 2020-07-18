@@ -19,8 +19,9 @@ License and citation
 
 Chant21 is free and open source software licensed under the MIT license. The 
 gabc files in `chant21/examples` come from GregoBase and are in the public 
-domain (CC0). If you use Chant21 in your research, please cite the paper 
-describing the software:
+domain (CC0); the volpiano examples come from the Cantus Database and are 
+licenced under CC BY-NC-SA 4.0. If you use Chant21 in your research, please cite
+the paper describing the software:
 
 > (forthcoming)
 
