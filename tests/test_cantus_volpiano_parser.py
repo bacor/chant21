@@ -144,6 +144,23 @@ class TestSyllable(unittest.TestCase):
         self.assertEqual(parse[0].rule_name, 'neume')
         self.assertEqual(parse[1].rule_name, 'neume_boundary')
         self.assertEqual(parse[2].rule_name, 'neume')
+    
+    def test_other(self):
+        parser = ParserCantusVolpiano(root='syllable')
+        parse = parser.parser.parse('3')
+        self.assertEqual(len(parse), 1)
+        self.assertEqual(parse[0].rule_name, 'other')
+        self.assertEqual(parse[0][0].rule_name, 'section_end')
+
+        parse = parser.parser.parse('4')
+        self.assertEqual(len(parse), 1)
+        self.assertEqual(parse[0].rule_name, 'other')
+        self.assertEqual(parse[0][0].rule_name, 'chant_end')
+
+        parse = parser.parser.parse('6------6')
+        self.assertEqual(len(parse), 1)
+        self.assertEqual(parse[0].rule_name, 'other')
+        self.assertEqual(parse[0][0].rule_name, 'missing_pitches')
 
 class TestWord(unittest.TestCase):
     """Tests using `word` as the root node"""
@@ -201,15 +218,21 @@ class TestMissingPitches(unittest.TestCase):
         """Are missing pitches correctly parsed?"""
         parser = ParserCantusVolpiano(root='chant')
         parse = parser.parser.parse('1---6------6')
-        clef, _, (missing, ) = parse
-        self.assertEqual(missing.rule_name, 'missing_pitches')
+        clef, _, word = parse
+        self.assertEqual(word.rule_name, 'word')
+        self.assertEqual(word[0].rule_name, 'syllable')
+        self.assertEqual(word[0][0].rule_name, 'other')
+        self.assertEqual(word[0][0][0].rule_name, 'missing_pitches')
         
     def test_missing_pitches_with_break(self):
         """Test whether missing pitches directly followed by a break
         are correctly parsed"""
         parser = ParserCantusVolpiano(root='chant')
         parse = parser.parser.parse('1---6------677')
-        _, _, ((missing, page_break),) = parse
+        _, _, ((other,),) = parse
+        self.assertEqual(other.rule_name, 'other')
+        self.assertEqual(other[0].rule_name, 'missing_pitches')
+        (missing, page_break), = other
         self.assertEqual(missing.value, '6------6')
         self.assertEqual(page_break.rule_name, 'break')
         

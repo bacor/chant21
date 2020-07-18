@@ -5,13 +5,13 @@
 //   those starting with '1--' and later using '---', that is.
 
 volpiano = (chant / incipit) '-'* EOF
-incipit = clef '--' syllable (syllable_boundary syllable)* 
-chant = clef '---' (word / other) (word_boundary (word / other))*
+chant = clef '---' word (word_boundary word)*
+incipit = clef '--' word
 
 // Music
-other = section_end / chant_end / missing_pitches
 word = syllable (syllable_boundary syllable)*
-syllable = neume (neume_boundary neume)*
+syllable = other / (neume (neume_boundary neume)*)
+other = section_end / chant_end / missing_pitches
 neume = (barline / break)? (note / liquescent / alteration)+ (barline / break)?
 
 // Notes
@@ -35,7 +35,6 @@ neume = (barline / break)? (note / liquescent / alteration)+ (barline / break)?
     chant_end = '4'
     // bold_double_barline = '5'
     // pausa_minor = '6'
-    
     
 // Alterations
     alteration = flat / natural

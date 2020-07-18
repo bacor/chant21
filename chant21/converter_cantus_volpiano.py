@@ -63,17 +63,21 @@ class VisitorCantusVolpiano(PTNodeVisitor):
         curSection = Section()
         curClef = None
 
-        # First element is always a clef
+        # First element is always a clef. For consistency wrap this in a 
+        # syllable and a word object
         if isinstance(children[0][0], Clef):
             clef = children[0][0]
             volpiano = clef.editorial.get('volpiano')
             curClef = 'g' if volpiano == '1' else 'f'
             word = Word()
-            word.append(clef)
+            syllable = Syllable()
+            syllable.append(clef)
+            word.append(syllable)
             curSection.append(word)
 
-        for word_like in children[0][1:]: 
-            curSection.append(word_like)
+        words = children[0][1:]
+        for word in words: 
+            curSection.append(word)
             
             # Scope of accidentals ends at word boundaries
             bIsFlat = False
@@ -81,7 +85,7 @@ class VisitorCantusVolpiano(PTNodeVisitor):
             eIsFlat = False
             eIsNatural = False
 
-            for el in word_like.flat:
+            for el in word.flat:
                 if isinstance(el, Note):
                     if curClef is None: 
                         raise MissingClef('Missing clef! Cannot process notes without a clef.')
@@ -128,11 +132,11 @@ class VisitorCantusVolpiano(PTNodeVisitor):
                     eIsFlat = False
                     eIsNatural = False  
                     
-                    # Intermediate sections start (!) at pausa finalis (double barlines)
+                    # Intermediate sections start (!) at pausa major (single barline)
                     # because annotations below them always refer to the next sections.
                     # The very last pausa finalis is part of the last section though
-                    if isinstance(el, PausaFinalis):
-                        if not word == children[-1]:
+                    if isinstance(el, PausaMajor) or isinstance(el, PausaFinalis):
+                        if not word == words[-1]:
                             curSection.remove(word)
                             ch.append(curSection)
                             curSection = Section()
@@ -159,11 +163,11 @@ class VisitorCantusVolpiano(PTNodeVisitor):
     def visit_chant(self, node, children):
         return children
 
-    def visit_other(self, node, children):
-        word = Word()
-        for child in children:
-            word.append(child)
-        return word
+    # def visit_other(self, node, children):
+    #     word = Word()
+    #     for child in children:
+    #         word.append(child)
+    #     return word
     
     def visit_word(self, node, children):
         word = Word()

@@ -179,61 +179,19 @@ class TestElements(unittest.TestCase):
         self.assertEqual(len(word), 3)
         self.assertIsInstance(word[0], Syllable)
 
-    def test_chant(self):
-        parser = ParserCantusVolpiano(root='chant')
-        parse = parser.parser.parse('1---fg-h--f--g---f')
-        chant = visitParseTree(parse, VisitorCantusVolpiano())
-        self.assertIsInstance(chant, Chant)
-        self.assertEqual(len(chant), 3)
-        self.assertIsInstance(chant[0], Clef)
-
     def test_volpiano(self):
+        """Test the basic structure of a chant: division in sections, words
+        and syllables"""
         parser = ParserCantusVolpiano(root='volpiano')
         parse = parser.parser.parse('1---fg-h--f--g---f')
         chant = visitParseTree(parse, VisitorCantusVolpiano())
         self.assertIsInstance(chant, Chant)
-        self.assertEqual(len(chant), 3)
-        self.assertIsInstance(chant[0], Clef)
+        self.assertIsInstance(chant[0], Section)
+        (word1, word2, word3), = chant
+        self.assertIsInstance(word1, Word)
+        self.assertIsInstance(word1[0], Syllable)
+        self.assertIsInstance(word1[0][0], Clef)
 
-class TestVolpiano(unittest.TestCase):
-    def test_b_flats(self):
-        parser = ParserCantusVolpiano(root='volpiano')
-        parse = parser.parser.parse('1---j--ij--j---j-h-j---4')
-        chant = visitParseTree(parse, VisitorCantusVolpiano())
-        notes = chant.recurse().notes
-        self.assertEqual(len(notes), 6)
-        self.assertEqual(notes[0].nameWithOctave, 'B4')
-        self.assertEqual(notes[1].nameWithOctave, 'B-4')
-        self.assertEqual(notes[2].nameWithOctave, 'B-4')
-        self.assertEqual(notes[3].nameWithOctave, 'B4')
-        self.assertEqual(notes[4].nameWithOctave, 'A4')
-        self.assertEqual(notes[5].nameWithOctave, 'B4')
-
-    def test_other_b_flats(self):
-        parser = ParserCantusVolpiano(root='volpiano')
-        parse = parser.parser.parse('1---b--yb--b---b-a-b---4')
-        chant = visitParseTree(parse, VisitorCantusVolpiano())
-        notes = chant.recurse().notes
-        self.assertEqual(len(notes), 6)
-        self.assertEqual(notes[0].nameWithOctave, 'B3')
-        self.assertEqual(notes[1].nameWithOctave, 'B-3')
-        self.assertEqual(notes[2].nameWithOctave, 'B-3')
-        self.assertEqual(notes[3].nameWithOctave, 'B3')
-        self.assertEqual(notes[4].nameWithOctave, 'A3')
-        self.assertEqual(notes[5].nameWithOctave, 'B3')
-
-    def test_e_flats(self):
-        parser = ParserCantusVolpiano(root='volpiano')
-        parse = parser.parser.parse('1---e--we--e--We--e---4')
-        chant = visitParseTree(parse, VisitorCantusVolpiano())
-        notes = chant.recurse().notes
-        self.assertEqual(len(notes), 5)
-        self.assertEqual(notes[0].nameWithOctave, 'E4')
-        self.assertEqual(notes[1].nameWithOctave, 'E-4')
-        self.assertEqual(notes[2].nameWithOctave, 'E-4')
-        self.assertEqual(notes[3].nameWithOctave, 'E4')
-        self.assertEqual(notes[4].nameWithOctave, 'E4')
-        
 class TestVolpianoPositionConverter(unittest.TestCase):
     def test_g_clef(self):
         self.assertEqual(volpianoPositionToStep('8', clef='g'), 'F4')
@@ -283,3 +241,49 @@ class TestConverter(unittest.TestCase):
     def test_converter(self):
         chant = converter.parse('1---f-g---4', format='Cantus')
         self.assertIsInstance(chant, Chant)
+
+    def test_b_flats(self):
+        chant = converter.parse('1---j--ij--j---j-h-j---4', format='cantus')
+        notes = chant.recurse().notes
+        self.assertEqual(len(notes), 6)
+        self.assertEqual(notes[0].nameWithOctave, 'B4')
+        self.assertEqual(notes[1].nameWithOctave, 'B-4')
+        self.assertEqual(notes[2].nameWithOctave, 'B-4')
+        self.assertEqual(notes[3].nameWithOctave, 'B4')
+        self.assertEqual(notes[4].nameWithOctave, 'A4')
+        self.assertEqual(notes[5].nameWithOctave, 'B4')
+
+    def test_other_b_flats(self):
+        chant = converter.parse('1---b--yb--b---b-a-b---4', format='cantus')
+        notes = chant.recurse().notes
+        self.assertEqual(len(notes), 6)
+        self.assertEqual(notes[0].nameWithOctave, 'B3')
+        self.assertEqual(notes[1].nameWithOctave, 'B-3')
+        self.assertEqual(notes[2].nameWithOctave, 'B-3')
+        self.assertEqual(notes[3].nameWithOctave, 'B3')
+        self.assertEqual(notes[4].nameWithOctave, 'A3')
+        self.assertEqual(notes[5].nameWithOctave, 'B3')
+
+    def test_e_flats(self):
+        chant = converter.parse('1---e--we--e--We--e---4', format='cantus')
+        notes = chant.recurse().notes
+        self.assertEqual(len(notes), 5)
+        self.assertEqual(notes[0].nameWithOctave, 'E4')
+        self.assertEqual(notes[1].nameWithOctave, 'E-4')
+        self.assertEqual(notes[2].nameWithOctave, 'E-4')
+        self.assertEqual(notes[3].nameWithOctave, 'E4')
+        self.assertEqual(notes[4].nameWithOctave, 'E4')
+        
+    def test_sections(self):
+        ch = converter.parse('1---fg-h---3---f-g---4', format='cantus')
+        self.assertEqual(len(ch), 2)
+        sect1, sect2 = ch
+        self.assertIsInstance(sect1, Section)
+        self.assertIsInstance(sect2, Section)
+
+    def test_clef(self):
+        section, = converter.parse('1---fg---4', format='cantus')
+        self.assertIsInstance(section[0], Word)
+        self.assertIsInstance(section[0][0], Syllable)
+        self.assertIsInstance(section[0][0][0], Clef)
+        

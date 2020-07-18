@@ -765,24 +765,24 @@ class LineBreak(Chant21Object, base.Music21Object):
     Indicates that the line breaks at this point in the manuscript.
     Denoted by one 7.
     '''
-    pass
+    volpiano = '7'
 
 class PageBreak(Chant21Object, base.Music21Object):
     '''
     Indicates that the page breaks at this point in the manuscript
     Denoted by two 7s.
     '''
-    pass
+    volpiano = '77'
 
 class ColumnBreak(Chant21Object, base.Music21Object):
     '''
     Indicates that the page breaks at this point in the manuscript
     Denoted by three 7s.
     '''
-    pass
+    volpiano = '777'
 
 class MissingPitches(Chant21Object, base.Music21Object):
-    pass
+    volpiano = '6------6'
 
 ##
 
