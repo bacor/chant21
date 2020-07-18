@@ -32,10 +32,6 @@ class TestParseExamples(unittest.TestCase):
         filename = f'{EXAMPLES_DIR}ky--kyrie_ad_lib_x_-_orbis_factor--solesmes.gabc'
         self.runTest(filename)
 
-    def test_populusSion(self):
-        filename = f'{EXAMPLES_DIR}populus_sion.gabc'
-        self.runTest(filename)
-
     def test_abOrtuSolis(self):
         filename = f'{EXAMPLES_DIR}tr--ab_ortu_solis--solesmes.gabc'
         self.runTest(filename)
@@ -81,11 +77,6 @@ class TestConvertExamples(unittest.TestCase):
         
     def test_utQueantLaxis(self):
         filename = f'{EXAMPLES_DIR}/hy--ut_queant_laxis--solesmes.gabc'
-        chant = parseGABC(filename)
-        self.assertTrue(True)
-
-    def test_populusSion(self):
-        filename = f'{EXAMPLES_DIR}/populus_sion.gabc'
         chant = parseGABC(filename)
         self.assertTrue(True)
 
@@ -145,10 +136,6 @@ class TestCHSONConversionExamples(unittest.TestCase):
 
     def test_kyrie(self):
         filename = f'{EXAMPLES_DIR}ky--kyrie_ad_lib_x_-_orbis_factor--solesmes.gabc'
-        self.runTest(filename)
-
-    def test_populusSion(self):
-        filename = f'{EXAMPLES_DIR}populus_sion.gabc'
         self.runTest(filename)
 
     def test_abOrtuSolis(self):

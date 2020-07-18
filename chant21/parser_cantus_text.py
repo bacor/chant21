@@ -1,6 +1,7 @@
 from arpeggio.cleanpeg import ParserPEG
 import os.path
 import re
+from pandas import isna
 
 cur_dir = os.path.dirname(__file__)
 GRAMMAR_PATH = os.path.join(cur_dir, 'grammars', 'cantus_text.peg')
@@ -36,5 +37,6 @@ class ParserCantusText():
         self.parser = ParserPEG(grammar, root, skipws=False, **kwargs)
 
     def parse(self, text: str, debug: bool = True, strict = None):
+        if isna(text): return None
         if strict is None: strict = self.strict 
         return self.parser.parse(text)

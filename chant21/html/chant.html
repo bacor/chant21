@@ -188,7 +188,7 @@
                         <span class="annotation">{{syllable.annotation}}</span>
                     {%- elif syllable.lyric -%}
                         <span class="lyric">{{syllable.lyric}}</span>
-                        {%- if numSyllables > 1 and loop.index < numSyllables -%}
+                        {%- if numSyllables > 1 and loop.index < numSyllables and word.musicAndTextAligned != False -%}
                         <span class="hyphen">-</span>
                         {%- endif -%}
                     {%- else -%}

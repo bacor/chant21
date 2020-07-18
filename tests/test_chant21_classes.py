@@ -99,7 +99,7 @@ class TestToObject(unittest.TestCase):
         obj = word.toObject()
         self.assertEqual(len(obj['elements']), 2)
         del obj['elements']
-        targetObj = {'type': 'word'}
+        targetObj = {'type': 'word', 'musicAndTextAligned': None}
         self.assertDictEqual(obj, targetObj)
     
     def test_syllable(self):

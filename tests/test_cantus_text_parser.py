@@ -35,7 +35,7 @@ class TestGrammar(unittest.TestCase):
     def test_psalm_incipit(self):
         parser = ParserCantusText()
         section, eof = parser.parse('~a b')
-        self.assertEqual(section[0].rule_name, 'psalm_incipit')
+        self.assertEqual(section[0].rule_name, 'tilda')
 
     def test_ipsum(self):
         parser = ParserCantusText()
@@ -61,6 +61,11 @@ class TestGrammar(unittest.TestCase):
         a, _, b_, missing = words
         # TODO this is not optimal: should be one word
         self.assertEqual(missing.rule_name, 'missing_pitches')
+
+    # def test_pitchless_text(self):
+    #     parser = ParserCantusText()
+    #     parse = parser.parse('~A B C')
+    #     print(parse)
 
 if __name__ == '__main__':
     unittest.main()

@@ -287,3 +287,24 @@ class TestConverter(unittest.TestCase):
         self.assertIsInstance(section[0][0], Syllable)
         self.assertIsInstance(section[0][0][0], Clef)
         
+class TestVolpianoAndTextConversion(unittest.TestCase):
+
+    def test_volpiano_and_text(self):
+        ch = converter.parse('1---f--g---f---3---f---4/Amen et | A', format='cantus')
+        print(ch)
+
+    def test_hyphens(self):
+        ch = converter.parse('1---a---cde--d--d---4/A facie', format='cantus')
+        self.assertEqual(ch[0][1][0].lyric, 'a')
+        self.assertEqual(ch[0][2][0].lyric, 'fa')
+        self.assertEqual(ch[0][2][1].lyric, 'ci')
+        self.assertEqual(ch[0][2][2].lyric, 'e')
+
+    def test_pitchless_text(self):
+        input_str = ('1---df---efd--c---4---c--d--f--f---3---f--f--f--e--c--d7---3'
+                     '/A fructu  | ~Cum invocarem | euouae')
+        ch = converter.parse(input_str, format='cantus')
+        self.assertEqual(len(ch), 3)
+        self.assertEqual(ch[1][1][0].lyric, '~Cum invocarem')
+
+        

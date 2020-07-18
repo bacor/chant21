@@ -27,6 +27,9 @@ from .html import toFile
 from .html import toWidget
 from . import __version__
 
+# from .converter_cantus_volpiano import addTextToChant
+# from arpeggio import visit_parse_tree as visitParseTree
+
 #TODO add __repr__ method to classes
 
 def pitchToVolpiano(pitch, liquescence=False):
@@ -443,6 +446,10 @@ class Chant(Chant21Object, stream.Part):
         for section in self.sections:
             section.joinWordsAcrossPausas()
 
+    # def addCantusText(self, text):
+    #     visitor = VisitorCantusText(chant=self)
+    #     visitParseTree(text, visitor)
+
 class Section(Chant21Object, stream.Stream):
     _name = None
 
@@ -502,7 +509,9 @@ class Section(Chant21Object, stream.Stream):
         return obj
 
 class Word(Chant21Object, stream.Stream):
-        
+
+    musicAndTextAligned = None
+
     @property
     def syllables(self):
         return self.getElementsByClass(Syllable)
@@ -565,6 +574,11 @@ class Word(Chant21Object, stream.Stream):
         # TODO long melisma's on a single-syllable word,
         # are those dealt with properly?
 
+    def toObject(self, **kwargs):
+        obj = super().toObject(**kwargs)
+        obj['musicAndTextAligned'] = self.musicAndTextAligned
+        return obj
+    
     def fromObject(self, obj, **kwargs):
         super().fromObject(obj, **kwargs)
         self.updateSyllableLyrics()

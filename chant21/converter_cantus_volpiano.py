@@ -30,6 +30,8 @@ from .chant import PageBreak
 from .chant import MissingPitches
 
 from .parser_cantus_volpiano import ParserCantusVolpiano
+from .parser_cantus_text import ParserCantusText
+from .syllabifier import ChantSyllabifier
 # from . import __version__
 
 CHARACTERS = {
@@ -237,18 +239,102 @@ class VisitorCantusVolpiano(PTNodeVisitor):
 
 ###
 
+TEXT_BARLINE = '|'
+
+class VisitorCantusText(PTNodeVisitor):
+    def __init__(self, chant, syllabifier, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.chant = chant
+        self.syllabifier = syllabifier
+    
+    def syllabify(self, text):
+        return self.syllabifier.syllabify(text)
+
+    def visit_text(self, node, children):
+        text_sections = [child for child in children 
+            if type(child) != str or child != TEXT_BARLINE]
+        for text_sec, chant_sec in zip(text_sections, self.chant):
+            chant_words = [word for word in chant_sec if len(word.flat.notes) > 0]
+            if type(text_sec) == str:
+                # Music is not aligned to text. Add lyrics to first syllable.
+                # TODO is there a more principled solution for this?
+                l = note.Lyric(text=text_sec, applyRaw=True)
+                l.syllabic = 'end'
+                chant_words[0].musicAndTextAligned = False
+                chant_words[0][0].lyric = l
+            else:
+                text_words = text_sec
+                for text_word, chant_word in zip(text_words, chant_words):
+                    for i, (text_syll, chant_syll) in enumerate(zip(text_word, chant_word)):
+                        # Add dashes to all but the final syllable
+                        if i < len(text_word) - 1:
+                            chant_syll.lyric = note.Lyric(text=f'{text_syll}-')
+                        else:
+                            chant_syll.lyric = note.Lyric(text_syll)
+
+    def visit_section(self, node, children):
+        words = children[0]
+        return words
+
+    def visit_tilda(self, node, children):
+        return node.value.strip()
+
+    def visit_words(self, node, children):
+        return [child for child in children if type(child) != str]
+
+    def visit_word(self, node, children):
+        syllables = self.syllabify(node.value)
+        return syllables
+
+    def visit_barline(self, node, children):
+        return TEXT_BARLINE
+
+###
+
+def addTextToChant(chant, text):
+    """Parses the Cantus manuscript text and adds it as lyrics to a Chant 
+    object.
+
+    Parameters
+    ----------
+    chant : chant21.chant.Chant
+        The chant object to which the text is to be added
+    text : str
+        The text, should be of the same form as the full_text_manuscript field
+
+    Returns
+    -------
+    chant21.chant.Chant
+        the same chant object with added lyrics
+    """
+    syllabifier = ChantSyllabifier()
+    visitor = VisitorCantusText(chant, syllabifier)
+    parser = ParserCantusText()
+    parse = parser.parse(text)
+    visitParseTree(parse, visitor)
+    return chant
+
+###
+
 class ConverterCantusVolpiano(converter.subConverters.SubConverter):
     registerFormats = ('cantus', 'Cantus', 'CANTUS')
     registerInputExtensions = ('cantus', 'Cantus', 'CANTUS')
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.parser = ParserCantusVolpiano()
-        self.visitor = VisitorCantusVolpiano()
+        self.volpianoParser = ParserCantusVolpiano()
+        self.volpianoVisitor = VisitorCantusVolpiano()
     
     def parseData(self, strData, number=None, strict = False):
-        parse = self.parser.parse(strData, strict = strict)
-        ch = visitParseTree(parse, self.visitor)
+        if '/' in strData:
+            volpiano, text = strData.split('/')
+        else:
+            volpiano = strData
+            text = None
+        parse = self.volpianoParser.parse(volpiano, strict = strict)
+        ch = visitParseTree(parse, self.volpianoVisitor)
+        if text is not None:
+            addTextToChant(ch, text)
         self.stream = ch
 
 converter.registerSubconverter(ConverterCantusVolpiano)

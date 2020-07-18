@@ -3,18 +3,18 @@ barline = r'\ *\|\ *'
 section = (
     ipsum
     / incipit
-    / psalm_incipit
+    / tilda
     / words)
     
 words = (
-    (word / missing_pitches / pitchless_text) 
-    (space? (word / missing_pitches / pitchless_text))*
-    )
+    (word / missing_pitches) 
+    (space? (word / missing_pitches))*
+)
 space = r'[\ \n]+'
 word = r'[a-zA-Z\.\,\'\-]+'
 missing_pitches = ('{' r'[^\}]+' '}') / '#'
-pitchless_text = '~' word (space word)*
 
 incipit = word (space word)* '*'
-psalm_incipit = '~' word (space word)*
+// Can be psalm incipit or text that does not align to pitches
+tilda = r'\~[a-zA-Z\.\,\'\-\ ]+'
 ipsum = r'\~Ipsum [^\|]+'
