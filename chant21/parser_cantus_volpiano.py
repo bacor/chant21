@@ -6,20 +6,16 @@ cur_dir = os.path.dirname(__file__)
 GRAMMAR_PATH = os.path.join(cur_dir, 'grammars', 'cantus_volpiano.peg')
 
 class ParserCantusVolpiano():
-    """Cantus Volpiano Parser"""
     
-    def __init__(self, 
-        grammar_path: str = GRAMMAR_PATH,
-        root: str = 'volpiano',
-        strict: bool = False,
-        **kwargs) -> None:
-        """The Cantus volpiano parser
+    def __init__(self, grammarPath = None, root: str = 'volpiano',
+        strict: bool = False, **kwargs) -> None:
+        """Initialize a Cantus Volpiano parser.
 
         Parameters
         ----------
-        grammar_path : str, optional
-            Path to the PEG grammar file, by default GRAMMAR_PATH, which points
-            to ``grammars/cantus_volpiano.peg``
+        grammarPath : str, optional
+            Path to the PEG grammar file, defaults to 
+            ``grammars/cantus_volpiano.peg``
         root : str, optional
             Root element of the parser, by default 'volpiano'
         strict : bool, optional
@@ -28,14 +24,15 @@ class ParserCantusVolpiano():
             syntax. In non-strict mode, some deviations will be automatically 
             corrected. See :meth:`ParserCantusVolpiano.preprocess` for details.
             By default True
+        **kwargs 
+            Other keywords are passed to :class:`ParserPeg`.
         """
-        
-        if not os.path.exists(grammar_path):
-            raise Exception(f'Grammar file ({ grammar_path }) does not exist')
-
-        with open(grammar_path, 'r') as handle:
+        if grammarPath == None:
+            grammarPath = GRAMMAR_PATH
+        if not os.path.exists(grammarPath):
+            raise Exception(f'Grammar file ({ grammarPath }) does not exist')
+        with open(grammarPath, 'r') as handle:
             grammar = handle.read()
-        
         self.strict = strict
         self.parser = ParserPEG(grammar, root, skipws=False, **kwargs)
 
