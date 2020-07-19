@@ -39,6 +39,11 @@
         margin-top: 1em;
     }
 
+   .text.not_aligned {
+        color: #999;
+        font-style: italic;
+    }
+
     .lyric {
         background: #fff;
     }
@@ -183,7 +188,7 @@
                     <span class="wordBoundary boundary">---</span>
                     {%- endif -%}
                 </div>
-                <div class="text">
+                <div class="text{% if word.musicAndTextAligned == false %} not_aligned{% endif %}">
                     {%- if syllable.annotation -%}
                         <span class="annotation">{{syllable.annotation}}</span>
                     {%- elif syllable.lyric -%}
