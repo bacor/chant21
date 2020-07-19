@@ -10,6 +10,7 @@ Chant21 Documentation
 
    content/classes.rst
    content/html.rst
+   content/parsers.rst
 
 Indices and tables
 ==================
