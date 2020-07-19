@@ -134,6 +134,17 @@ class TestParser(unittest.TestCase):
         parser.parse('1---fg.', strict=False)
         self.assertTrue(True)
 
+    def test_alternative_hyphenation_strict(self):
+        parser = ParserCantusVolpiano()
+        test_fn = lambda : parser.parse('1--fg-f--g', strict=True)
+        self.assertRaises(HyphenationError, test_fn)
+
+    def test_alternative_hyphenation_not_strict(self):
+        parser = ParserCantusVolpiano()
+        parse = parser.parse('1--fg-f-f--g', strict=False)
+        vol = parse.value.replace(' ', '').replace('|', '')
+        self.assertEqual(vol, '1---fg--f--f---g')
+
 class TestSyllable(unittest.TestCase):
     """Tests using `syllable` as the root node"""
 
@@ -149,18 +160,15 @@ class TestSyllable(unittest.TestCase):
         parser = ParserCantusVolpiano(root='syllable')
         parse = parser.parser.parse('3')
         self.assertEqual(len(parse), 1)
-        self.assertEqual(parse[0].rule_name, 'other')
-        self.assertEqual(parse[0][0].rule_name, 'section_end')
+        self.assertEqual(parse[0].rule_name, 'section_end')
 
         parse = parser.parser.parse('4')
         self.assertEqual(len(parse), 1)
-        self.assertEqual(parse[0].rule_name, 'other')
-        self.assertEqual(parse[0][0].rule_name, 'chant_end')
+        self.assertEqual(parse[0].rule_name, 'chant_end')
 
         parse = parser.parser.parse('6------6')
         self.assertEqual(len(parse), 1)
-        self.assertEqual(parse[0].rule_name, 'other')
-        self.assertEqual(parse[0][0].rule_name, 'missing_pitches')
+        self.assertEqual(parse[0].rule_name, 'missing_pitches')
 
 class TestWord(unittest.TestCase):
     """Tests using `word` as the root node"""
@@ -176,14 +184,9 @@ class TestWord(unittest.TestCase):
 class TestVolpiano(unittest.TestCase):
     """Tests using `volpiano` as the root node"""
 
-    def test_incipit(self):
-        parser = ParserCantusVolpiano()
-        parse = parser.parse('1--g-h--j--l')
-        self.assertEqual(parse[0].rule_name, 'incipit')
-
     def test_hyphensAtEnd(self):
         parser = ParserCantusVolpiano()
-        parse = parser.parse('1--l-')
+        parse = parser.parse('1---l-')
         self.assertFalse(parse.error)
         parse = parser.parse('1---l--')
         self.assertFalse(parse.error)
@@ -191,16 +194,13 @@ class TestVolpiano(unittest.TestCase):
     def test_volpiano(self):
         parser = ParserCantusVolpiano(root='volpiano')
         parse = parser.parse('1---fgf-ef--fg-h---f-g')
-        chant, EOF = parse
-        self.assertEqual(chant.rule_name, 'chant')
-        self.assertEqual(EOF.rule_name, 'EOF')
-
-        clef, _, word1, word_boundary, word2 = chant
-        self.assertEqual(clef.rule_name, 'clef')
-        self.assertEqual(_.value, '---')
+        word0, bound1, word1, bound2, word2, EOF = parse
+        self.assertEqual(word0.rule_name, 'word')
+        self.assertEqual(bound1.rule_name, 'word_boundary')
         self.assertEqual(word1.rule_name, 'word')
-        self.assertEqual(word_boundary.rule_name, 'word_boundary')
+        self.assertEqual(bound2.rule_name, 'word_boundary')
         self.assertEqual(word2.rule_name, 'word')
+        self.assertEqual(EOF.rule_name, 'EOF')
 
     def test_breaks_before_neume(self):
         parser = ParserCantusVolpiano(root='neume')
@@ -216,25 +216,23 @@ class TestMissingPitches(unittest.TestCase):
 
     def test_missing_pitches(self):
         """Are missing pitches correctly parsed?"""
-        parser = ParserCantusVolpiano(root='chant')
+        parser = ParserCantusVolpiano(root='volpiano')
         parse = parser.parser.parse('1---6------6')
-        clef, _, word = parse
+        _, _, word, EOF = parse
         self.assertEqual(word.rule_name, 'word')
         self.assertEqual(word[0].rule_name, 'syllable')
-        self.assertEqual(word[0][0].rule_name, 'other')
-        self.assertEqual(word[0][0][0].rule_name, 'missing_pitches')
+        self.assertEqual(word[0][0].rule_name, 'missing_pitches')
         
     def test_missing_pitches_with_break(self):
         """Test whether missing pitches directly followed by a break
         are correctly parsed"""
-        parser = ParserCantusVolpiano(root='chant')
+        parser = ParserCantusVolpiano(root='volpiano')
         parse = parser.parser.parse('1---6------677')
-        _, _, ((other,),) = parse
-        self.assertEqual(other.rule_name, 'other')
-        self.assertEqual(other[0].rule_name, 'missing_pitches')
-        (missing, page_break), = other
-        self.assertEqual(missing.value, '6------6')
-        self.assertEqual(page_break.rule_name, 'break')
+        _, _, word, eof = parse
+        missing = word[0][0]
+        self.assertEqual(missing.rule_name, 'missing_pitches')
+        self.assertEqual(missing[0].value, '6------6')
+        self.assertEqual(missing[1].rule_name, 'break')
         
 if __name__ == '__main__':
     unittest.main()

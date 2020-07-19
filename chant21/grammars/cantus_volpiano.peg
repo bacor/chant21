@@ -1,17 +1,9 @@
-//
-// TO DO
-// * Pausa minima can occur in a syllable
-// * Chants mixing hyphenation types are not supported: 
-//   those starting with '1--' and later using '---', that is.
-
-volpiano = (chant / incipit) '-'* EOF
-chant = clef '---' word (word_boundary word)*
-incipit = clef '--' word
-
-// Music
+volpiano = word (word_boundary word)* '-'* EOF
 word = syllable (syllable_boundary syllable)*
-syllable = other / (neume (neume_boundary neume)*)
-other = section_end / chant_end / missing_pitches
+syllable = (
+    (clef / section_end / chant_end / missing_pitches)
+    / (neume (neume_boundary neume)*)
+)
 neume = (barline / break)? (note / liquescent / alteration)+ (barline / break)?
 
 // Notes

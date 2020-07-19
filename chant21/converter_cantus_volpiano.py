@@ -47,9 +47,9 @@ CHARACTERS = {
     'others': "[]{¶",
 }
 
-def volpianoPositionToStep(position, clef, adjustClefOctave=-1):
+def volpianoPositionToStep(position, clef, adjustClefOctave=0):
     positions = '89abcdefghjklmnopqrs'
-    clefOctaves = dict(f=4, g=5)
+    clefOctaves = dict(f=3, g=4)
     cPosition = dict(f='h', g='c')
     noteIndex = positions.index(position)
     cIndex = positions.index(cPosition[clef])
@@ -65,10 +65,6 @@ class VisitorCantusVolpiano(PTNodeVisitor):
         ch = Chant()
         curSection = Section()
         curClef = None
-
-        # Store whether the chant uses incipit hyphenation
-        ch.editorial.hasIncipitHyphenation = 'incipit' in children.results
-
         ch.editorial.metadata = {
             'conversion': {
                 'originalFormat': 'cantus/volpiano',
@@ -77,20 +73,9 @@ class VisitorCantusVolpiano(PTNodeVisitor):
             }
         }
 
-        # First element is always a clef. For consistency wrap this in a 
-        # syllable and a word object
-        if isinstance(children[0][0], Clef):
-            clef = children[0][0]
-            volpiano = clef.editorial.get('volpiano')
-            curClef = 'g' if volpiano == '1' else 'f'
-            word = Word()
-            syllable = Syllable()
-            syllable.append(clef)
-            word.append(syllable)
-            curSection.append(word)
-
-        words = children[0][1:]
-        for word in words: 
+        for word in children: 
+            # Ignore dashes at the very end of the chant
+            if word == '-': continue
             curSection.append(word)
             
             # Scope of accidentals ends at word boundaries
@@ -150,7 +135,7 @@ class VisitorCantusVolpiano(PTNodeVisitor):
                     # because annotations below them always refer to the next sections.
                     # The very last pausa finalis is part of the last section though
                     if isinstance(el, PausaMajor) or isinstance(el, PausaFinalis):
-                        if not word == words[-1]:
+                        if not word == children[-1]:
                             curSection.remove(word)
                             ch.append(curSection)
                             curSection = Section()
@@ -160,9 +145,8 @@ class VisitorCantusVolpiano(PTNodeVisitor):
                             curSection = Section()
 
                 if isinstance(el, Clef):
-                    raise NotImplementedError()
-                    # volpiano = el.editorial.get('volpiano')
-                    # curClef = 'g' if volpiano == '1' else 'f'
+                    volpiano = el.editorial.get('volpiano')
+                    curClef = 'g' if volpiano == '1' else 'f'
         
         # Append cursection if this didn't happen yet: incipits for example
         # do not always contain a final barline
@@ -170,12 +154,6 @@ class VisitorCantusVolpiano(PTNodeVisitor):
             ch.append(curSection)
 
         return ch
-
-    def visit_incipit(self, node, children):
-        return children
-    
-    def visit_chant(self, node, children):
-        return children
     
     def visit_word(self, node, children):
         word = Word()
@@ -269,20 +247,7 @@ class VisitorCantusText(PTNodeVisitor):
                 chant_words[0].musicAndTextAligned = False
                 chant_words[0][0].lyric = l
             else:
-                if self.chant.editorial.hasIncipitHyphenation:
-                    text_words = [[syll for word in text_sec for syll in word]]
-                else:
-                    text_words = text_ec
-                    # lyrics = []
-                    # for word in text_words:
-                    #     for i, syll in enumerate(word):
-                    #         if i == len(word) - 1:
-                    #             lyrics.append(note.Lyric(syll))
-                    #         else:
-                    #             lyrics.append(note.Lyric(f'{syll}-'))
-                    # print(lyrics)
-                    
-
+                text_words = text_sec
                 for text_word, chant_word in zip(text_words, chant_words):
                     for i, (text_syll, chant_syll) in enumerate(zip(text_word, chant_word)):
                         # Add dashes to all but the final syllable

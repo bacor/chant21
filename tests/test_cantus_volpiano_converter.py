@@ -194,48 +194,48 @@ class TestElements(unittest.TestCase):
 
 class TestVolpianoPositionConverter(unittest.TestCase):
     def test_g_clef(self):
-        self.assertEqual(volpianoPositionToStep('8', clef='g'), 'F4')
-        self.assertEqual(volpianoPositionToStep('9', clef='g'), 'G4')
-        self.assertEqual(volpianoPositionToStep('a', clef='g'), 'A4')
-        self.assertEqual(volpianoPositionToStep('b', clef='g'), 'B4')
-        self.assertEqual(volpianoPositionToStep('c', clef='g'), 'C5')
-        self.assertEqual(volpianoPositionToStep('d', clef='g'), 'D5')
-        self.assertEqual(volpianoPositionToStep('e', clef='g'), 'E5')
-        self.assertEqual(volpianoPositionToStep('f', clef='g'), 'F5')
-        self.assertEqual(volpianoPositionToStep('g', clef='g'), 'G5')
-        self.assertEqual(volpianoPositionToStep('h', clef='g'), 'A5')
-        self.assertEqual(volpianoPositionToStep('j', clef='g'), 'B5')
-        self.assertEqual(volpianoPositionToStep('k', clef='g'), 'C6')
-        self.assertEqual(volpianoPositionToStep('l', clef='g'), 'D6')
-        self.assertEqual(volpianoPositionToStep('m', clef='g'), 'E6')
-        self.assertEqual(volpianoPositionToStep('n', clef='g'), 'F6')
-        self.assertEqual(volpianoPositionToStep('o', clef='g'), 'G6')
-        self.assertEqual(volpianoPositionToStep('p', clef='g'), 'A6')
-        self.assertEqual(volpianoPositionToStep('q', clef='g'), 'B6')
-        self.assertEqual(volpianoPositionToStep('r', clef='g'), 'C7')
-        self.assertEqual(volpianoPositionToStep('s', clef='g'), 'D7')
+        self.assertEqual(volpianoPositionToStep('8', clef='g'), 'F3')
+        self.assertEqual(volpianoPositionToStep('9', clef='g'), 'G3')
+        self.assertEqual(volpianoPositionToStep('a', clef='g'), 'A3')
+        self.assertEqual(volpianoPositionToStep('b', clef='g'), 'B3')
+        self.assertEqual(volpianoPositionToStep('c', clef='g'), 'C4')
+        self.assertEqual(volpianoPositionToStep('d', clef='g'), 'D4')
+        self.assertEqual(volpianoPositionToStep('e', clef='g'), 'E4')
+        self.assertEqual(volpianoPositionToStep('f', clef='g'), 'F4')
+        self.assertEqual(volpianoPositionToStep('g', clef='g'), 'G4')
+        self.assertEqual(volpianoPositionToStep('h', clef='g'), 'A4')
+        self.assertEqual(volpianoPositionToStep('j', clef='g'), 'B4')
+        self.assertEqual(volpianoPositionToStep('k', clef='g'), 'C5')
+        self.assertEqual(volpianoPositionToStep('l', clef='g'), 'D5')
+        self.assertEqual(volpianoPositionToStep('m', clef='g'), 'E5')
+        self.assertEqual(volpianoPositionToStep('n', clef='g'), 'F5')
+        self.assertEqual(volpianoPositionToStep('o', clef='g'), 'G5')
+        self.assertEqual(volpianoPositionToStep('p', clef='g'), 'A5')
+        self.assertEqual(volpianoPositionToStep('q', clef='g'), 'B5')
+        self.assertEqual(volpianoPositionToStep('r', clef='g'), 'C6')
+        self.assertEqual(volpianoPositionToStep('s', clef='g'), 'D6')
 
     def test_f_clef(self):
-        self.assertEqual(volpianoPositionToStep('8', clef='f'), 'A2')
-        self.assertEqual(volpianoPositionToStep('9', clef='f'), 'B2')
-        self.assertEqual(volpianoPositionToStep('a', clef='f'), 'C3')
-        self.assertEqual(volpianoPositionToStep('b', clef='f'), 'D3')
-        self.assertEqual(volpianoPositionToStep('c', clef='f'), 'E3')
-        self.assertEqual(volpianoPositionToStep('d', clef='f'), 'F3')
-        self.assertEqual(volpianoPositionToStep('e', clef='f'), 'G3')
-        self.assertEqual(volpianoPositionToStep('f', clef='f'), 'A3')
-        self.assertEqual(volpianoPositionToStep('g', clef='f'), 'B3')
-        self.assertEqual(volpianoPositionToStep('h', clef='f'), 'C4')
-        self.assertEqual(volpianoPositionToStep('j', clef='f'), 'D4')
-        self.assertEqual(volpianoPositionToStep('k', clef='f'), 'E4')
-        self.assertEqual(volpianoPositionToStep('l', clef='f'), 'F4')
-        self.assertEqual(volpianoPositionToStep('m', clef='f'), 'G4')
-        self.assertEqual(volpianoPositionToStep('n', clef='f'), 'A4')
-        self.assertEqual(volpianoPositionToStep('o', clef='f'), 'B4')
-        self.assertEqual(volpianoPositionToStep('p', clef='f'), 'C5')
-        self.assertEqual(volpianoPositionToStep('q', clef='f'), 'D5')
-        self.assertEqual(volpianoPositionToStep('r', clef='f'), 'E5')
-        self.assertEqual(volpianoPositionToStep('s', clef='f'), 'F5')
+        self.assertEqual(volpianoPositionToStep('8', clef='f'), 'A1')
+        self.assertEqual(volpianoPositionToStep('9', clef='f'), 'B1')
+        self.assertEqual(volpianoPositionToStep('a', clef='f'), 'C2')
+        self.assertEqual(volpianoPositionToStep('b', clef='f'), 'D2')
+        self.assertEqual(volpianoPositionToStep('c', clef='f'), 'E2')
+        self.assertEqual(volpianoPositionToStep('d', clef='f'), 'F2')
+        self.assertEqual(volpianoPositionToStep('e', clef='f'), 'G2')
+        self.assertEqual(volpianoPositionToStep('f', clef='f'), 'A2')
+        self.assertEqual(volpianoPositionToStep('g', clef='f'), 'B2')
+        self.assertEqual(volpianoPositionToStep('h', clef='f'), 'C3')
+        self.assertEqual(volpianoPositionToStep('j', clef='f'), 'D3')
+        self.assertEqual(volpianoPositionToStep('k', clef='f'), 'E3')
+        self.assertEqual(volpianoPositionToStep('l', clef='f'), 'F3')
+        self.assertEqual(volpianoPositionToStep('m', clef='f'), 'G3')
+        self.assertEqual(volpianoPositionToStep('n', clef='f'), 'A3')
+        self.assertEqual(volpianoPositionToStep('o', clef='f'), 'B3')
+        self.assertEqual(volpianoPositionToStep('p', clef='f'), 'C4')
+        self.assertEqual(volpianoPositionToStep('q', clef='f'), 'D4')
+        self.assertEqual(volpianoPositionToStep('r', clef='f'), 'E4')
+        self.assertEqual(volpianoPositionToStep('s', clef='f'), 'F4')
 
 class TestConverter(unittest.TestCase):
     def test_converter(self):
@@ -286,12 +286,26 @@ class TestConverter(unittest.TestCase):
         self.assertIsInstance(section[0], Word)
         self.assertIsInstance(section[0][0], Syllable)
         self.assertIsInstance(section[0][0][0], Clef)
+
+    def test_alternative_hyphenation(self):
+        volpiano = '1--f--fg-g--f'
+        chant = converter.parse(volpiano, format='cantus')
+        self.assertEqual(len(chant[0]), 4)
+        word1, word2, word3, word4 = chant[0]
+        self.assertIsInstance(word1, Word)
+        self.assertIsInstance(word2, Word)
+        self.assertIsInstance(word3, Word)
+        self.assertIsInstance(word4, Word)
+        self.assertEqual(len(word3), 2)
+        self.assertIsInstance(word3[0], Syllable)
+        self.assertIsInstance(word3[1], Syllable)
         
 class TestVolpianoAndTextConversion(unittest.TestCase):
 
     def test_volpiano_and_text(self):
         ch = converter.parse('1---f--g---f---3---f---4/Amen et | A', format='cantus')
-        print(ch)
+        # print(ch)
+        self.assertTrue(True)
 
     def test_hyphens(self):
         ch = converter.parse('1---a---cde--d--d---4/A facie', format='cantus')
@@ -307,8 +321,3 @@ class TestVolpianoAndTextConversion(unittest.TestCase):
         self.assertEqual(len(ch), 3)
         self.assertEqual(ch[1][1][0].lyric, '~Cum invocarem')
     
-    def test_incipit(self):
-        input_str = '1--c--ef-g-g--e--fe-d--dc-f-g/A bimatu et infra occidit'
-        ch = converter.parse(input_str, format='cantus')
-        print(ch)
-        
