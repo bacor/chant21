@@ -45,7 +45,13 @@
 <body>
     <main>
         <header>
-            <h1>{{ chant.metadata.name }}</h1>
+            <h1>
+                {% if 'name' in chant.metadata %}
+                    {{ chant.metadata.name }}
+                {% elif 'incipit' in chant.metadata %}
+                    {{ chant.metadata.incipit }}
+                {% endif %}
+            </h1>
             <ul class="properties">
                 {% set fields = [
                     'office-part',
@@ -64,7 +70,9 @@
                     'transcription-date',
                     'mode',
                     'user-notes',
-                    'annotation'
+                    'annotation',
+                    'cantus_id',
+                    'siglum'
                     ]
                 %}
                 {% for key, value in chant.metadata.items() %}
@@ -77,6 +85,14 @@
                         <span>GregoBase ID</span>
                         <a href="{{chant.metadata._gregobase_url}}" target="_blank">
                             {{chant.metadata._gregobase_id}}
+                        </a>
+                    </li> 
+                {% endif %}
+                {% if 'drupal_path' in chant.metadata %}
+                    <li>
+                        <span>Cantus</span>
+                        <a href="{{chant.metadata.drupal_path}}" target="_blank">
+                            {{chant.metadata.drupal_path}}
                         </a>
                     </li> 
                 {% endif %}

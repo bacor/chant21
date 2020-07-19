@@ -306,5 +306,9 @@ class TestVolpianoAndTextConversion(unittest.TestCase):
         ch = converter.parse(input_str, format='cantus')
         self.assertEqual(len(ch), 3)
         self.assertEqual(ch[1][1][0].lyric, '~Cum invocarem')
-
+    
+    def test_incipit(self):
+        input_str = '1--c--ef-g-g--e--fe-d--dc-f-g/A bimatu et infra occidit'
+        ch = converter.parse(input_str, format='cantus')
+        print(ch)
         

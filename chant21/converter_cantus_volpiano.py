@@ -4,6 +4,7 @@ from music21 import note
 from music21 import bar
 from music21 import converter
 from music21 import articulations
+from pandas import isna
 
 from arpeggio import PTNodeVisitor
 from arpeggio import visit_parse_tree as visitParseTree
@@ -32,7 +33,7 @@ from .chant import MissingPitches
 from .parser_cantus_volpiano import ParserCantusVolpiano
 from .parser_cantus_text import ParserCantusText
 from .syllabifier import ChantSyllabifier
-# from . import __version__
+from . import __version__
 
 CHARACTERS = {
     'bars': '34567',
@@ -64,6 +65,17 @@ class VisitorCantusVolpiano(PTNodeVisitor):
         ch = Chant()
         curSection = Section()
         curClef = None
+
+        # Store whether the chant uses incipit hyphenation
+        ch.editorial.hasIncipitHyphenation = 'incipit' in children.results
+
+        ch.editorial.metadata = {
+            'conversion': {
+                'originalFormat': 'cantus/volpiano',
+                'converter': 'chant21',
+                'version': __version__
+            }
+        }
 
         # First element is always a clef. For consistency wrap this in a 
         # syllable and a word object
@@ -164,12 +176,6 @@ class VisitorCantusVolpiano(PTNodeVisitor):
     
     def visit_chant(self, node, children):
         return children
-
-    # def visit_other(self, node, children):
-    #     word = Word()
-    #     for child in children:
-    #         word.append(child)
-    #     return word
     
     def visit_word(self, node, children):
         word = Word()
@@ -263,7 +269,20 @@ class VisitorCantusText(PTNodeVisitor):
                 chant_words[0].musicAndTextAligned = False
                 chant_words[0][0].lyric = l
             else:
-                text_words = text_sec
+                if self.chant.editorial.hasIncipitHyphenation:
+                    text_words = [[syll for word in text_sec for syll in word]]
+                else:
+                    text_words = text_ec
+                    # lyrics = []
+                    # for word in text_words:
+                    #     for i, syll in enumerate(word):
+                    #         if i == len(word) - 1:
+                    #             lyrics.append(note.Lyric(syll))
+                    #         else:
+                    #             lyrics.append(note.Lyric(f'{syll}-'))
+                    # print(lyrics)
+                    
+
                 for text_word, chant_word in zip(text_words, chant_words):
                     for i, (text_syll, chant_syll) in enumerate(zip(text_word, chant_word)):
                         # Add dashes to all but the final syllable
@@ -312,6 +331,18 @@ def addTextToChant(chant, text):
     parser = ParserCantusText()
     parse = parser.parse(text)
     visitParseTree(parse, visitor)
+    return chant
+
+def addCantusMetadataToChant(chant, data):
+    chant.editorial.metadata.update(data.to_dict())
+
+def convertCantusData(data):
+    chant = converter.parse(data['volpiano'], format='cantus')
+    if not isna(data['full_text_manuscript']):
+        addTextToChant(chant, data['full_text_manuscript'])
+    elif not isna(data['incipit']):
+        addTextToChant(chant, data['incipit'])
+    chant.editorial.metadata.update(data.to_dict())
     return chant
 
 ###
