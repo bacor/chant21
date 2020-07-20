@@ -37,7 +37,8 @@ master_doc = 'index'
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.napoleon',
-    'sphinx.ext.intersphinx'
+    'sphinx.ext.intersphinx',
+    'jupyter_sphinx'
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -65,3 +66,8 @@ html_static_path = ['_static']
 intersphinx_mapping = {'music21': ('https://web.mit.edu/music21/doc', None)}
 
 autodoc_member_order = 'bysource'
+
+# Make sure chant21 is loadable by jupyter-sphinx:
+# https://jupyter-sphinx.readthedocs.io/en/latest/#configuration-options
+package_path = os.path.abspath('../')
+os.environ['PYTHONPATH'] = ':'.join((package_path, os.environ.get('PYTHONPATH', '')))
