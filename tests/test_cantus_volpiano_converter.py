@@ -323,7 +323,7 @@ class TestVolpianoAndTextConversion(unittest.TestCase):
                      '/A fructu  | ~Cum invocarem | euouae')
         ch = converter.parse(input_str, format='cantus')
         self.assertEqual(len(ch), 3)
-        self.assertEqual(ch[1][1][0].lyric, '~Cum invocarem')
+        self.assertEqual(ch[1][0][0].lyric.text, '~Cum invocarem')
     
     def test_misalignment_syllables(self):
         """Test the handling of misaligned syllables in the text and music. In 
