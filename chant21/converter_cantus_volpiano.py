@@ -241,7 +241,7 @@ class VisitorCantusText(PTNodeVisitor):
     def visit_text(self, node, children):
         txt_sections = [sec for sec in children 
             if type(sec) != str or sec != TEXT_BARLINE]
-        mus_sections = self.chant.sections
+        mus_sections = self.chant
 
         # Test if sections are alignable
         if self.strict and len(txt_sections) != len(mus_sections):

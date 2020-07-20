@@ -4,6 +4,7 @@
 {%- set showWords = showWords|default(False, True) %}
 {%- set showSyllables = showSyllables|default(False, True) %}
 {%- set showNeumes = showNeumes|default(False, True) %}
+{%- set showMisalignments = showMisalignments|default(True, True) %}
 
 {%- if includeStyles %}
 <style type="text/css">
@@ -51,6 +52,16 @@
     .annotation {
         font-style: italic;
         color: #c00;
+    }
+
+    .showMisalignments .misaligned,
+    .showMisalignments.misaligned {
+        color: #C00;
+    }
+
+    .showMisalignments .misaligned .text,
+    .showMisalignments.misaligned .text {
+        font-style: italic;
     }
 
     .showSections .section {
@@ -135,8 +146,13 @@
     }
 </style>
 {% endif -%}
-
+{%- set chantIsMisaligned = False -%}
+{%- if 'misaligned' in chant.editorial and chant.editorial.misaligned -%}
+    {%- set chantIsMisaligned = True -%}
+{%- endif -%}
 <div class="chant
+    {%- if chantIsMisaligned %} misaligned{% endif %}
+    {%- if showMisalignments %} showMisalignments{% endif %}
     {%- if showMetadata %} showMetadata{% endif %}    
     {%- if showSections %} showSections{% endif %}
     {%- if showWords %} showWords{% endif %}
@@ -145,13 +161,21 @@
 {%- for section in chant.elements -%}
 {%- set numSections = chant.elements|length -%}
 {%- set sectionLoop = loop -%}
-    <div class="section"><p class="sectionHeader">
+    {%- set sectionIsMisaligned = False -%}
+    {%- if 'misaligned' in section.editorial and section.editorial.misaligned -%}
+        {%- set sectionIsMisaligned = True -%}
+    {%- endif -%}
+    <div class="section{% if sectionIsMisaligned %} misaligned{% endif %}"><p class="sectionHeader">
         Section{% if section.name -%}: {{ section.name }}{%- endif -%}
     </p>
     {%- for word in section.elements -%}
     {%- set wordLoop = loop -%}
     {%- set numWords = section.elements|length -%}
-        <div class="word">
+    {%- set wordIsMisaligned = False -%}
+    {%- if 'misaligned' in word.editorial and word.editorial.misaligned -%}
+        {%- set wordIsMisaligned = True -%}
+    {%- endif -%}
+        <div class="word{% if wordIsMisaligned %} misaligned{% endif %}">
         {%- set numSyllables = word.elements|length -%}
         {%- for syllable in word.elements -%}
             <div class="syllable">

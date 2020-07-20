@@ -80,5 +80,19 @@ class TestCantusExamplesConversion(unittest.TestCase):
             # ch.show()
         self.assertTrue(True)
 
+    def test_misalignment(self):
+        """Not really a test. This just generates html files with the three types
+        of misalignments to check if those are visualized correctly."""
+        ch = converter.parse('cantus: 1---a--b--c---d---3/bada ca')
+        # ch.toHTML('tmp/test-misaligned-sylls.html')
+
+        ch = converter.parse('cantus: 1---a--b---d---e---3---f---3/bada ca | da')
+        # ch.toHTML('tmp/test-misaligned-words.html')
+
+        ch = converter.parse('cantus: 1---a---3---b---3/bada ca')
+        # ch.toHTML('tmp/test-misaligned-sections.html')
+        
+        self.assertTrue(True)
+
 if __name__ == '__main__':
     unittest.main()

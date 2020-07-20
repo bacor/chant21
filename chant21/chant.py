@@ -238,9 +238,11 @@ class Chant(Chant21Object, stream.Part):
         :meth:`chant21.chant.Chant21Object.toObject`"""
         metadata = self.editorial.get('metadata', {})
         metadata['chant21version'] = __version__
+        editorial = { k: v for k, v in self.editorial.items() if k != 'metadata'}
         obj = {
             'type': 'chant',
             'metadata': metadata,
+            'editorial': editorial,
             'elements': [section.toObject(**kwargs) for section in self.sections]
         }
         return obj

@@ -44,7 +44,7 @@ FILE = TEMPLATE_ENV.get_template('file.html')
 
 def toWidget(chant, showDisplayOptions=True, showSections=False, 
     showWords=False, showSyllables=False, showNeumes=False,
-    showMetadata=False):
+    showMetadata=False, showMisalignments=True):
     """Export a chant to an HTML widget: a snippet displayed in Jupyter notebooks.
     
     The structure of the chant can be highlighted visually using several flags:
@@ -63,6 +63,7 @@ def toWidget(chant, showDisplayOptions=True, showSections=False,
         showNeumes (bool, optional): Highlight neumes?. Defaults to False.
         showMetadata (bool, optional): Show a table with all metadata fields?
             Defaults to False.
+        showMisalignments (bool, optional): Highlight misaligned text and music?
     
     Returns:
         str: a HTML string
@@ -74,7 +75,8 @@ def toWidget(chant, showDisplayOptions=True, showSections=False,
                          showWords=showWords,
                          showSyllables=showSyllables, 
                          showNeumes=showNeumes,
-                         showMetadata=showMetadata)
+                         showMetadata=showMetadata,
+                         showMisalignments=showMisalignments)
     return html
 
 def toFile(chant, filepath=None, **kwargs):
