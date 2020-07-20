@@ -226,35 +226,83 @@ class VisitorCantusVolpiano(PTNodeVisitor):
 TEXT_BARLINE = '|'
 
 class VisitorCantusText(PTNodeVisitor):
-    def __init__(self, chant, syllabifier, *args, **kwargs):
+
+    def __init__(self, chant, syllabifier, *args, strict=False, **kwargs):
+        """"""
         super().__init__(*args, **kwargs)
         self.chant = chant
         self.syllabifier = syllabifier
+        self.strict = strict
     
     def syllabify(self, text):
+        """Syllabify Latin text using the syllabifier of the class."""
         return self.syllabifier.syllabify(text)
 
     def visit_text(self, node, children):
-        text_sections = [child for child in children 
-            if type(child) != str or child != TEXT_BARLINE]
-        for text_sec, chant_sec in zip(text_sections, self.chant):
-            chant_words = [word for word in chant_sec if len(word.flat.notes) > 0]
-            if type(text_sec) == str:
-                # Music is not aligned to text. Add lyrics to first syllable.
-                # TODO is there a more principled solution for this?
-                l = note.Lyric(text=text_sec, applyRaw=True)
+        txt_sections = [sec for sec in children 
+            if type(sec) != str or sec != TEXT_BARLINE]
+        mus_sections = self.chant.sections
+
+        # Test if sections are alignable
+        if self.strict and len(txt_sections) != len(mus_sections):
+            raise SectionAlignmentError(
+                f'The sections cannot be aligned: the text contains '
+                f'{len(txt_sections)} sections, while the music contains '
+                f'{len(mus_sections)} sections.'
+            )
+        elif not self.strict and len(txt_sections) != len(mus_sections):
+            self.chant.editorial.misaligned = True
+
+        # Align the sections
+        for sec_num, (txt_section, mus_section) in enumerate(
+            zip(txt_sections, mus_sections)):
+
+            # Ignore words without notes: these cannot be aligned to text anyway
+            mus_section_words = [w for w in mus_section if len(w.flat.notes) > 0]
+
+            # Music is not aligned to text. Add lyrics to first syllable.
+            # TODO is there a more principled solution for this?
+            if type(txt_section) == str:    
+                l = note.Lyric(text=txt_section, applyRaw=True)
                 l.syllabic = 'end'
-                chant_words[0].musicAndTextAligned = False
-                chant_words[0][0].lyric = l
-            else:
-                text_words = text_sec
-                for text_word, chant_word in zip(text_words, chant_words):
-                    for i, (text_syll, chant_syll) in enumerate(zip(text_word, chant_word)):
-                        # Add dashes to all but the final syllable
-                        if i < len(text_word) - 1:
-                            chant_syll.lyric = note.Lyric(text=f'{text_syll}-')
-                        else:
-                            chant_syll.lyric = note.Lyric(text_syll)
+                mus_section[0].musicAndTextAligned = False
+                mus_section[0][0].lyric = l
+                continue
+            
+            # Check if the words in text and music are aligned
+            if self.strict and len(txt_section) != len(mus_section_words):
+                raise WordAlignmentError(
+                    f'Section {sec_num} cannot be aligned. The text contains '
+                    f'{len(txt_section)} words, whereas the music contains '
+                    f'{len(mus_section_words)} words with notes.'
+                )
+            elif not self.strict and len(txt_section) != len(mus_section_words):
+                mus_section.editorial.misaligned = True
+
+            # Align the words in the section
+            for word_num, (txt_word, mus_word) in enumerate(
+                zip(txt_section, mus_section_words)):
+                
+                # Check if the syllables in text and music are aligned
+                if self.strict and len(txt_word) != len(mus_word):
+                    raise SyllableAlignmentError(
+                        f'Section {sec_num}, word {word_num} '
+                        f'({"".join(txt_word)}) cannot be aligned. In the '
+                        f'text, the word contains {len(txt_word)} '
+                        f'syllables, but there are {len(mus_word)} '
+                        f'syllables in the music.'
+                    )
+                elif not self.strict and len(txt_word) != len(mus_word):
+                    mus_word.editorial.misaligned = True
+
+                # Align the syllables of each word
+                for syll_num, (txt_syll, mus_syll) in enumerate(
+                    zip(txt_word, mus_word)):
+                    # Add dashes to all but the final syllable
+                    if syll_num < len(txt_word) - 1:
+                        mus_syll.lyric = note.Lyric(text=f'{txt_syll}-')
+                    else:
+                        mus_syll.lyric = note.Lyric(txt_syll)
 
     def visit_section(self, node, children):
         words = children[0]
@@ -273,30 +321,78 @@ class VisitorCantusText(PTNodeVisitor):
     def visit_barline(self, node, children):
         return TEXT_BARLINE
 
+class TextAlignmentError(Exception):
+    """General exception for all text-music alignment errors"""
+    pass
+
+class SectionAlignmentError(TextAlignmentError):
+    """Exception raised when the number of sections in the music and text do not
+    match"""
+    pass
+
+class WordAlignmentError(TextAlignmentError):
+    """Exception for when the number of words in the music and text do not 
+    match"""
+    pass
+
+class SyllableAlignmentError(TextAlignmentError):
+    """Exception for when the number of syllables in the music and text do not 
+    match"""
+    pass
+
 ###
 
-def addTextToChant(chant, text):
+def addTextToChant(chant: Chant, text: str, strict: bool = False):
     """Parses the Cantus manuscript text and adds it as lyrics to a Chant 
     object.
 
+    The text and music are not always aligned: sometimes the music might have
+    more syllables than the text, or vice versa. This can be the result of 
+    transcription errors or of faulty (automatic) syllabification. Misalignments
+    are dealt with differently in strict and normal mode. In strict mode, 
+    :class:`TextAlignmentError` exceptions are raised. In normal mode, 
+    misalignments are only flagged in the editorial information, but otherwise 
+    ignored. Misalignments are also highlighted in the HTML exports, which is 
+    useful in Jupyter notebooks. 
+    
+    The following example illustrates the handling of misalignments hwne there 
+    are more syllables in the music than in the text. Othe cases are similar.
+
+    >>> from music21 import converter
+    >>> ch = converter.parse('cantus: 1---a--b--c---d---3')
+    >>> addTextToChant(ch, 'baca da', strict=True)
+    Traceback (most recent call last):
+    ...
+    chant21.converter_cantus_volpiano.SyllableAlignmentError: Section 0, word 0 (baca) cannot be aligned. In the text, the word contains 2 syllables, but there are 3 syllables in the music.
+    >>> addTextToChant(ch, 'baca da', strict=False)
+    >>> word = ch[0][1]
+    >>> word.editorial.misaligned
+    True
+
+    .. jupyter-execute::
+
+        from music21 import converter
+        import chant21
+        ch = converter.parse('cantus: 1---a--b--c---d---3/baca da')
+        ch.show('html', showDisplayOptions=False)
+
     Parameters
     ----------
-    chant : chant21.chant.Chant
+    chant : Chant
         The chant object to which the text is to be added
     text : str
         The text, should be of the same form as the full_text_manuscript field
-
-    Returns
-    -------
-    chant21.chant.Chant
-        the same chant object with added lyrics
+    strict : bool, optional
+        When in strict mode, exceptions are raised whenever the music and text
+        are misaligned (e.g. more syllables in the text than in the music).
+        In normal mode such misalignments are accepted but flagged in the
+        editorial information.
     """
     syllabifier = ChantSyllabifier()
-    visitor = VisitorCantusText(chant, syllabifier)
+    visitor = VisitorCantusText(chant, syllabifier, strict=strict)
     parser = ParserCantusText()
     parse = parser.parse(text)
     visitParseTree(parse, visitor)
-    return chant
 
 def addCantusMetadataToChant(chant, data):
     chant.editorial.metadata.update(data.to_dict())
@@ -316,21 +412,31 @@ class ConverterCantusVolpiano(converter.subConverters.SubConverter):
     registerFormats = ('cantus', 'Cantus', 'CANTUS')
     registerInputExtensions = ('cantus', 'Cantus', 'CANTUS')
     
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, strict=False, **kwargs):
         super().__init__(*args, **kwargs)
         self.volpianoParser = ParserCantusVolpiano()
         self.volpianoVisitor = VisitorCantusVolpiano()
+        self.strict = strict
     
-    def parseData(self, strData, number=None, strict = False):
+    def parseData(self, strData, number=None):
         if '/' in strData:
             volpiano, text = strData.split('/')
         else:
             volpiano = strData
             text = None
-        parse = self.volpianoParser.parse(volpiano, strict = strict)
+        parse = self.volpianoParser.parse(volpiano, strict=self.strict)
         ch = visitParseTree(parse, self.volpianoVisitor)
         if text is not None:
-            addTextToChant(ch, text)
+            addTextToChant(ch, text, strict=self.strict)
         self.stream = ch
 
 converter.registerSubconverter(ConverterCantusVolpiano)
+
+class ConverterCantusVolpianoStrict(ConverterCantusVolpiano):
+    registerFormats = ('cantus-strict', 'Cantus-strict', 'CANTUS-STRICT')
+    registerInputExtensions = ('cantus-strict')
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, strict=True, **kwargs)
+
+converter.registerSubconverter(ConverterCantusVolpianoStrict)

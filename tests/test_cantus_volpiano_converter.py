@@ -26,6 +26,10 @@ from chant21 import PageBreak
 from chant21 import ParserCantusVolpiano
 from chant21.converter_cantus_volpiano import VisitorCantusVolpiano
 from chant21.converter_cantus_volpiano import volpianoPositionToStep
+from chant21.converter_cantus_volpiano import TextAlignmentError
+from chant21.converter_cantus_volpiano import SyllableAlignmentError
+from chant21.converter_cantus_volpiano import WordAlignmentError
+from chant21.converter_cantus_volpiano import SectionAlignmentError
 
 class TestElements(unittest.TestCase):
     def test_note(self):
@@ -321,3 +325,59 @@ class TestVolpianoAndTextConversion(unittest.TestCase):
         self.assertEqual(len(ch), 3)
         self.assertEqual(ch[1][1][0].lyric, '~Cum invocarem')
     
+    def test_misalignment_syllables(self):
+        """Test the handling of misaligned syllables in the text and music. In 
+        strict mode exceptions should be raised, otherwise the misalignment
+        should be marked in the editorial information"""
+        more_sylls_in_mus = ('1---a--b--c---d---3/bada ca')
+        more_sylls_in_txt = ('1---a---d---3/bada ca')
+        
+        # Strict
+        test_fn = lambda: converter.parse(more_sylls_in_mus, format='cantus-strict')
+        self.assertRaises(SyllableAlignmentError, test_fn)
+        test_fn = lambda: converter.parse(more_sylls_in_txt, format='cantus-strict')
+        self.assertRaises(SyllableAlignmentError, test_fn)
+        
+        # Non-strict
+        ch = converter.parse(more_sylls_in_mus, format='cantus')
+        self.assertTrue(ch[0][1].editorial.misaligned)
+        ch = converter.parse(more_sylls_in_txt, format='cantus')
+        self.assertTrue(ch[0][1].editorial.misaligned)
+
+    def test_misalignment_words(self):
+        """Test the handling of misaligned words in the text and music. In 
+        strict mode exceptions should be raised, otherwise the misalignment
+        should be marked in the editorial information"""
+        more_words_in_mus = ('1---a--b---d---e---3/bada ca')
+        more_words_in_txt = ('1---a--b---d---3/bada ca da')
+        
+        # Strict
+        test_fn = lambda: converter.parse(more_words_in_mus, format='cantus-strict')
+        self.assertRaises(WordAlignmentError, test_fn)
+        test_fn = lambda: converter.parse(more_words_in_txt, format='cantus-strict')
+        self.assertRaises(WordAlignmentError, test_fn)
+
+        # Non-strict
+        ch = converter.parse(more_words_in_mus, format='cantus')
+        self.assertTrue(ch[0].editorial.misaligned)
+        ch = converter.parse(more_words_in_txt, format='cantus')
+        self.assertTrue(ch[0].editorial.misaligned)
+
+    def test_misalignment_sections(self):
+        """Test the handling of misaligned sections in the text and music. In 
+        strict mode exceptions should be raised, otherwise the misalignment
+        should be marked in the editorial information"""
+        more_secs_in_mus = ('1---a---b---3---c---3/ba ca da')
+        more_secs_in_txt = ('1---a---b---c---3/ba ca | da')
+
+        # Strict
+        test_fn = lambda: converter.parse(more_secs_in_mus, format='cantus-strict')
+        self.assertRaises(SectionAlignmentError, test_fn)
+        test_fn = lambda: converter.parse(more_secs_in_txt, format='cantus-strict')
+        self.assertRaises(SectionAlignmentError, test_fn)
+
+        # Non-strict
+        ch = converter.parse(more_secs_in_mus, format='cantus')
+        self.assertTrue(ch.editorial.misaligned)
+        ch = converter.parse(more_secs_in_txt, format='cantus')
+        self.assertTrue(ch.editorial.misaligned)
