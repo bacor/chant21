@@ -8,26 +8,26 @@ from music21 import articulations
 from arpeggio import PTNodeVisitor
 from arpeggio import visit_parse_tree as visitParseTree
 
-from .chant import Chant
-from .chant import Section
-from .chant import Note
-from .chant import Neume
-from .chant import Syllable
-from .chant import Word
-from .chant import Alteration
-from .chant import Pausa
-from .chant import Clef
-from .chant import PausaMinima
-from .chant import PausaMinor
-from .chant import PausaMajor
-from .chant import PausaFinalis
-from .chant import Annotation
-from .chant import Natural
-from .chant import Flat
+from ..chant import Chant
+from ..chant import Section
+from ..chant import Note
+from ..chant import Neume
+from ..chant import Syllable
+from ..chant import Word
+from ..chant import Alteration
+from ..chant import Pausa
+from ..chant import Clef
+from ..chant import PausaMinima
+from ..chant import PausaMinor
+from ..chant import PausaMajor
+from ..chant import PausaFinalis
+from ..chant import Annotation
+from ..chant import Natural
+from ..chant import Flat
+from .. import __version__
 
 from . import ParserGABC
 
-from . import __version__
 
 NEUME_BOUNDARY = '_NEUME_BOUNDARY_'
 

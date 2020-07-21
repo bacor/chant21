@@ -1,50 +1,29 @@
 import unittest
-from arpeggio import visit_parse_tree as visitParseTree
 from music21 import converter
-
-from chant21 import Chant
-from chant21 import Note
-from chant21 import Section
-from chant21 import Neume
-from chant21 import Syllable
-from chant21 import Word
-from chant21 import Alteration
-from chant21 import Flat
-from chant21 import Natural
-from chant21 import Clef
-from chant21 import ParserGABC
-from chant21 import Pausa
-from chant21 import PausaMinima
-from chant21 import PausaMinor
-from chant21 import PausaMajor
-from chant21 import PausaFinalis
-
-from chant21 import LineBreak
-from chant21 import ColumnBreak
-from chant21 import PageBreak
-
-from chant21 import ParserCantusVolpiano
-from chant21.converter_cantus_volpiano import VisitorCantusVolpiano
-from chant21.converter_cantus_volpiano import volpianoPositionToStep
-from chant21.converter_cantus_volpiano import TextAlignmentError
-from chant21.converter_cantus_volpiano import SyllableAlignmentError
-from chant21.converter_cantus_volpiano import WordAlignmentError
-from chant21.converter_cantus_volpiano import SectionAlignmentError
-from chant21.syllabifier import ChantSyllabifier
+from arpeggio import visit_parse_tree as visitParseTree
+from chant21 import chant
+from chant21.cantus import ParserCantusVolpiano
+from chant21.cantus import VisitorCantusVolpiano
+from chant21.cantus import volpianoPositionToStep
+from chant21.cantus import TextAlignmentError
+from chant21.cantus import SyllableAlignmentError
+from chant21.cantus import WordAlignmentError
+from chant21.cantus import SectionAlignmentError
+from chant21.cantus import ChantSyllabifier
 
 class TestElements(unittest.TestCase):
     def test_note(self):
         parser = ParserCantusVolpiano(root='note')
         parse = parser.parser.parse('f')
         note = visitParseTree(parse, VisitorCantusVolpiano())
-        self.assertIsInstance(note, Note)
+        self.assertIsInstance(note, chant.Note)
         self.assertEqual(note.editorial.volpianoPosition, 'f')
 
     def test_liquescent(self):
         parser = ParserCantusVolpiano(root='liquescent')
         parse = parser.parser.parse('F')
         note = visitParseTree(parse, VisitorCantusVolpiano())
-        self.assertIsInstance(note, Note)
+        self.assertIsInstance(note, chant.Note)
         self.assertEqual(note.editorial.volpianoPosition, 'f')
         self.assertEqual(note.editorial.liquescence, True)
         self.assertEqual(note.notehead, 'x')
@@ -53,7 +32,7 @@ class TestElements(unittest.TestCase):
         parser = ParserCantusVolpiano(root='clef')
         parse = parser.parser.parse('1')
         clef = visitParseTree(parse, VisitorCantusVolpiano())
-        self.assertIsInstance(clef, Clef)
+        self.assertIsInstance(clef, chant.Clef)
         self.assertEqual(clef.editorial.volpiano, '1')
     
     def test_f_clef(self):
@@ -61,141 +40,141 @@ class TestElements(unittest.TestCase):
         parser = ParserCantusVolpiano(root='clef')
         parse = parser.parser.parse('2')
         clef = visitParseTree(parse, VisitorCantusVolpiano())
-        self.assertIsInstance(clef, Clef)
+        self.assertIsInstance(clef, chant.Clef)
         self.assertEqual(clef.editorial.volpiano, '2')
     
     def test_line_break(self):
         parser = ParserCantusVolpiano(root='break')
         parse = parser.parser.parse('7')
         brk = visitParseTree(parse, VisitorCantusVolpiano())
-        self.assertIsInstance(brk, LineBreak)
+        self.assertIsInstance(brk, chant.LineBreak)
 
     def test_column_break(self):
         parser = ParserCantusVolpiano(root='break')
         parse = parser.parser.parse('777')
         brk = visitParseTree(parse, VisitorCantusVolpiano())
-        self.assertIsInstance(brk, ColumnBreak)
+        self.assertIsInstance(brk, chant.ColumnBreak)
 
     def test_page_break(self):
         parser = ParserCantusVolpiano(root='break')
         parse = parser.parser.parse('77')
         brk = visitParseTree(parse, VisitorCantusVolpiano())
-        self.assertIsInstance(brk, PageBreak)
+        self.assertIsInstance(brk, chant.PageBreak)
 
     def test_flats(self):
         parser = ParserCantusVolpiano(root='alteration')
         parse = parser.parser.parse('i')
         alteration = visitParseTree(parse, VisitorCantusVolpiano())
-        self.assertIsInstance(alteration, Alteration)
-        self.assertIsInstance(alteration, Flat)
+        self.assertIsInstance(alteration, chant.Alteration)
+        self.assertIsInstance(alteration, chant.Flat)
         self.assertEqual(alteration.editorial.volpiano, 'i')
         self.assertEqual(alteration.editorial.volpianoPosition, 'j')
 
         # High e flat 
         parse = parser.parser.parse('x')
         alteration = visitParseTree(parse, VisitorCantusVolpiano())
-        self.assertIsInstance(alteration, Flat)
+        self.assertIsInstance(alteration, chant.Flat)
         self.assertEqual(alteration.editorial.volpianoPosition, 'm')
 
         # Low e flat
         parse = parser.parser.parse('w')
         alteration = visitParseTree(parse, VisitorCantusVolpiano())
-        self.assertIsInstance(alteration, Flat)
+        self.assertIsInstance(alteration, chant.Flat)
         self.assertEqual(alteration.editorial.volpianoPosition, 'e')
 
         # Low b flat
         parse = parser.parser.parse('y')
         alteration = visitParseTree(parse, VisitorCantusVolpiano())
-        self.assertIsInstance(alteration, Flat)
+        self.assertIsInstance(alteration, chant.Flat)
         self.assertEqual(alteration.editorial.volpianoPosition, 'b')
 
         # High b flat
         parse = parser.parser.parse('z')
         alteration = visitParseTree(parse, VisitorCantusVolpiano())
-        self.assertIsInstance(alteration, Flat)
+        self.assertIsInstance(alteration, chant.Flat)
         self.assertEqual(alteration.editorial.volpianoPosition, 'q')
 
     def test_naturals(self):
         parser = ParserCantusVolpiano(root='alteration')
         parse = parser.parser.parse('I')
         alteration = visitParseTree(parse, VisitorCantusVolpiano())
-        self.assertIsInstance(alteration, Alteration)
-        self.assertIsInstance(alteration, Natural)
+        self.assertIsInstance(alteration, chant.Alteration)
+        self.assertIsInstance(alteration, chant.Natural)
         self.assertEqual(alteration.editorial.volpiano, 'I')
         self.assertEqual(alteration.editorial.volpianoPosition, 'j')
 
         # High e flat 
         parse = parser.parser.parse('X')
         alteration = visitParseTree(parse, VisitorCantusVolpiano())
-        self.assertIsInstance(alteration, Natural)
+        self.assertIsInstance(alteration, chant.Natural)
         self.assertEqual(alteration.editorial.volpianoPosition, 'm')
 
         # Low e flat
         parse = parser.parser.parse('W')
         alteration = visitParseTree(parse, VisitorCantusVolpiano())
-        self.assertIsInstance(alteration, Natural)
+        self.assertIsInstance(alteration, chant.Natural)
         self.assertEqual(alteration.editorial.volpianoPosition, 'e')
 
         # Low b flat
         parse = parser.parser.parse('Y')
         alteration = visitParseTree(parse, VisitorCantusVolpiano())
-        self.assertIsInstance(alteration, Natural)
+        self.assertIsInstance(alteration, chant.Natural)
         self.assertEqual(alteration.editorial.volpianoPosition, 'b')
 
         # High b flat
         parse = parser.parser.parse('Z')
         alteration = visitParseTree(parse, VisitorCantusVolpiano())
-        self.assertIsInstance(alteration, Natural)
+        self.assertIsInstance(alteration, chant.Natural)
         self.assertEqual(alteration.editorial.volpianoPosition, 'q')
 
     def test_chant_end(self):
         parser = ParserCantusVolpiano(root='chant_end')
         parse = parser.parser.parse('4')
         bar = visitParseTree(parse, VisitorCantusVolpiano())
-        self.assertIsInstance(bar, PausaFinalis)
+        self.assertIsInstance(bar, chant.PausaFinalis)
 
     def test_section_end(self):
         parser = ParserCantusVolpiano(root='section_end')
         parse = parser.parser.parse('3')
         bar = visitParseTree(parse, VisitorCantusVolpiano())
-        self.assertIsInstance(bar, PausaMajor)
+        self.assertIsInstance(bar, chant.PausaMajor)
 
     def test_neume(self):
         parser = ParserCantusVolpiano(root='neume')
         parse = parser.parser.parse('fg')
         neume = visitParseTree(parse, VisitorCantusVolpiano())
-        self.assertIsInstance(neume, Neume)
+        self.assertIsInstance(neume, chant.Neume)
         self.assertEqual(len(neume), 2)
-        self.assertIsInstance(neume[0], Note)
+        self.assertIsInstance(neume[0], chant.Note)
 
     def test_syllable(self):
         parser = ParserCantusVolpiano(root='syllable')
         parse = parser.parser.parse('fg-h-g')
         syll = visitParseTree(parse, VisitorCantusVolpiano())
-        self.assertIsInstance(syll, Syllable)
+        self.assertIsInstance(syll, chant.Syllable)
         self.assertEqual(len(syll), 3)
-        self.assertIsInstance(syll[0], Neume)
+        self.assertIsInstance(syll[0], chant.Neume)
     
     def test_word(self):
         parser = ParserCantusVolpiano(root='word')
         parse = parser.parser.parse('fg-h--f--g')
         word = visitParseTree(parse, VisitorCantusVolpiano())
-        self.assertIsInstance(word, Word)
+        self.assertIsInstance(word, chant.Word)
         self.assertEqual(len(word), 3)
-        self.assertIsInstance(word[0], Syllable)
+        self.assertIsInstance(word[0], chant.Syllable)
 
     def test_volpiano(self):
         """Test the basic structure of a chant: division in sections, words
         and syllables"""
         parser = ParserCantusVolpiano(root='volpiano')
         parse = parser.parser.parse('1---fg-h--f--g---f')
-        chant = visitParseTree(parse, VisitorCantusVolpiano())
-        self.assertIsInstance(chant, Chant)
-        self.assertIsInstance(chant[0], Section)
-        (word1, word2, word3), = chant
-        self.assertIsInstance(word1, Word)
-        self.assertIsInstance(word1[0], Syllable)
-        self.assertIsInstance(word1[0][0], Clef)
+        ch = visitParseTree(parse, VisitorCantusVolpiano())
+        self.assertIsInstance(ch, chant.Chant)
+        self.assertIsInstance(ch[0], chant.Section)
+        (word1, word2, word3), = ch
+        self.assertIsInstance(word1, chant.Word)
+        self.assertIsInstance(word1[0], chant.Syllable)
+        self.assertIsInstance(word1[0][0], chant.Clef)
 
 class TestVolpianoPositionConverter(unittest.TestCase):
     def test_g_clef(self):
@@ -244,12 +223,12 @@ class TestVolpianoPositionConverter(unittest.TestCase):
 
 class TestConverter(unittest.TestCase):
     def test_converter(self):
-        chant = converter.parse('1---f-g---4', format='Cantus')
-        self.assertIsInstance(chant, Chant)
+        ch = converter.parse('1---f-g---4', format='Cantus')
+        self.assertIsInstance(ch, chant.Chant)
 
     def test_b_flats(self):
-        chant = converter.parse('1---j--ij--j---j-h-j---4', format='cantus')
-        notes = chant.recurse().notes
+        ch = converter.parse('1---j--ij--j---j-h-j---4', format='cantus')
+        notes = ch.recurse().notes
         self.assertEqual(len(notes), 6)
         self.assertEqual(notes[0].nameWithOctave, 'B4')
         self.assertEqual(notes[1].nameWithOctave, 'B-4')
@@ -259,8 +238,8 @@ class TestConverter(unittest.TestCase):
         self.assertEqual(notes[5].nameWithOctave, 'B4')
 
     def test_other_b_flats(self):
-        chant = converter.parse('1---b--yb--b---b-a-b---4', format='cantus')
-        notes = chant.recurse().notes
+        ch = converter.parse('1---b--yb--b---b-a-b---4', format='cantus')
+        notes = ch.recurse().notes
         self.assertEqual(len(notes), 6)
         self.assertEqual(notes[0].nameWithOctave, 'B3')
         self.assertEqual(notes[1].nameWithOctave, 'B-3')
@@ -270,8 +249,8 @@ class TestConverter(unittest.TestCase):
         self.assertEqual(notes[5].nameWithOctave, 'B3')
 
     def test_e_flats(self):
-        chant = converter.parse('1---e--we--e--We--e---4', format='cantus')
-        notes = chant.recurse().notes
+        ch = converter.parse('1---e--we--e--We--e---4', format='cantus')
+        notes = ch.recurse().notes
         self.assertEqual(len(notes), 5)
         self.assertEqual(notes[0].nameWithOctave, 'E4')
         self.assertEqual(notes[1].nameWithOctave, 'E-4')
@@ -283,27 +262,27 @@ class TestConverter(unittest.TestCase):
         ch = converter.parse('1---fg-h---3---f-g---4', format='cantus')
         self.assertEqual(len(ch), 2)
         sect1, sect2 = ch
-        self.assertIsInstance(sect1, Section)
-        self.assertIsInstance(sect2, Section)
+        self.assertIsInstance(sect1, chant.Section)
+        self.assertIsInstance(sect2, chant.Section)
 
     def test_clef(self):
         section, = converter.parse('1---fg---4', format='cantus')
-        self.assertIsInstance(section[0], Word)
-        self.assertIsInstance(section[0][0], Syllable)
-        self.assertIsInstance(section[0][0][0], Clef)
+        self.assertIsInstance(section[0], chant.Word)
+        self.assertIsInstance(section[0][0], chant.Syllable)
+        self.assertIsInstance(section[0][0][0], chant.Clef)
 
     def test_alternative_hyphenation(self):
         volpiano = '1--f--fg-g--f'
-        chant = converter.parse(volpiano, format='cantus')
-        self.assertEqual(len(chant[0]), 4)
-        word1, word2, word3, word4 = chant[0]
-        self.assertIsInstance(word1, Word)
-        self.assertIsInstance(word2, Word)
-        self.assertIsInstance(word3, Word)
-        self.assertIsInstance(word4, Word)
+        ch = converter.parse(volpiano, format='cantus')
+        self.assertEqual(len(ch[0]), 4)
+        word1, word2, word3, word4 = ch[0]
+        self.assertIsInstance(word1, chant.Word)
+        self.assertIsInstance(word2, chant.Word)
+        self.assertIsInstance(word3, chant.Word)
+        self.assertIsInstance(word4, chant.Word)
         self.assertEqual(len(word3), 2)
-        self.assertIsInstance(word3[0], Syllable)
-        self.assertIsInstance(word3[1], Syllable)
+        self.assertIsInstance(word3[0], chant.Syllable)
+        self.assertIsInstance(word3[1], chant.Syllable)
         
 class TestVolpianoAndTextConversion(unittest.TestCase):
 

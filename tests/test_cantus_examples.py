@@ -2,14 +2,13 @@ import unittest
 import os
 import pandas as pd
 from arpeggio import visit_parse_tree as visitParseTree
-
-# from chant21.cantus_parser import CantusParser
 from music21 import converter
-from chant21.parser_cantus_volpiano import ParserCantusVolpiano
-from chant21.parser_cantus_text import ParserCantusText
-from chant21.converter_cantus_volpiano import VisitorCantusVolpiano
-from chant21.converter_cantus_volpiano import addCantusMetadataToChant
-from chant21.converter_cantus_volpiano import convertCantusData
+
+from chant21.cantus import ParserCantusVolpiano
+from chant21.cantus import ParserCantusText
+from chant21.cantus import VisitorCantusVolpiano
+from chant21.cantus import addCantusMetadataToChant
+from chant21.cantus import convertCantusData
 
 class TestCantusExamplesConversion(unittest.TestCase):
     def test_parse_volpiano_examples(self):

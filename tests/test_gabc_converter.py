@@ -1,31 +1,16 @@
 """Unittests for the GABC to Chant21 converter"""
 import unittest
-
+from arpeggio import visit_parse_tree as visitParseTree
 from music21 import articulations
 from music21 import converter
 from music21 import note as note21
 from music21 import clef as clef21
-
-from chant21 import Note
-from chant21 import Section
-from chant21 import Neume
-from chant21 import Syllable
-from chant21 import Alteration
-from chant21 import Flat
-from chant21 import Natural
-from chant21 import Clef
-from chant21 import ParserGABC
-from chant21 import Pausa
-from chant21 import PausaMinima
-from chant21 import PausaMinor
-from chant21 import PausaMajor
-from chant21 import PausaFinalis
-
-from arpeggio import visit_parse_tree as visitParseTree
-from chant21.converter_gabc import VisitorGABC
-from chant21.converter_gabc import gabcPositionToStep
-from chant21.converter_gabc import MissingClef
-from chant21.converter_gabc import AlterationWarning
+from chant21 import chant
+from chant21.gabc import ParserGABC
+from chant21.gabc import VisitorGABC
+from chant21.gabc import gabcPositionToStep
+from chant21.gabc import MissingClef
+from chant21.gabc import AlterationWarning
 
 def parseGABC(string):
     return converter.parse(string, format='gabc', forceSource=True, storePickle=False)
@@ -35,13 +20,13 @@ class TestFile(unittest.TestCase):
         parser = ParserGABC(root='file')
         fileStr = 'title:Title!;\nattr1:value1;%%\n\n(c2) a(f)b(g) c(h)\ni(j)'
         parse = parser.parse(fileStr)
-        chant = visitParseTree(parse, VisitorGABC())
+        ch = visitParseTree(parse, VisitorGABC())
 
-        metadata = chant.editorial.metadata
+        metadata = ch.editorial.metadata
         self.assertEqual(metadata['title'], 'Title!')
         self.assertEqual(metadata['attr1'], 'value1')
         
-        notes = chant.flat.notes
+        notes = ch.flat.notes
         self.assertEqual(notes[0].name, 'C')
         self.assertEqual(notes[1].name, 'D')
         self.assertEqual(notes[2].name, 'E')
@@ -51,8 +36,8 @@ class TestFile(unittest.TestCase):
         parser = ParserGABC(root='file')
         fileStr = '(c2) a(f)b(g) c(h)\ni(j)'
         parse = parser.parse(fileStr)
-        chant = visitParseTree(parse, VisitorGABC())
-        notes = chant.flat.notes
+        ch = visitParseTree(parse, VisitorGABC())
+        notes = ch.flat.notes
         self.assertEqual(notes[0].name, 'C')
         self.assertEqual(notes[1].name, 'D')
         self.assertEqual(notes[2].name, 'E')
@@ -69,7 +54,7 @@ class TestFile(unittest.TestCase):
         parser = ParserGABC()
         fileStr = 'attr1:value1;\n%%\nattr2:value2;\n%%\n(c2) A(f)'
         parse = parser.parse(fileStr)
-        chant = visitParseTree(parse, VisitorGABC())
+        ch = visitParseTree(parse, VisitorGABC())
         metadata = {'attr1': 'value1', 'attr2': 'value2'}
         self.assertEqual(metadata['attr1'], 'value1')
         self.assertEqual(metadata['attr2'], 'value2')
@@ -96,7 +81,7 @@ class TestAlterations(unittest.TestCase):
             parse = parser.parse(f'f{alteration}')
             element = visitParseTree(parse, VisitorGABC())
             ed = element.editorial
-            self.assertIsInstance(element, Alteration)
+            self.assertIsInstance(element, chant.Alteration)
             self.assertEqual(ed.gabcPosition, 'f')
             self.assertEqual(ed.gabcAlteration, alteration)
 
@@ -105,7 +90,7 @@ class TestAlterations(unittest.TestCase):
         parse = parser.parse('(c2) a(exee,e)')
         stream = visitParseTree(parse, VisitorGABC())
         flat = stream.flat[1]
-        self.assertIsInstance(flat, Alteration)
+        self.assertIsInstance(flat, chant.Alteration)
         self.assertEqual(flat.pitch.step, 'B')
 
         notes = stream.flat.notes
@@ -191,17 +176,17 @@ class TestAlterations(unittest.TestCase):
         parse = parser.parse('f{ix}g')
         elements = visitParseTree(parse, VisitorGABC())
         n1, alt, n2 = elements
-        self.assertIsInstance(n1, Neume)
-        self.assertIsInstance(alt, Flat)
-        self.assertIsInstance(n2, Neume)
+        self.assertIsInstance(n1, chant.Neume)
+        self.assertIsInstance(alt, chant.Flat)
+        self.assertIsInstance(n2, chant.Neume)
       
 class TestText(unittest.TestCase):
 
     def test_text(self):
         parser = ParserGABC(root='body')    
         parse = parser.parse('a(c2) word(e)1(f) word2(g)')
-        chant = visitParseTree(parse, VisitorGABC())
-        w1, w2, w3 = chant[0]
+        ch = visitParseTree(parse, VisitorGABC())
+        w1, w2, w3 = ch[0]
         self.assertEqual(w1.flatLyrics, 'a')
         self.assertEqual(w2.flatLyrics, 'word1')
         self.assertEqual(w3.flatLyrics, 'word2')
@@ -215,8 +200,8 @@ class TestText(unittest.TestCase):
     def test_textAfterAccidental(self):
         parser = ParserGABC(root='body')    
         parse = parser.parse('(c2) bla(eye)')
-        chant = visitParseTree(parse, VisitorGABC())
-        word1, word2 = chant[0]
+        ch = visitParseTree(parse, VisitorGABC())
+        word1, word2 = ch[0]
         self.assertIsNone(word1.flatLyrics)
         self.assertEqual(word2.flatLyrics, 'bla')
         note = word2.flat.notes[0]
@@ -292,10 +277,10 @@ class TestBarClefs(unittest.TestCase):
     def test_pausa(self):
         parser = ParserGABC(root='pausa')
         pausaTypes = [
-            (PausaFinalis, ['::']),
-            (PausaMajor, [':', ':?', ':\'']),
-            (PausaMinor, [';', ';1', ';2']),
-            (PausaMinima, [',', ',_', ',0', ',1', '`'])
+            (chant.PausaFinalis, ['::']),
+            (chant.PausaMajor, [':', ':?', ':\'']),
+            (chant.PausaMinor, [';', ';1', ';2']),
+            (chant.PausaMinima, [',', ',_', ',0', ',1', '`'])
         ]
         for pausaClass, examples in pausaTypes:
             for gabc in examples:
@@ -344,9 +329,9 @@ class TestSyllables(unittest.TestCase):
         self.assertEqual(len(word), 3)
         syll1, syll2, syll3 = word.elements
         self.assertEqual(len(syll1.flat), 3)
-        self.assertIsInstance(syll1.flat[1], Pausa)
+        self.assertIsInstance(syll1.flat[1], chant.Pausa)
         self.assertEqual(len(syll2.flat), 3)
-        self.assertIsInstance(syll2.flat[1], Pausa)
+        self.assertIsInstance(syll2.flat[1], chant.Pausa)
         self.assertEqual(len(syll3.flat), 1)
 
     def test_syllablesWithCommas2(self):
@@ -357,11 +342,11 @@ class TestSyllables(unittest.TestCase):
         word.joinSyllablesAcrossPausas()
         self.assertEqual(len(word), 1)
         neume1, neume2, comma, neume3, neume4 = word[0].elements
-        self.assertIsInstance(neume1, Neume)
-        self.assertIsInstance(neume2, Neume)
-        self.assertIsInstance(comma, Pausa)
-        self.assertIsInstance(neume3, Neume)
-        self.assertIsInstance(neume4, Neume)
+        self.assertIsInstance(neume1, chant.Neume)
+        self.assertIsInstance(neume2, chant.Neume)
+        self.assertIsInstance(comma, chant.Pausa)
+        self.assertIsInstance(neume3, chant.Neume)
+        self.assertIsInstance(neume4, chant.Neume)
                 
     def test_syllablesWithCommas3(self):
         """Test whether a new syllable starts if the next syllable
@@ -372,11 +357,11 @@ class TestSyllables(unittest.TestCase):
         word = visitParseTree(parse, VisitorGABC())
         word.joinSyllablesAcrossPausas()
         (neume1, neume2, comma), (neume3, neume4) = word
-        self.assertIsInstance(neume1, Neume)
-        self.assertIsInstance(neume2, Neume)
-        self.assertIsInstance(comma, Pausa)
-        self.assertIsInstance(neume3, Neume)
-        self.assertIsInstance(neume4, Neume)
+        self.assertIsInstance(neume1, chant.Neume)
+        self.assertIsInstance(neume2, chant.Neume)
+        self.assertIsInstance(comma, chant.Pausa)
+        self.assertIsInstance(neume3, chant.Neume)
+        self.assertIsInstance(neume4, chant.Neume)
 
     def test_multipleSyllablesWithCommas(self):
         parser = ParserGABC(root='word')    
@@ -387,7 +372,7 @@ class TestSyllables(unittest.TestCase):
         self.assertEqual(len(word), 2)
         syll1, syll2 = word.elements
         self.assertEqual(len(syll1.flat), 5)
-        self.assertIsInstance(syll1.flat[1], Pausa)
+        self.assertIsInstance(syll1.flat[1], chant.Pausa)
         self.assertEqual(len(syll2.flat), 1)
     
     def test_multipleSyllablesWithCommas2(self):
@@ -422,9 +407,9 @@ class TestNeumes(unittest.TestCase):
         parse = parser.parse('eh/hi')
         elements = visitParseTree(parse, VisitorGABC())
         self.assertEqual(len(elements), 2)
-        self.assertIsInstance(elements[0], Neume)
+        self.assertIsInstance(elements[0], chant.Neume)
         self.assertEqual(len(elements[0]), 2)
-        self.assertIsInstance(elements[1], Neume)
+        self.assertIsInstance(elements[1], chant.Neume)
         self.assertEqual(len(elements[1]), 2)
 
     def test_articulationBeforeComma(self):
@@ -433,9 +418,9 @@ class TestNeumes(unittest.TestCase):
         ch = visitParseTree(parse, VisitorGABC())
         ch.makeBreathMarks()
         clef, n1, n2 = ch.flat
-        self.assertIsInstance(clef, Clef)
-        self.assertIsInstance(n1, Note)
-        self.assertIsInstance(n2, Note)
+        self.assertIsInstance(clef, chant.Clef)
+        self.assertIsInstance(n1, chant.Note)
+        self.assertIsInstance(n2, chant.Note)
         self.assertEqual(len(n1.articulations), 1)
     
 class TestNotes(unittest.TestCase):
@@ -493,8 +478,8 @@ class TestConverter(unittest.TestCase):
 
     def test_conversion(self):
         gabc = '(c2) a(f)b(g) c(h)\ni(j)'
-        chant = parseGABC(gabc)
-        notes = chant.flat.notes
+        ch = parseGABC(gabc)
+        notes = ch.flat.notes
         self.assertEqual(notes[0].name, 'C')
         self.assertEqual(notes[1].name, 'D')
         self.assertEqual(notes[2].name, 'E')
@@ -503,8 +488,8 @@ class TestConverter(unittest.TestCase):
 
     def test_conversionFileContents(self):
         fileStr = 'title:Title!;\nattr1:value1;%%\n\n(c2) a(f)b(g) c(h)\ni(j)'
-        chant = parseGABC(fileStr)
-        notes = chant.flat.notes
+        ch = parseGABC(fileStr)
+        notes = ch.flat.notes
         self.assertEqual(notes[0].name, 'C')
         self.assertEqual(notes[1].name, 'D')
         self.assertEqual(notes[2].name, 'E')

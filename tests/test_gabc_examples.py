@@ -2,10 +2,10 @@ import unittest
 import glob
 from music21 import converter
 from music21 import metadata
-import chant21
-from chant21 import ParserGABC
-from chant21.converter_gabc import VisitorGABC
 from arpeggio import visit_parse_tree as visitParseTree
+import chant21
+from chant21.gabc import ParserGABC
+from chant21.gabc import VisitorGABC
 
 EXAMPLES_DIR = 'chant21/examples/'
 

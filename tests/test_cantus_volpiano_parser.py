@@ -1,9 +1,9 @@
 import unittest
-from chant21.parser_cantus_volpiano import ParserCantusVolpiano
-from chant21.parser_cantus_volpiano import HyphenationError
-from chant21.parser_cantus_volpiano import BarlineError
-from chant21.parser_cantus_volpiano import ClefError
-from chant21.parser_cantus_volpiano import UnsupportedCharacterError
+from chant21.cantus import ParserCantusVolpiano
+from chant21.cantus import HyphenationError
+from chant21.cantus import BarlineError
+from chant21.cantus import ClefError
+from chant21.cantus import UnsupportedCharacterError
 
 class TestParser(unittest.TestCase):
     def test_missing_clef(self):

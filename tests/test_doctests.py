@@ -7,11 +7,11 @@ sys.path.append(ROOT_DIR)
 if __name__ == '__main__':
     import doctest
     
-    from chant21 import converter_cantus_volpiano
-    doctest.testmod(converter_cantus_volpiano)
+    from chant21 import cantus
+    doctest.testmod(cantus)
 
-    from chant21 import parser_cantus_volpiano
-    doctest.testmod(parser_cantus_volpiano)
+    # from chant21 import parser_cantus_volpiano
+    # doctest.testmod(parser_cantus_volpiano)
 
-    from chant21 import syllabifier
-    doctest.testmod(syllabifier)
+    # from chant21 import syllabifier
+    # doctest.testmod(syllabifier)

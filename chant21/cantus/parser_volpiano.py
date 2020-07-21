@@ -1,9 +1,8 @@
-from arpeggio.cleanpeg import ParserPEG
-import os.path
 import re
+import os.path
+from arpeggio.cleanpeg import ParserPEG
 
-cur_dir = os.path.dirname(__file__)
-GRAMMAR_PATH = os.path.join(cur_dir, 'grammars', 'cantus_volpiano.peg')
+GRAMMAR_PATH = os.path.join(os.path.dirname(__file__), 'cantus_volpiano.peg')
 
 class ParserCantusVolpiano():
     

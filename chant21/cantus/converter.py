@@ -9,31 +9,31 @@ from pandas import isna
 from arpeggio import PTNodeVisitor
 from arpeggio import visit_parse_tree as visitParseTree
 
-from .chant import Chant
-from .chant import Section
-from .chant import Note
-from .chant import Neume
-from .chant import Syllable
-from .chant import Word
-from .chant import Alteration
-from .chant import Pausa
-from .chant import Clef
-# from .chant import PausaMinima
-# from .chant import PausaMinor
-from .chant import PausaMajor
-from .chant import PausaFinalis
-# from .chant import Annotation
-from .chant import Natural
-from .chant import Flat
-from .chant import LineBreak
-from .chant import ColumnBreak
-from .chant import PageBreak
-from .chant import MissingPitches
+from ..chant import Chant
+from ..chant import Section
+from ..chant import Note
+from ..chant import Neume
+from ..chant import Syllable
+from ..chant import Word
+from ..chant import Alteration
+from ..chant import Pausa
+from ..chant import Clef
+# from ..chant import PausaMinima
+# from ..chant import PausaMinor
+from ..chant import PausaMajor
+from ..chant import PausaFinalis
+# from ..chant import Annotation
+from ..chant import Natural
+from ..chant import Flat
+from ..chant import LineBreak
+from ..chant import ColumnBreak
+from ..chant import PageBreak
+from ..chant import MissingPitches
 
-from .parser_cantus_volpiano import ParserCantusVolpiano
-from .parser_cantus_text import ParserCantusText
+from .parser_volpiano import ParserCantusVolpiano
+from .parser_text import ParserCantusText
 from .syllabifier import ChantSyllabifier
-from . import __version__
+from .. import __version__
 
 CHARACTERS = {
     'bars': '34567',

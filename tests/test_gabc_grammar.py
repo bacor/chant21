@@ -10,7 +10,7 @@ TODO
 """
 import unittest
 from arpeggio import NoMatch
-from chant21 import ParserGABC
+from chant21.gabc import ParserGABC
 
 class TestFile(unittest.TestCase):
     def test_file(self):

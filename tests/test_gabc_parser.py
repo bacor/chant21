@@ -1,5 +1,5 @@
 import unittest
-from chant21 import ParserGABC
+from chant21.gabc import ParserGABC
 
 class TestParserGABC(unittest.TestCase):
 

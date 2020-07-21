@@ -1,26 +1,10 @@
 import unittest
 from music21 import converter
 from music21 import metadata
-
-from chant21 import Chant
-from chant21 import Section
-from chant21 import Note
-from chant21 import Neume
-from chant21 import Syllable
-from chant21 import Word
-from chant21 import Alteration
-from chant21 import Pausa
-from chant21 import Clef
-from chant21 import PausaMinima
-from chant21 import PausaMinor
-from chant21 import PausaMajor
-from chant21 import PausaFinalis
-from chant21 import Annotation
-from chant21.chant import pitchToVolpiano
-
-from chant21 import ParserGABC
-from chant21.converter_gabc import VisitorGABC
 from arpeggio import visit_parse_tree as visitParseTree
+from chant21 import chant
+from chant21.gabc import ParserGABC
+from chant21.gabc import VisitorGABC
 
 class TestChant(unittest.TestCase):
     def test_flatter(self):
@@ -31,12 +15,12 @@ class TestChant(unittest.TestCase):
         n5, n6, bar2 = m2
         n7, bar3 = m3
         for n in [n1, n2, n3, n4, n5, n6, n7]:
-            self.assertIsInstance(n, Note)
+            self.assertIsInstance(n, chant.Note)
 
     def test_makeMetadata(self):
         gabc = "transcriber:foo;\nname:bar;%%\n(c4) A(fgf/h,gh) (:) B(g) (::)"
         ch = converter.parse(gabc, format='gabc', forceSource=True, storePickle=False)
-        self.assertIsInstance(ch[0], Section)
+        self.assertIsInstance(ch[0], chant.Section)
         ch.makeMetadata()
         self.assertIsInstance(ch[0], metadata.Metadata)
 
@@ -52,9 +36,9 @@ class TestChant(unittest.TestCase):
         self.assertEqual(len(word3), 1)
 
         neume1, pausa, neume2 = word2[0]
-        self.assertIsInstance(neume1, Neume)
-        self.assertIsInstance(pausa, PausaMinor)
-        self.assertIsInstance(neume2, Neume)
+        self.assertIsInstance(neume1, chant.Neume)
+        self.assertIsInstance(pausa, chant.PausaMinor)
+        self.assertIsInstance(neume2, chant.Neume)
 
     def test_mergeWords2(self):
         gabc = "(c4) Ia(d) *(;) (f) (,) (c) (b)"
@@ -123,9 +107,9 @@ class TestToObject(unittest.TestCase):
         self.assertDictEqual(obj, targetObj)
 
     def test_neume(self):
-        n = Neume()
-        c = Note('C4')
-        d = Note('D4')
+        n = chant.Neume()
+        c = chant.Note('C4')
+        d = chant.Note('D4')
         n.append([c, d])
         targetObj = {
             'type': 'neume',
@@ -137,12 +121,12 @@ class TestToObject(unittest.TestCase):
         self.assertDictEqual(n.toObject(), targetObj)
 
     def test_note(self):
-        n = Note('D-4')
+        n = chant.Note('D-4')
         targetObj = {'pitch': 'D-4', 'type': 'note'}
         self.assertDictEqual(n.toObject(), targetObj)
 
     def test_noteWithEditorialInfo(self):
-        n = Note('D-4')
+        n = chant.Note('D-4')
         n.editorial.foo = 'bar'
         targetObj = {'pitch': 'D-4', 'type': 'note', 'editorial': {'foo': 'bar'}}
         self.assertDictEqual(n.toObject(), targetObj)
@@ -150,13 +134,13 @@ class TestToObject(unittest.TestCase):
 class TestFromObject(unittest.TestCase):
     
     def test_typeError(self):
-        syll = Syllable()
+        syll = chant.Syllable()
         obj = {'type': 'foo'}
         test_fn = lambda: syll.fromObject(obj)
         self.assertRaises(TypeError, test_fn)
 
     def test_chant(self):
-        chant = Chant()
+        ch = chant.Chant()
         obj = {
             'type': 'chant',
             'metadata': {
@@ -164,12 +148,12 @@ class TestFromObject(unittest.TestCase):
             },
             'elements': []
         }
-        chant.fromObject(obj)
-        self.assertEqual(len(chant.elements), 0)
-        self.assertEqual(chant.editorial.metadata['title'], 'Hello')
+        ch.fromObject(obj)
+        self.assertEqual(len(ch.elements), 0)
+        self.assertEqual(ch.editorial.metadata['title'], 'Hello')
 
     def test_syllable(self):
-        syll = Syllable()
+        syll = chant.Syllable()
         obj = {
             'type': 'syllable',
             'lyric': 'bla',
@@ -179,10 +163,10 @@ class TestFromObject(unittest.TestCase):
         self.assertEqual(syll.lyric, 'bla')
         self.assertEqual(syll.annotation, '*')
         self.assertEqual(len(syll.elements), 1)
-        self.assertIsInstance(syll.elements[0], Annotation)
+        self.assertIsInstance(syll.elements[0], chant.Annotation)
     
     def test_neume(self):
-        n = Neume()
+        n = chant.Neume()
         obj = {
             'type': 'neume',
             'elements': [
@@ -192,11 +176,11 @@ class TestFromObject(unittest.TestCase):
         }
         n.fromObject(obj)
         self.assertEqual(len(n.elements), 2)
-        self.assertIsInstance(n.elements[0], Note)
-        self.assertIsInstance(n.elements[1], Note)
+        self.assertIsInstance(n.elements[0], chant.Note)
+        self.assertIsInstance(n.elements[1], chant.Note)
 
     def test_note(self):
-        n = Note()
+        n = chant.Note()
         obj = {
             'type': 'note',
             'pitch': 'D-4', 
@@ -211,28 +195,28 @@ class TestFromObject(unittest.TestCase):
 class TestToVolpiano(unittest.TestCase):
 
     def test_pitchConversion(self):
-        lowest = Note('F3')
-        highest = Note('D6')
+        lowest = chant.Note('F3')
+        highest = chant.Note('D6')
         volpianoNotes = '89abcdefghjklmnopqrs'
         i = 0
         for octave in [3,4,5,6]:
             for noteName in 'CDEFGAB':
-                n = Note(f'{noteName}{octave}')
+                n = chant.Note(f'{noteName}{octave}')
                 if lowest <= n and n <= highest:
-                    volpiano = pitchToVolpiano(n.pitch)
+                    volpiano = chant.pitchToVolpiano(n.pitch)
                     self.assertEqual(volpiano, volpianoNotes[i])
                     self.assertEqual(n.volpiano, volpianoNotes[i])
                     i += 1
     
     def test_exceptions(self):
-        too_low = Note('E3')
-        self.assertRaises(Exception, lambda: pitchToVolpiano(too_low.pitch))
+        too_low = chant.Note('E3')
+        self.assertRaises(Exception, lambda: chant.pitchToVolpiano(too_low.pitch))
 
-        too_high = Note('E6')
-        self.assertRaises(Exception, lambda: pitchToVolpiano(too_high.pitch))
+        too_high = chant.Note('E6')
+        self.assertRaises(Exception, lambda: chant.pitchToVolpiano(too_high.pitch))
 
     def test_liquescence(self):
-        n = Note('C4')
+        n = chant.Note('C4')
         n.editorial.liquescence = True
         self.assertEqual(n.volpiano, 'C')
        

@@ -27,11 +27,6 @@ from .html import toFile
 from .html import toWidget
 from . import __version__
 
-# from .converter_cantus_volpiano import addTextToChant
-# from arpeggio import visit_parse_tree as visitParseTree
-
-#TODO add __repr__ method to classes
-
 def pitchToVolpiano(pitch, liquescence=False):
     """Convert a music21.pitch object to a volpiano character"""
     volpianoLiquescents = '()ABCDEFGHJKLMNOPQRS'

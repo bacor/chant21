@@ -1,6 +1,7 @@
 import json
 from music21 import converter
 from .chant import Chant
+__all__ = ['ConverterCHSON']
 
 class ConverterCHSON(converter.subConverters.SubConverter):
     registerFormats = ('chson', 'CHSON')
