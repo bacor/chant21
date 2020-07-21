@@ -12,7 +12,7 @@ docs/_build
 
 # Local stuff
 tmp/
-test_gregobase_corpus*.py
+analyses
 
 # Development
 *.egg-info
@@ -20,5 +20,3 @@ dist
 build
 env
 *-env
-
-analyses
