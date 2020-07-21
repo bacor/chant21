@@ -40,9 +40,13 @@
         margin-top: 1em;
     }
 
-   .text.not_aligned {
-        color: #999;
+   .unaligned .text {
+        color: #666;
         font-style: italic;
+    }
+
+    .unaligned .volpiano {
+        color: #666;
     }
 
     .lyric {
@@ -175,7 +179,13 @@
     {%- if 'misaligned' in word.editorial and word.editorial.misaligned -%}
         {%- set wordIsMisaligned = True -%}
     {%- endif -%}
-        <div class="word{% if wordIsMisaligned %} misaligned{% endif %}">
+    {%- set wordIsUnaligned = False -%}
+    {%- if 'unaligned' in word.editorial and word.editorial.unaligned -%}
+        {%- set wordIsUnaligned = True -%}
+    {%- endif -%}
+        <div class="word
+            {%- if wordIsMisaligned %} misaligned{% endif -%}
+            {%- if wordIsUnaligned %} unaligned{% endif -%}">
         {%- set numSyllables = word.elements|length -%}
         {%- for syllable in word.elements -%}
             <div class="syllable">
@@ -212,12 +222,12 @@
                     <span class="wordBoundary boundary">---</span>
                     {%- endif -%}
                 </div>
-                <div class="text{% if word.musicAndTextAligned == false %} not_aligned{% endif %}">
+                <div class="text">
                     {%- if syllable.annotation -%}
                         <span class="annotation">{{syllable.annotation}}</span>
                     {%- elif syllable.lyric -%}
                         <span class="lyric">{{syllable.lyric}}</span>
-                        {%- if numSyllables > 1 and loop.index < numSyllables and word.musicAndTextAligned != False -%}
+                        {%- if numSyllables > 1 and loop.index < numSyllables and wordIsUnaligned == False -%}
                         <span class="hyphen">-</span>
                         {%- endif -%}
                     {%- else -%}
