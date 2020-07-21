@@ -3,15 +3,13 @@
 
 Chant21 Documentation
 =====================
-
 .. toctree::
-   :maxdepth: 2
    :caption: Contents:
 
-   content/classes.rst
-   content/html.rst
-   content/parsers.rst
-   content/converters.rst
+   content/installation.rst
+   content/getting_started.rst
+   content/api.rst
+
 
 Indices and tables
 ==================

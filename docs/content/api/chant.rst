@@ -1,12 +1,12 @@
-Classes
-=======
+Chant
+======
 
-.. module:: chant21
+.. module:: chant21.chant
 
 Chant21Object
 -------------
 
-.. autoclass:: chant21.chant.Chant21Object
+.. autoclass:: Chant21Object
     :members:
     :undoc-members:
 
@@ -40,6 +40,7 @@ Syllable
 
 Neume
 -----
+
 .. autoclass:: Neume
     :members:
     :undoc-members:

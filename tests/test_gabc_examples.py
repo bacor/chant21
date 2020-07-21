@@ -6,8 +6,10 @@ from arpeggio import visit_parse_tree as visitParseTree
 import chant21
 from chant21.gabc import ParserGABC
 from chant21.gabc import VisitorGABC
-
-EXAMPLES_DIR = 'chant21/examples/'
+from chant21.examples import salveRegina
+from chant21.examples import abOrtuSolis
+from chant21.examples import kyrie
+from chant21.examples import utQueantLaxis
 
 def parseGABC(string):
     return converter.parse(string, format='gabc', forceSource=True, storePickle=False)
@@ -21,26 +23,21 @@ class TestParseExamples(unittest.TestCase):
         return parse
 
     def test_salveRegina(self):
-        filename = f'{EXAMPLES_DIR}an--salve_regina_simple_tone--solesmes.gabc'
-        self.runTest(filename)
+        self.runTest(salveRegina)
         
     def test_utQueantLaxis(self):
-        filename = f'{EXAMPLES_DIR}hy--ut_queant_laxis--solesmes.gabc'
-        self.runTest(filename)
+        self.runTest(utQueantLaxis)
 
     def test_kyrie(self):
-        filename = f'{EXAMPLES_DIR}ky--kyrie_ad_lib_x_-_orbis_factor--solesmes.gabc'
-        self.runTest(filename)
+        self.runTest(kyrie)
 
     def test_abOrtuSolis(self):
-        filename = f'{EXAMPLES_DIR}tr--ab_ortu_solis--solesmes.gabc'
-        self.runTest(filename)
+        self.runTest(abOrtuSolis)
         
-    def _test_allExamples(self):
-        parser = ParserGABC()
-        examples = glob.glob(f'{EXAMPLES_DIR}*.gabc')
-        for filename in examples:
-            self.runTest(filename)
+    # def _test_allExamples(self):
+    #     parser = ParserGABC()
+    #     for filename in [salveRegina, utQueantLaxis, kyrie, abOrtuSolis]:
+    #         self.runTest(filename)
 
     def test_GBCParsing(self):
         GABC_FN = '/Users/Bas/repos/projects/GregoBaseCorpus/dist/gregobasecorpus-v0.3/gregobasecorpus-v0.3/gabc/{idx:0>5}.gabc'
@@ -66,23 +63,19 @@ class TestSpecialCases(unittest.TestCase):
 
 class TestConvertExamples(unittest.TestCase):
     def test_kyrie(self):
-        filename = f'{EXAMPLES_DIR}/ky--kyrie_ad_lib_x_-_orbis_factor--solesmes.gabc'
-        chant = parseGABC(filename)
+        chant = parseGABC(kyrie)
         self.assertTrue(True)
 
     def test_salveRegina(self):
-        filename = f'{EXAMPLES_DIR}/an--salve_regina_simple_tone--solesmes.gabc'
-        chant = parseGABC(filename)
+        chant = parseGABC(salveRegina)
         self.assertTrue(True)
         
     def test_utQueantLaxis(self):
-        filename = f'{EXAMPLES_DIR}/hy--ut_queant_laxis--solesmes.gabc'
-        chant = parseGABC(filename)
+        chant = parseGABC(utQueantLaxis)
         self.assertTrue(True)
 
     def test_abOrtuSolis(self):
-        filename = f'{EXAMPLES_DIR}/tr--ab_ortu_solis--solesmes.gabc'
-        chant = parseGABC(filename)
+        chant = parseGABC(abOrtuSolis)
         self.assertTrue(True)
 
     # def test_GBCConversion2(self):
@@ -127,20 +120,16 @@ class TestCHSONConversionExamples(unittest.TestCase):
                                     self.assertIsInstance(copy2, type(orig2))
     
     def test_salveRegina(self):
-        filename = f'{EXAMPLES_DIR}an--salve_regina_simple_tone--solesmes.gabc'
-        self.runTest(filename)
+        self.runTest(salveRegina)
         
     def test_utQueantLaxis(self):
-        filename = f'{EXAMPLES_DIR}hy--ut_queant_laxis--solesmes.gabc'
-        self.runTest(filename)
+        self.runTest(utQueantLaxis)
 
     def test_kyrie(self):
-        filename = f'{EXAMPLES_DIR}ky--kyrie_ad_lib_x_-_orbis_factor--solesmes.gabc'
-        self.runTest(filename)
+        self.runTest(kyrie)
 
     def test_abOrtuSolis(self):
-        filename = f'{EXAMPLES_DIR}tr--ab_ortu_solis--solesmes.gabc'
-        self.runTest(filename)
+        self.runTest(abOrtuSolis)
 
 if __name__ == '__main__':
     unittest.main()
