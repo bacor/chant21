@@ -1,6 +1,5 @@
 import re
 import os.path
-from pandas import isna
 from arpeggio.cleanpeg import ParserPEG
 
 GRAMMAR_PATH = os.path.join(os.path.dirname(__file__), 'cantus_text.peg')
@@ -29,5 +28,5 @@ class ParserCantusText():
 
     def parse(self, text: str, debug: bool = True):
         # TODO docstring
-        if isna(text): return None
+        if not type(text) == str: return None
         return self.parser.parse(text)

@@ -4,7 +4,6 @@ from music21 import note
 from music21 import bar
 from music21 import converter
 from music21 import articulations
-from pandas import isna
 
 from arpeggio import PTNodeVisitor
 from arpeggio import visit_parse_tree as visitParseTree
@@ -399,9 +398,9 @@ def addCantusMetadataToChant(chant, data):
 
 def convertCantusData(data):
     chant = converter.parse(data['volpiano'], format='cantus')
-    if not isna(data['full_text_manuscript']):
+    if type(data['full_text_manuscript']) == str:
         addTextToChant(chant, data['full_text_manuscript'])
-    elif not isna(data['incipit']):
+    elif type(data['incipit']) == str:
         addTextToChant(chant, data['incipit'])
     chant.editorial.metadata.update(data.to_dict())
     return chant
