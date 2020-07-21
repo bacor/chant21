@@ -30,6 +30,7 @@ from chant21.converter_cantus_volpiano import TextAlignmentError
 from chant21.converter_cantus_volpiano import SyllableAlignmentError
 from chant21.converter_cantus_volpiano import WordAlignmentError
 from chant21.converter_cantus_volpiano import SectionAlignmentError
+from chant21.syllabifier import ChantSyllabifier
 
 class TestElements(unittest.TestCase):
     def test_note(self):
@@ -313,7 +314,7 @@ class TestVolpianoAndTextConversion(unittest.TestCase):
 
     def test_hyphens(self):
         ch = converter.parse('1---a---cde--d--d---4/A facie', format='cantus')
-        self.assertEqual(ch[0][1][0].lyric, 'a')
+        self.assertEqual(ch[0][1][0].lyric, 'A')
         self.assertEqual(ch[0][2][0].lyric, 'fa')
         self.assertEqual(ch[0][2][1].lyric, 'ci')
         self.assertEqual(ch[0][2][2].lyric, 'e')
@@ -381,3 +382,20 @@ class TestVolpianoAndTextConversion(unittest.TestCase):
         self.assertTrue(ch.editorial.misaligned)
         ch = converter.parse(more_secs_in_txt, format='cantus')
         self.assertTrue(ch.editorial.misaligned)
+
+    def test_syllabifier_case(self):
+        """Test if the syllabifier preserves case"""
+        syllabifier = ChantSyllabifier()
+        syllables = syllabifier.syllabify('Lorem Ipsum DOLOR')
+        target_sylls = ['Lo', 'rem', ' Ip', 'sum', ' DO', 'LOR']
+        self.assertListEqual(syllables, target_sylls) 
+    
+    def test_syllabifier_exceptions(self):
+        """Test if the syllabifier exceptions are handled properly. A good test
+        case is "auouae" which is normally segmented as "e|u|o|u|ae", but should
+        be "e|u|o|u|a|e"."""
+        syllabifier = ChantSyllabifier()
+        syllables = syllabifier.syllabify('euouae')
+        self.assertListEqual(syllables, ['e', 'u', 'o', 'u', 'a', 'e']) 
+        
+

@@ -33,7 +33,7 @@ class TestCantusExamplesConversion(unittest.TestCase):
         examples = pd.read_csv('chant21/examples/cantus-volpiano-examples.csv', index_col=0)
         for idx, data in examples.iterrows():
             ch = converter.parse(data['volpiano'], format='cantus')
-            # ch.toHTML(f'tmp/cantus-html/{idx}.html')
+            ch.toHTML(f'tmp/cantus-html/{idx}.html')
             self.assertTrue(True)
 
     def test_convert_volpiano_and_text(self):
@@ -41,10 +41,9 @@ class TestCantusExamplesConversion(unittest.TestCase):
         for idx, data in examples.iterrows():
             try:
                 ch = convertCantusData(data)
-                # ch.toHTML(f'tmp/cantus-html/{idx}.html')
+                ch.toHTML(f'tmp/cantus-html/{idx}.html')
             except:
                 pass
-            # ch.show()
             self.assertTrue(True)
 
     def test_single_conversion_volpiano_and_text(self):
@@ -84,13 +83,13 @@ class TestCantusExamplesConversion(unittest.TestCase):
         """Not really a test. This just generates html files with the three types
         of misalignments to check if those are visualized correctly."""
         ch = converter.parse('cantus: 1---a--b--c---d---3/bada ca')
-        # ch.toHTML('tmp/test-misaligned-sylls.html')
+        ch.toHTML('tmp/test-misaligned-sylls.html')
 
         ch = converter.parse('cantus: 1---a--b---d---e---3---f---3/bada ca | da')
-        # ch.toHTML('tmp/test-misaligned-words.html')
+        ch.toHTML('tmp/test-misaligned-words.html')
 
         ch = converter.parse('cantus: 1---a---3---b---3/bada ca')
-        # ch.toHTML('tmp/test-misaligned-sections.html')
+        ch.toHTML('tmp/test-misaligned-sections.html')
         
         self.assertTrue(True)
 
