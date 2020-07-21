@@ -9,6 +9,7 @@ section = (
 words = (
     (word / missing_pitches) 
     (space? (word / missing_pitches))*
+    (space tilda)?
 )
 space = r'[\ \n]+'
 word = r'[a-zA-Z\.\,\'\-]+'

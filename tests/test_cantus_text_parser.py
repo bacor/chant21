@@ -62,6 +62,15 @@ class TestGrammar(unittest.TestCase):
         # TODO this is not optimal: should be one word
         self.assertEqual(missing.rule_name, 'missing_pitches')
 
+    def test_tilda_text(self):
+        # TODO how to convert this? See chant_003353
+        text = "Et ab ~parce servo tuo"
+        parser = ParserCantusText()
+        parse = parser.parse(text)
+        words = parse[0][0]
+        et, _, ab, _, tilda = words
+        self.assertEqual(tilda.rule_name, 'tilda')
+    
     # def test_pitchless_text(self):
     #     parser = ParserCantusText()
     #     parse = parser.parse('~A B C')

@@ -298,11 +298,20 @@ class TestVolpianoAndTextConversion(unittest.TestCase):
         self.assertEqual(ch[0][2][1].lyric, 'ci')
         self.assertEqual(ch[0][2][2].lyric, 'e')
 
-    def test_pitchless_text(self):
+    def test_unaligned_text(self):
+        """Test whether words where notes and text are not aligned are handled
+        correctly: this should be marked in the editorial information. Note that
+        this is not the same as a misalignment where there is a mismatch between
+        e.g. the number of syllables in the music and text."""
+        input_str = '1---f---f---f--f--f--ffedc-dfd---4/Et ab ~parce servo tuo'
+        ch = converter.parse(input_str, format='cantus')
+        self.assertTrue(ch[0][3].editorial.unaligned)
+
         input_str = ('1---df---efd--c---4---c--d--f--f---3---f--f--f--e--c--d7---3'
-                     '/A fructu  | ~Cum invocarem | euouae')
+                '/A fructu  | ~Cum invocarem | euouae')
         ch = converter.parse(input_str, format='cantus')
         self.assertEqual(len(ch), 3)
+        self.assertTrue(ch[1][0].editorial.unaligned)
         self.assertEqual(ch[1][0][0].lyric.text, '~Cum invocarem')
     
     def test_misalignment_syllables(self):

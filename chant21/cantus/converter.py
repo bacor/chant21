@@ -223,6 +223,7 @@ class VisitorCantusVolpiano(PTNodeVisitor):
 ###
 
 TEXT_BARLINE = '|'
+TEXT_SPACE = ' '
 
 class VisitorCantusText(PTNodeVisitor):
 
@@ -242,6 +243,8 @@ class VisitorCantusText(PTNodeVisitor):
             if type(sec) != str or sec != TEXT_BARLINE]
         mus_sections = self.chant
 
+        #TODO change variables to camelcase!
+
         # Test if sections are alignable
         if self.strict and len(txt_sections) != len(mus_sections):
             raise SectionAlignmentError(
@@ -260,11 +263,10 @@ class VisitorCantusText(PTNodeVisitor):
             mus_section_words = [w for w in mus_section if len(w.flat.notes) > 0]
 
             # Music is not aligned to text. Add lyrics to first syllable.
-            # TODO is there a more principled solution for this?
             if type(txt_section) == str:    
                 l = note.Lyric(text=txt_section, applyRaw=True)
                 l.syllabic = 'end'
-                mus_section[0].musicAndTextAligned = False
+                mus_section[0].editorial.unaligned = True
                 mus_section[0][0].lyric = l
                 continue
             
@@ -281,9 +283,17 @@ class VisitorCantusText(PTNodeVisitor):
             # Align the words in the section
             for word_num, (txt_word, mus_word) in enumerate(
                 zip(txt_section, mus_section_words)):
-                
+
+                # Unaligned text
+                if type(txt_word) == str:
+                    l = note.Lyric(text=txt_word, applyRaw=True)
+                    l.syllabic = 'end'
+                    mus_word.editorial.unaligned = True
+                    mus_word[0].lyric = l
+                    continue
+                    
                 # Check if the syllables in text and music are aligned
-                if self.strict and len(txt_word) != len(mus_word):
+                elif self.strict and len(txt_word) != len(mus_word):
                     raise SyllableAlignmentError(
                         f'Section {sec_num}, word {word_num} '
                         f'({"".join(txt_word)}) cannot be aligned. In the '
@@ -311,14 +321,17 @@ class VisitorCantusText(PTNodeVisitor):
         return node.value.strip()
 
     def visit_words(self, node, children):
-        return [child for child in children if type(child) != str]
+        return children
 
     def visit_word(self, node, children):
         syllables = self.syllabify(node.value)
         return syllables
 
     def visit_barline(self, node, children):
-        return TEXT_BARLINE
+        return None
+
+    def visit_space(self, node, children):
+        return None
 
 class TextAlignmentError(Exception):
     """General exception for all text-music alignment errors"""
