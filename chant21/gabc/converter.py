@@ -4,30 +4,12 @@ from music21 import note
 from music21 import bar
 from music21 import converter
 from music21 import articulations
-
 from arpeggio import PTNodeVisitor
 from arpeggio import visit_parse_tree as visitParseTree
 
-from ..chant import Chant
-from ..chant import Section
-from ..chant import Note
-from ..chant import Neume
-from ..chant import Syllable
-from ..chant import Word
-from ..chant import Alteration
-from ..chant import Pausa
-from ..chant import Clef
-from ..chant import PausaMinima
-from ..chant import PausaMinor
-from ..chant import PausaMajor
-from ..chant import PausaFinalis
-from ..chant import Annotation
-from ..chant import Natural
-from ..chant import Flat
+from .. import chant
 from .. import __version__
-
 from . import ParserGABC
-
 
 NEUME_BOUNDARY = '_NEUME_BOUNDARY_'
 
@@ -71,7 +53,7 @@ class VisitorGABC(PTNodeVisitor):
         if 'body' in children.results:
             ch = children.results['body'][0]
         else:
-            ch = Chant()
+            ch = chant.Chant()
 
         header = {
             'conversion': {
@@ -98,14 +80,14 @@ class VisitorGABC(PTNodeVisitor):
         return key, value
 
     def visit_body(self, node, children):
-        ch = Chant()
-        curSection = Section()
-        curClef = Clef()
+        ch = chant.Chant()
+        curSection = chant.Section()
+        curClef = chant.Clef()
         curGABCClef = None
 
         # First pass: add measurs
         for word in children:
-            if not isinstance(word, Word): raise Exception('Quoi?')
+            if not isinstance(word, chant.Word): raise Exception('Quoi?')
             curSection.append(word)
 
             # Scope of accidentals ends with word boundaries
@@ -134,7 +116,7 @@ class VisitorGABC(PTNodeVisitor):
                     elif eIsFlat and el.step == 'E':
                         el.pitch.accidental = pitch.Accidental('flat')
 
-                elif isinstance(el, Alteration):
+                elif isinstance(el, chant.Alteration):
                     if curGABCClef is None: 
                         raise MissingClef('Cannot process notes without a clef.')
                     position = el.editorial.gabcPosition
@@ -148,17 +130,17 @@ class VisitorGABC(PTNodeVisitor):
                     eIsNatural = False
 
                     # Update
-                    if isinstance(el, Flat) and el.pitch.step == 'E':
+                    if isinstance(el, chant.Flat) and el.pitch.step == 'E':
                         eIsFlat = True
-                    elif isinstance(el, Flat) and el.pitch.step == 'B':
+                    elif isinstance(el, chant.Flat) and el.pitch.step == 'B':
                         bIsFlat = True
-                    elif isinstance(el, Natural) and el.pitch.step == 'B':
+                    elif isinstance(el, chant.Natural) and el.pitch.step == 'B':
                         bIsNatural = True
-                    elif isinstance(el, Natural) and el.pitch.step == 'E':
+                    elif isinstance(el, chant.Natural) and el.pitch.step == 'E':
                         eIsNatural = True
                     
                 # Scope of accidentals ends at breathmarks
-                elif isinstance(el, Pausa):
+                elif isinstance(el, chant.Pausa):
                     bIsFlat = False or curClefHasFlat
                     bIsNatural = False
                     eIsFlat = False
@@ -167,20 +149,20 @@ class VisitorGABC(PTNodeVisitor):
                     # Intermediate sections start (!) at pausa finalis (double barlines)
                     # because annotations below them always refer to the next sections.
                     # The very last pausa finalis is part of the last section though
-                    if isinstance(el, PausaFinalis):
+                    if isinstance(el, chant.PausaFinalis):
                         if not word == children[-1]:
                             curSection.remove(word)
                             ch.append(curSection)
-                            curSection = Section()
+                            curSection = chant.Section()
                             curSection.append(word)
                         else:
                             ch.append(curSection)
-                            curSection = Section()
+                            curSection = chant.Section()
                         
-                elif isinstance(el, Clef):
+                elif isinstance(el, chant.Clef):
                     curClef = el
                     curGABCClef = curClef.editorial.gabc
-                elif isinstance(el, Annotation):
+                elif isinstance(el, chant.Annotation):
                     pass
                 else:
                     raise Exception('Unknown element')
@@ -192,14 +174,14 @@ class VisitorGABC(PTNodeVisitor):
         return ch
         
     def visit_word(self, node, children):
-        word = Word()
+        word = chant.Word()
         word.append(children)
         word.updateSyllableLyrics()
         return word
 
     def visit_syllable(self, node, children):
         elements = children.results.get('music', [[]])[0]
-        syllable = Syllable()
+        syllable = chant.Syllable()
         syllable.append(elements)
         
         if 'text' in children.results:
@@ -211,7 +193,7 @@ class VisitorGABC(PTNodeVisitor):
     def visit_music(self, node, children):
         """Returns a list of elements"""
         elements = []
-        curNeume = Neume()
+        curNeume = chant.Neume()
         for element in children:
             # Notes are added to the current neume
             if isinstance(element, note.Note):
@@ -222,22 +204,22 @@ class VisitorGABC(PTNodeVisitor):
                     for suffix in element.editorial.gabcSuffixes:
                         if 'rhythmicSign' in suffix and suffix['rhythmicSign'] in ['.', '..']:
                             elements.append(curNeume)
-                            curNeume = Neume()
+                            curNeume = chant.Neume()
 
             # Special symbols that are inserted outside Neumes
-            elif (isinstance(element, Pausa) 
-                or isinstance(element, Alteration)
-                or isinstance(element, Clef)):
+            elif (isinstance(element, chant.Pausa) 
+                or isinstance(element, chant.Alteration)
+                or isinstance(element, chant.Clef)):
                 if len(curNeume) > 0:
                     elements.append(curNeume)
-                    curNeume = Neume()
+                    curNeume = chant.Neume()
                 elements.append(element)
 
             # Close neumes on neume boundaries, ignore other spaces
             elif element is NEUME_BOUNDARY:
                 if len(curNeume) > 0:
                     elements.append(curNeume)
-                    curNeume = Neume()
+                    curNeume = chant.Neume()
             
             else:
                 raise Exception('I dont know how to handle this')
@@ -250,22 +232,22 @@ class VisitorGABC(PTNodeVisitor):
         return children[0]
     
     def visit_pausa_finalis(self, node, children):
-        el = PausaFinalis()
+        el = chant.PausaFinalis()
         el.editorial.gabc = node.value
         return el
     
     def visit_pausa_major(self, node, children):
-        el = PausaMajor()
+        el = chant.PausaMajor()
         el.editorial.gabc = node.value
         return el
     
     def visit_pausa_minor(self, node, children):
-        el = PausaMinor()
+        el = chant.PausaMinor()
         el.editorial.gabc = node.value
         return el
     
     def visit_pausa_minima(self, node, children):
-        el = PausaMinima()
+        el = chant.PausaMinima()
         el.editorial.gabc = node.value
         return el
 
@@ -278,7 +260,7 @@ class VisitorGABC(PTNodeVisitor):
 
     def visit_clef(self, node, children):
         """Return a clef object with the gabc_clef stored as editorial info"""
-        clef = Clef()
+        clef = chant.Clef()
         clef.editorial.gabc = node.value
         return clef
 
@@ -288,7 +270,7 @@ class VisitorGABC(PTNodeVisitor):
         editorial information. In the second pass the actual pitch is determined
         based on the current clef and accidentals.
         """
-        n = Note()
+        n = chant.Note()
         position = children.results.get('position')[0]
         n.editorial.gabcPosition = position
         n.editorial.gabcSuffixes = []
@@ -351,9 +333,9 @@ class VisitorGABC(PTNodeVisitor):
         position = children.results.get('position')[0]
         alteration = node[1].value
         if alteration == 'x':
-            element = Flat()
+            element = chant.Flat()
         elif alteration == 'y':
-            element = Natural()
+            element = chant.Natural()
         else:
             raise AlterationWarning('Encountered a sharp. are not supported and ignored.')
         element.editorial.gabcPosition = position
@@ -386,7 +368,7 @@ class VisitorGABC(PTNodeVisitor):
     def visit_annotation(self, node, children):
         def modifier(syll):
             syll.annotation = children[0]
-            syll.insert(0, Annotation(children[0]))
+            syll.insert(0, chant.Annotation(children[0]))
             return syll
         return modifier
 
