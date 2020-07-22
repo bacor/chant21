@@ -28,11 +28,13 @@ setuptools.setup(
     license="MIT License",
     description="Plainchant in Python",
     long_description=(
-        "`chant21` is a library for plainchant in Python. It contains converters"
-        "from GABC and Volpiano to `music21`, preserves the exact textual "
-        "structure of the  chant, and allows you to interactively explore "
-        "this in Jupyter notebooks. For details, refer to the "
-        "[GitHub repository](https://github.com/bacor/chant21) "
+        "Chant21 is a library for plainchant in Python. It contains "
+        "converters from [GABC](http://gregorio-project.github.io/gabc/index.html) "
+        "and Volpiano (as used by the [Cantus Database](https://cantus.uwaterloo.ca/)) "
+        "to [music21](https://web.mit.edu/music21/). It represents the "
+        "textual structure of the chant, and allows you to "
+        "interactively explore this in Jupyter notebooks. For details, refer "
+        "to the [GitHub repository](https://github.com/bacor/chant21) "
         "or the [documentation](https://chant21.readthedocs.io/)."
     ),
     long_description_content_type="text/markdown",
