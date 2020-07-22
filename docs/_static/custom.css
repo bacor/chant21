@@ -1,16 +1,29 @@
 /* Load Volpiano from the Cantus Database; not ideal */
 @font-face {
-    font-family: 'volpiano';
-    src: url('../_static/volpiano51_web/volpiano.eot'); /* IE9 Compat Modes */
-    src: url('../_static/volpiano51_web/volpiano.eot?#iefix') format('embedded-opentype'), /* IE6-IE8 */
-         url('../_static/volpiano51_web/volpiano.woff') format('woff'), /* Modern Browsers */
-         url('../_static/volpiano51_web/volpiano.ttf')  format('truetype'), /* Safari, Android, iOS */
-         url('../_static/volpiano51_web/volpiano.svg') format('svg'); /* Legacy iOS */
-    font-style: normal;
-    font-weight: normal;
-    text-rendering: optimizeLegibility;
-  }
+     font-family: 'volpiano';
+     src: url('../_static/volpiano51_web/volpiano.eot'); /* IE9 Compat Modes */
+     src: url('../_static/volpiano51_web/volpiano.eot?#iefix') format('embedded-opentype'), /* IE6-IE8 */
+          url('../_static/volpiano51_web/volpiano.woff') format('woff'), /* Modern Browsers */
+          url('../_static/volpiano51_web/volpiano.ttf')  format('truetype'), /* Safari, Android, iOS */
+          url('../_static/volpiano51_web/volpiano.svg') format('svg'); /* Legacy iOS */
+     font-style: normal;
+     font-weight: normal;
+     text-rendering: optimizeLegibility;
+}
 
-  .cell_output {
-       padding: 0.5em;
-  }
+.cell_output {
+     padding: 0.25em 0.5em;
+}
+
+body .jupyter_container div.code_cell {
+     border-top: 0;
+     border-left: 0;
+     border-right: 0;
+     border-radius: 0;
+}
+
+body div.jupyter_container {
+     box-shadow: 0 0 10px rgba(87, 87, 87, 0.1);
+     border-radius: 0.25em;
+     overflow: hidden;
+}
