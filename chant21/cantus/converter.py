@@ -409,8 +409,8 @@ def addTextToChant(chant: Chant, text: str, strict: bool = False):
 def addCantusMetadataToChant(chant, data):
     chant.editorial.metadata.update(data.to_dict())
 
-def convertCantusData(data):
-    chant = converter.parse(data['volpiano'], format='cantus')
+def convertCantusData(data, **kwargs):
+    chant = converter.parse(data['volpiano'], format='cantus', **kwargs)
     if type(data['full_text_manuscript']) == str:
         addTextToChant(chant, data['full_text_manuscript'])
     elif type(data['incipit']) == str:
