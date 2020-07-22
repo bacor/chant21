@@ -11,7 +11,7 @@ from chant21.examples import abOrtuSolis
 from chant21.examples import kyrie
 from chant21.examples import utQueantLaxis
 
-def parseGABC(string):
+def convertGABC(string):
     return converter.parse(string, format='gabc', forceSource=True, storePickle=False)
 
 class TestParseExamples(unittest.TestCase):
@@ -63,19 +63,19 @@ class TestSpecialCases(unittest.TestCase):
 
 class TestConvertExamples(unittest.TestCase):
     def test_kyrie(self):
-        chant = parseGABC(kyrie)
+        chant = convertGABC(kyrie)
         self.assertTrue(True)
 
     def test_salveRegina(self):
-        chant = parseGABC(salveRegina)
+        chant = convertGABC(salveRegina)
         self.assertTrue(True)
         
     def test_utQueantLaxis(self):
-        chant = parseGABC(utQueantLaxis)
+        chant = convertGABC(utQueantLaxis)
         self.assertTrue(True)
 
     def test_abOrtuSolis(self):
-        chant = parseGABC(abOrtuSolis)
+        chant = convertGABC(abOrtuSolis)
         self.assertTrue(True)
 
     # def test_GBCConversion2(self):
@@ -101,7 +101,7 @@ class TestConvertExamples(unittest.TestCase):
 class TestCHSONConversionExamples(unittest.TestCase):
     def runTest(self, filename):
         # Music21 by default caches parses as pickle files, we disable that here
-        origChant = parseGABC(filename)
+        origChant = convertGABC(filename)
         chson = origChant.toCHSON()
         chant = converter.parse(chson, format='chson',  forceSource=True, storePickle=False)
         for orig1, copy1 in zip(origChant, chant):

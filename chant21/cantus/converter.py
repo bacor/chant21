@@ -386,7 +386,7 @@ def addTextToChant(chant: Chant, text: str, strict: bool = False):
         from music21 import converter
         import chant21
         ch = converter.parse('cantus: 1---a--b--c---d---3/baca da')
-        ch.show('html', showDisplayOptions=False)
+        ch.show('html', showOptions=False)
 
     Parameters
     ----------

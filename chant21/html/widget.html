@@ -1,4 +1,4 @@
-{%- set showDisplayOptions = showDisplayOptions|default(False, True) %}
+{%- set showOptions = showOptions|default(False, True) %}
 {%- set showWords = showWords|default(False, True) %}
 {%- set showSyllables = showSyllables|default(False, True) %}
 {%- set showNeumes = showNeumes|default(False, True) %}
@@ -11,7 +11,7 @@
 {%- endset %}
 
 <div id="chantContainer-{{chantId}}">
-    {% if showDisplayOptions %}
+    {% if showOptions %}
         {% include 'displayOptions.html' %}
     {% endif %}
     {% include 'chant.html' %}   

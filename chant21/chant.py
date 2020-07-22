@@ -198,13 +198,17 @@ class Chant(Chant21Object, stream.Part):
         Chant21 allows you to visualize the structure of a chant interactively 
         in an IPython environment:
 
-        >>> from music21 import converter
-        >>> ch = converter.parse('1---fg-f--h---fg', format='cantus')
-        >>> ch.show('html', showWords=True)
-        <IPython.core.display.HTML object>
+        .. jupyter-execute::
 
-        See :func:`chant21.html.toWidget` for all keyword arguments you can pass
-        to show.
+            from music21 import converter
+            import chant21
+            ch = converter.parse('cantus: 1---f-g--h---g--f--h---3/Abra cadabra')
+            ch.show('html', showWords=True, showOptions=True)
+
+        Optional keywords include ``showOptions``, ``showSections``, 
+        ``showWords``, ``showSyllables``, ``showNeumes``, ``showMetadata`` 
+        and ``showMisalignments``. See :func:`chant21.html.toWidget` for 
+        more information.
 
         Parameters
         ----------
@@ -258,10 +262,32 @@ class Chant(Chant21Object, stream.Part):
             with open(fp, 'w') as handle:
                 json.dump(self.toObject(**toObjectKwargs), handle, **jsonKwargs)
     
-    def toHTML(self, filepath=None, completeFile=False, 
-        showDisplayOptions=False, **kwargs):
-        """"""
-        if filepath is not None or completeFile:
+    def toHTML(self, filepath=None, chantOnly=True, **kwargs):
+        """Export the chant to HTML and render the music in the Volpiano 
+        typeface. There are two ways of exporting the chant: either a complete
+        file is generated, with a title and metadata, or a 'widget' with only 
+        the music is returned. The latter is used in Jupyter notebooks.
+
+        Parameters
+        ----------
+        filepath : [type], optional
+            If set the chant is exported to an HTML file, otherwise a HTML 
+            string is returned, by default None
+        chantOnly : bool, optional
+            Create a widget with only the chant, not the title and additional
+            metadata. By default True
+        **kwargs : optional
+            Optional keyword arguments for :func:`chant21.html.toFile` or
+            :func:`chant21.html.toWidget`. Keywords include ``showOptions``,
+            ``showSections``, ``showWords``, ``showSyllables``, ``showNeumes``,
+            ``showMetadata`` and ``showMisalignments``.
+
+        Returns
+        -------
+        str or none
+            A html string if the html is not written to a file.
+        """
+        if filepath is not None or not chantOnly:
             return toFile(self, filepath=filepath, **kwargs)
         else:
             return toWidget(self, **kwargs)

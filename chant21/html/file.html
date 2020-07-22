@@ -101,7 +101,9 @@
         
         {% set chantId = '1' %}
         <div id="chantContainer-{{chantId}}">
+        {% if showOptions %}
         {% include 'displayOptions.html' %}
+        {% endif %}
         {% include 'chant.html' %}
         </div>
 

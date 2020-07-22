@@ -42,19 +42,19 @@ TEMPLATE_ENV = jinja2.Environment(loader=TEMPLATE_LOADER)
 WIDGET = TEMPLATE_ENV.get_template('widget.html')
 FILE = TEMPLATE_ENV.get_template('file.html')
 
-def toWidget(chant, showDisplayOptions=True, showSections=False, 
+def toWidget(chant, showOptions=False, showSections=False, 
     showWords=False, showSyllables=False, showNeumes=False,
     showMetadata=False, showMisalignments=True):
     """Export a chant to an HTML widget: a snippet displayed in Jupyter notebooks.
     
     The structure of the chant can be highlighted visually using several flags:
     ``showSections``, ``showWords``, ``showSyllables`` and ``showNeumes``. When
-    ``showDisplayOptions`` is on, several checkboxes are shown that allow you
+    ``showOptions`` is on, several checkboxes are shown that allow you
     to highlight these interactively.
     
     Args:
         chant (chant21.Chant): A chant object
-        showDisplayOptions (bool, optional): If True, several checkboxes are 
+        showOptions (bool, optional): If True, several checkboxes are 
             shown that allow you to highlight the structure of the chant
             interactively. Defaults to True.
         showSections (bool, optional): Highlight sections? Defaults to False.
@@ -70,7 +70,7 @@ def toWidget(chant, showDisplayOptions=True, showSections=False,
     """
     obj = chant.toObject(includeVolpiano=True)
     html = WIDGET.render(chant=obj,
-                         showDisplayOptions=showDisplayOptions,
+                         showOptions=showOptions,
                          showSections=showSections, 
                          showWords=showWords,
                          showSyllables=showSyllables, 
@@ -79,7 +79,9 @@ def toWidget(chant, showDisplayOptions=True, showSections=False,
                          showMisalignments=showMisalignments)
     return html
 
-def toFile(chant, filepath=None, **kwargs):
+def toFile(chant, filepath=None, showOptions=True, showSections=False, 
+    showWords=False, showSyllables=False, showNeumes=False,
+    showMetadata=False, showMisalignments=True):
     """Export a Chant to an HTML file.
     
     Args:
@@ -94,7 +96,14 @@ def toFile(chant, filepath=None, **kwargs):
         str: The HTML string is returned if no ``filepath`` is specified.
     """
     obj = chant.toObject(includeVolpiano=True)
-    html = FILE.render(chant=obj, **kwargs)
+    html = FILE.render(chant=obj, 
+                       showOptions=showOptions, 
+                       showSections=showSections, 
+                       showWords=showWords,
+                       showSyllables=showSyllables, 
+                       showNeumes=showNeumes,
+                       showMetadata=showMetadata,
+                       showMisalignments=showMisalignments)
     if filepath is None:
         return html
     else:
