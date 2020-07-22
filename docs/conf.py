@@ -62,6 +62,10 @@ html_theme = 'sphinx_rtd_theme'
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
 
+html_css_files = [
+    'custom.css',
+]
+
 # Allow references to music21
 intersphinx_mapping = {'music21': ('https://web.mit.edu/music21/doc', None)}
 
