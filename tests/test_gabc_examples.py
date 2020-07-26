@@ -39,12 +39,12 @@ class TestParseExamples(unittest.TestCase):
     #     for filename in [salveRegina, utQueantLaxis, kyrie, abOrtuSolis]:
     #         self.runTest(filename)
 
-    def test_GBCParsing(self):
-        GABC_FN = '/Users/Bas/repos/projects/GregoBaseCorpus/dist/gregobasecorpus-v0.3/gregobasecorpus-v0.3/gabc/{idx:0>5}.gabc'
-        filename = GABC_FN.format(idx=1)
-        parser = ParserGABC()
-        parse = parser.parseFile(filename)
-        self.assertFalse(parse.error)
+    # def test_GBCParsing(self):
+    #     GABC_FN = '../GregoBaseCorpus/dist/gregobasecorpus-v0.3/gregobasecorpus-v0.3/gabc/{idx:0>5}.gabc'
+    #     filename = GABC_FN.format(idx=1)
+    #     parser = ParserGABC()
+    #     parse = parser.parseFile(filename)
+    #     self.assertFalse(parse.error)
 
 class TestSpecialCases(unittest.TestCase):
     """Tests of examples where parsing failed initially"""
@@ -78,25 +78,13 @@ class TestConvertExamples(unittest.TestCase):
         chant = convertGABC(abOrtuSolis)
         self.assertTrue(True)
 
-    # def test_GBCConversion2(self):
-    #     GABC_FN = '/Users/Bas/repos/projects/GregoBaseCorpus/gabc/{idx:0>5}.gabc'
-    #     filename = GABC_FN.format(idx=7231)
-    #     parser = ParserGABC()
-    #     parse = parser.parseFile(filename)
-    #     ch = visitParseTree(parse, VisitorGABC())
-    #     # ch.show()
-    #     ch.toHTML('tmp/test.html')
-    #     self.assertTrue(True)
-
     # def test_exampleConversion(self):
-    #     # gabc = "(c4) AL(dc~) *(;) <i>ij.</i>(hghvGFg_fgvFDffdev.dec.,e/ggh'GFgvFEffdevDCd!ewfd.)"
-    #     # gabc = "(c4) AL(dc~)le(c/e'gF'EC'd)lú(dc/fg!hvGF'g)ia.(g.) *(;) <i>ij.</i>(hghvGFg_fgvFDffdev.dec.,e/ggh'GFgvFEffdevDCd!ewfd.) "
-    #     gabc = "(c4) AL(dc~)le(c/e'gF'EC'd)lú(dc/fg!hvGF'g)ia.(g.) <sp>V/</sp>.(::) Lau(h)dem(ghG'E) Dó(fe)mi(fg)ni(gvF'EC'dw!evDCd.) (;) lo(d)qué(d/ffe/ggh)tur(fvED) os(cd) me(d!ewfd)um,(d.) (:) et(de) be(gh)ne(gh)dí(h!iwj/ki'jvH'G/h!iwjh)cat(h.) (,) o(h_ghvGF)mnis(fvED) ca(c.d!ewfd)ro(d.) (;) no(de)men(gh) san(ghgh)ctum(h.) *(,) e(h!iwj/ki'jvH'G/h!iwjh)jus.(h,hghvGFg_fgvFDffdev.dec.,e/ggh'GFgvFEffd/evDCd!ewfd.) (::)"
-    #     parser = ParserGABC()
-    #     parse = parser.parse(gabc)
-    #     ch = visitParseTree(parse, GABCVisitor())
-    #     ch.flatter.show()
-    #     self.assertTrue(True)
+    #     gabc = "(cb3) AL(d.f!gwhhv//ikkvJ'IH'Ghih'h)ma(fef.) *(,) Re(h)dem(h')ptó(d)ris(ef) Ma(gvED)ter,(d.)"        ch = converter.parse(gabc, format='gabc', forceSource=True, storePickle=False)
+    #     ch.toHTML('tmp/html-test-bla.html')
+    #     # parse = parser.parse(gabc)
+    #     # ch = visitParseTree(parse, GABCVisitor())
+    #     # ch.flatter.show()
+    #     # self.assertTrue(True)
         
 class TestCHSONConversionExamples(unittest.TestCase):
     def runTest(self, filename):
