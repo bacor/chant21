@@ -219,6 +219,12 @@ class TestToVolpiano(unittest.TestCase):
         n = chant.Note('C4')
         n.editorial.liquescence = True
         self.assertEqual(n.volpiano, 'C')
+
+    def test_flatClef(self):
+        """Test whether flat clefs are exported properly"""
+        ch = converter.parse("gabc: (cb3) A(g)B(h)", forceSource=True)
+        clef = ch[0][0][0][0]
+        self.assertEqual(clef.volpiano, '1i')
        
 if __name__  ==  '__main__':
     unittest.main()

@@ -719,6 +719,14 @@ class Clef(Chant21Object, clef.TrebleClef):
         super().__init__(**kwargs)
         self.priority = -2
 
+    @property
+    def volpiano(self):
+        # Is this a flat clef such as (cb2)
+        if self.hasEditorialInformation and 'b' in self.editorial.get('gabc', ''):
+            return '1i'
+        else:
+            return '1'
+
 ###
 
 class Alteration(Chant21Object, base.Music21Object):
