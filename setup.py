@@ -43,7 +43,7 @@ setuptools.setup(
         "music21>=5.7.2",
         "Arpeggio>=1.9.2",
         "Jinja2>=2.11.1",
-        "PyYAML==5.3.1"
+        "PyYAML==5.4"
     ],
 
     # Which data files to include, see 
