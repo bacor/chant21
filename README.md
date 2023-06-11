@@ -12,7 +12,8 @@ and Volpiano as used by the [Cantus Database](cantus.uwaterloo.ca/).
 in sections, words, syllables and neumes. 
 - Very fast and interactive chant visualization in Jupyter notebooks.
 - Usable with two large plainchant Corpora: 
-the [GregoBaseCorpus](todo) and the [CantusCorpus](todo).
+the [GregoBaseCorpus](https://github.com/bacor/gregobasecorpus)
+and the [CantusCorpus](https://github.com/bacor/cantuscorpus).
 
 License and citation
 --------------------
