@@ -11,6 +11,16 @@ from chant21.cantus import addCantusMetadataToChant
 from chant21.cantus import convertCantusData
 
 class TestCantusExamplesConversion(unittest.TestCase):
+    _tmp_dir = 'tmp/cantus-html'
+
+    def setUp(self):
+        os.makedirs(self._tmp_dir, exist_ok=True)
+
+    def tearDown(self):
+        dir = self._tmp_dir
+        for i in os.listdir(dir):
+            os.remove(os.path.join(dir, i))
+
     def test_parse_volpiano_examples(self):
         """Test whether the volpiano of all Cantus examples can be parsed"""
         examples = pd.read_csv('chant21/examples/cantus-volpiano-examples.csv', index_col=0)
