@@ -1,0 +1,17 @@
+name: CI
+on: [push, pull_request]
+jobs:
+  specs:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: pip install .
+      - name: Run tests
+        run: python -m unittest tests/*.py
