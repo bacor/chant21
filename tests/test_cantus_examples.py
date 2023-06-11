@@ -16,7 +16,12 @@ class TestCantusExamplesConversion(unittest.TestCase):
         examples = pd.read_csv('chant21/examples/cantus-volpiano-examples.csv', index_col=0)
         for idx, data in examples.iterrows():
             parser = ParserCantusVolpiano()
-            parse = parser.parser.parse(data['volpiano'])
+            volpiano = data['volpiano']
+            try:
+                parser.parser.parse(volpiano)
+            except:
+                print('Error parsing entry {}, Volpiano code "{}"'.format(idx, volpiano))
+                raise
             self.assertTrue(True)
 
     def test_parse_text_examples(self):
