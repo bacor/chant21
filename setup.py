@@ -40,7 +40,7 @@ setuptools.setup(
     packages=setuptools.find_packages(),
     classifiers=classifiers,
     install_requires=[
-        "music21>=5.7.2",
+        "music21>=5.7.2,<8.0",
         "Arpeggio>=1.9.2",
         "Jinja2>=2.11.1",
         "PyYAML==5.3.1"
