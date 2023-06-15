@@ -50,6 +50,18 @@ class TestFile(unittest.TestCase):
         target = dict(attr1='value1', attr2='value2')
         self.assertDictEqual(header, target)
 
+    def test_headerEmptyValue(self):
+        parser = ParserGABC(root='header')
+        parse = parser.parse('attr1:;')
+        header = visitParseTree(parse, VisitorGABC())
+        self.assertDictEqual(header, {'attr1': ''})
+
+    def test_headerWhitespaceValue(self):
+        parser = ParserGABC(root='header')
+        parse = parser.parse('attr1: ;\nattr2:    ;')
+        header = visitParseTree(parse, VisitorGABC())
+        self.assertDictEqual(header, {'attr1': '', 'attr2': ''})
+
     def test_multipleHeaders(self):
         parser = ParserGABC()
         fileStr = 'attr1:value1;\n%%\nattr2:value2;\n%%\n(c2) A(f)'
