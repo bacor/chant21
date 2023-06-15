@@ -76,7 +76,7 @@ class VisitorGABC(PTNodeVisitor):
     
     def visit_attribute(self, node, children):
         key = children.results['attribute_key'][0]
-        value = children.results['attribute_value'][0]
+        value = children.results.get('attribute_value', [''])[0]
         return key, value
 
     def visit_body(self, node, children):
