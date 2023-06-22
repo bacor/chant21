@@ -94,12 +94,13 @@ class VisitorGABC(PTNodeVisitor):
             curClefHasFlat = curGABCClef in ['cb1', 'cb2', 'cb3', 'cb4']
             flatNotes = dict()
             isFlat = lambda n: flatNotes.get(n, False)
-            def resetFlatNotes():
+            naturalNotes = dict()
+            isNatural = lambda n: naturalNotes.get(n, False)
+            def resetAccidentals():
                 flatNotes.clear()
                 flatNotes['B'] = curClefHasFlat
-            resetFlatNotes()
-            bIsNatural = False
-            eIsNatural = False
+                naturalNotes.clear()
+            resetAccidentals()
 
             # Update the pitches of all notes based on the the clef
             # and accidentals
@@ -111,9 +112,7 @@ class VisitorGABC(PTNodeVisitor):
                     stepWithOctave = gabcPositionToStep(position, curGABCClef)
                     el.nameWithOctave = stepWithOctave
                     
-                    if bIsNatural and el.step == 'B':
-                        el.pitch.accidental = pitch.Accidental('natural')
-                    elif eIsNatural and el.step == 'E':
+                    if isNatural(el.step):
                         el.pitch.accidental = pitch.Accidental('natural')
                     elif isFlat(el.step):
                         el.pitch.accidental = pitch.Accidental('flat')
@@ -126,23 +125,17 @@ class VisitorGABC(PTNodeVisitor):
                     el.pitch = pitch.Pitch(step)
 
                     # Reset alterations
-                    resetFlatNotes()
-                    bIsNatural = False
-                    eIsNatural = False
+                    resetAccidentals()
 
                     # Update
                     if isinstance(el, chant.Flat):
                         flatNotes[el.pitch.step] = True
-                    elif isinstance(el, chant.Natural) and el.pitch.step == 'B':
-                        bIsNatural = True
-                    elif isinstance(el, chant.Natural) and el.pitch.step == 'E':
-                        eIsNatural = True
+                    elif isinstance(el, chant.Natural):
+                        naturalNotes[el.pitch.step] = True
                     
                 # Scope of accidentals ends at breathmarks
                 elif isinstance(el, chant.Pausa):
-                    resetFlatNotes()
-                    bIsNatural = False
-                    eIsNatural = False  
+                    resetAccidentals()
                     
                     # Intermediate sections start (!) at pausa finalis (double barlines)
                     # because annotations below them always refer to the next sections.
