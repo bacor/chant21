@@ -87,7 +87,7 @@ class TestAlterations(unittest.TestCase):
 
     def test_flats(self):
         parser = ParserGABC(root='body')    
-        parse = parser.parse('(c2) a(exee,e)')
+        parse = parser.parse('(c2) (exee,e)')
         stream = visitParseTree(parse, VisitorGABC())
         flat = stream.flat[1]
         self.assertIsInstance(flat, chant.Alteration)
@@ -179,6 +179,21 @@ class TestAlterations(unittest.TestCase):
         self.assertIsInstance(n1, chant.Neume)
         self.assertIsInstance(alt, chant.Flat)
         self.assertIsInstance(n2, chant.Neume)
+
+    def test_flatAllNotes(self):
+        """Test whether flat is handled consistently for all pitches"""
+        def char_range(a, b):
+            for i in range(ord(a), ord(b)):
+                yield chr(i)
+
+        notes = ' '.join(['{}x{}'.format(i, i) for i in char_range('a', 'm')])
+
+        parser = ParserGABC(root='body')
+        parse = parser.parse('(c4) ({})'.format(notes))
+        stream = visitParseTree(parse, VisitorGABC())
+        notes = stream.flat.notes
+        for n in notes:
+            self.assertEqual(n.pitch.accidental.name, 'flat')
       
 class TestText(unittest.TestCase):
 
