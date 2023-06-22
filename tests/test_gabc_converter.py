@@ -15,6 +15,13 @@ from chant21.gabc import AlterationWarning
 def parseGABC(string):
     return converter.parse(string, format='gabc', forceSource=True, storePickle=False)
 
+def char_range(a, b):
+    for i in range(ord(a), ord(b)):
+        yield chr(i)
+
+def all_gabc_notes():
+    return char_range('a', 'm')
+
 class TestFile(unittest.TestCase):
     def test_file(self):
         parser = ParserGABC(root='file')
@@ -87,7 +94,7 @@ class TestAlterations(unittest.TestCase):
 
     def test_flats(self):
         parser = ParserGABC(root='body')    
-        parse = parser.parse('(c2) a(exee,e)')
+        parse = parser.parse('(c2) (exee,e)')
         stream = visitParseTree(parse, VisitorGABC())
         flat = stream.flat[1]
         self.assertIsInstance(flat, chant.Alteration)
@@ -102,21 +109,25 @@ class TestAlterations(unittest.TestCase):
         self.assertIsNone(notes[2].pitch.accidental)
     
     def test_naturals(self): 
-        parser = ParserGABC(root='body')    
-        parse = parser.parse('(c2) a(eexeeyee,e)')
-        stream = visitParseTree(parse, VisitorGABC())
-        notes = stream.flat.notes
-        self.assertEqual(notes[0].name, 'B')
-        self.assertEqual(notes[1].name, 'B-')
-        self.assertEqual(notes[2].name, 'B')
-        self.assertEqual(notes[3].name, 'B')
-        self.assertEqual(notes[4].name, 'B')
+        parser = ParserGABC(root='body')
+        for n in all_gabc_notes():
+            with self.subTest(n=n):
+                gabc = '(c2) a(**x**y**,*)'.replace('*', n)
+                parse = parser.parse(gabc)
+                stream = visitParseTree(parse, VisitorGABC())
+                notes = stream.flat.notes
+                for i in range(0, 5):
+                    if i == 1:
+                        self.assertEqual(2, len(notes[i].name))
+                        self.assertTrue(notes[i].name.endswith('-'))
+                    else:
+                        self.assertEqual(1, len(notes[i].name))
 
-        self.assertIsNone(notes[0].pitch.accidental)
-        self.assertEqual(notes[1].pitch.accidental.name, 'flat')
-        self.assertEqual(notes[2].pitch.accidental.name, 'natural')
-        self.assertEqual(notes[3].pitch.accidental.name, 'natural')
-        self.assertIsNone(notes[4].pitch.accidental)
+                self.assertIsNone(notes[0].pitch.accidental)
+                self.assertEqual(notes[1].pitch.accidental.name, 'flat')
+                self.assertEqual(notes[2].pitch.accidental.name, 'natural')
+                self.assertEqual(notes[3].pitch.accidental.name, 'natural')
+                self.assertIsNone(notes[4].pitch.accidental)
 
     def test_breath_mark(self):
         """Test whether breath marks reset the accidentals"""
@@ -179,6 +190,17 @@ class TestAlterations(unittest.TestCase):
         self.assertIsInstance(n1, chant.Neume)
         self.assertIsInstance(alt, chant.Flat)
         self.assertIsInstance(n2, chant.Neume)
+
+    def test_flatAllNotes(self):
+        """Test whether flat is handled consistently for all pitches"""
+        notes = ' '.join(['{}x{}'.format(i, i) for i in all_gabc_notes()])
+
+        parser = ParserGABC(root='body')
+        parse = parser.parse('(c4) ({})'.format(notes))
+        stream = visitParseTree(parse, VisitorGABC())
+        notes = stream.flat.notes
+        for n in notes:
+            self.assertEqual(n.pitch.accidental.name, 'flat')
       
 class TestText(unittest.TestCase):
 
