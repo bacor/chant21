@@ -2,6 +2,7 @@ import unittest
 import glob
 from music21 import converter
 from music21 import metadata
+from music21 import __version__
 from arpeggio import visit_parse_tree as visitParseTree
 import chant21
 from chant21.gabc import ParserGABC
@@ -10,6 +11,8 @@ from chant21.examples import salveRegina
 from chant21.examples import abOrtuSolis
 from chant21.examples import kyrie
 from chant21.examples import utQueantLaxis
+
+music21_version = tuple(int(i) for i in __version__.split('.'))
 
 def convertGABC(string):
     return converter.parse(string, format='gabc', forceSource=True, storePickle=False)
@@ -97,9 +100,12 @@ class TestConvertExamples(unittest.TestCase):
     #     ch = visitParseTree(parse, GABCVisitor())
     #     ch.flatter.show()
     #     self.assertTrue(True)
-        
+
 class TestCHSONConversionExamples(unittest.TestCase):
     def runTest(self, filename):
+        if music21_version >= (8,):
+            self.skipTest('data structure changed in music21 v8')
+
         # Music21 by default caches parses as pickle files, we disable that here
         origChant = convertGABC(filename)
         chson = origChant.toCHSON()
